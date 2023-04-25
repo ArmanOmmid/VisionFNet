@@ -5,12 +5,6 @@ import os
 import shutil
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from tqdm import tqdm
-from torch.utils.data import Subset
-import copy
 
 def reusable_splitter(full_train_dataset, full_test_dataset, train_count, test_proportion, targets='targets', slice_targets=False):
     full_train_targets = np.array(getattr(full_train_dataset, targets)) if not slice_targets else np.array(getattr(full_train_dataset, targets))[:, 1]
