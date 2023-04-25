@@ -64,7 +64,7 @@ class Experiment(object):
         valid_iou_per_epoch = []
         valid_acc_per_epoch = []
 
-        if os.path.exists(self.model_save_path)
+        if os.path.exists(self.model_save_path):
             self.model.load_state_dict(torch.load(self.model_save_path))
         
         for epoch in range(epochs):
