@@ -183,7 +183,7 @@ if __name__ == "__main__":
     
     print("Training")
 
-    results = experiment.train()
+    results = experiment.train(epochs, early_stop_tolerance)
     
     best_iou_score, \
     train_loss_per_epoch, \
