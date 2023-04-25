@@ -162,41 +162,178 @@ else:
 
 model = model.to(device) # transfer the model to the device
 
+def train():
+    best_iou_score = 0.0
+    best_loss = 100.0
+    early_stop_count = 0
+    train_loss_per_epoch = []
+    train_iou_per_epoch = []
+    train_acc_per_epoch = []
+    
+    valid_loss_per_epoch = []
+    valid_iou_per_epoch = []
+    valid_acc_per_epoch = []
+    
+    for epoch in range(epochs):
+        ts = time.time()
+        losses = []
+        mean_iou_scores = []
+        accuracy = []
+        for iter, (inputs, labels) in enumerate(train_loader):
+            # reset optimizer gradients
+            optimizer.zero_grad()
+
+            # both inputs and labels have to reside in the same device as the model's
+            inputs =  inputs.to(device)# transfer the input to the same device as the model's
+            labels =  labels.to(device) # transfer the labels to the same device as the model's
+            
+            if 'augment' in MODE:
+                # due to crop transform
+                b, ncrop, c, h, w = inputs.size()
+                inputs = inputs.view(-1, c, h, w)
+                b, ncrop, h, w = labels.size()
+                labels = labels.view(-1, h, w)
+            
+            outputs = model(inputs) # Compute outputs. we will not need to transfer the output, it will be automatically in the same device as the model's!
+
+            loss = criterion(outputs, labels)  # calculate loss
+
+            with torch.no_grad():
+                losses.append(loss.item())
+                _, pred = torch.max(outputs, dim=1)
+                acc = util.pixel_acc(pred, labels)
+                accuracy.append(acc)
+                iou_score = util.iou(pred, labels)
+                mean_iou_scores.append(iou_score)
+                
+            # backpropagate
+            loss.backward()
+
+            # update the weights
+            optimizer.step()
+
+            if iter % 10 == 0:
+                print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.item()))
+
+        if 'lr' in MODE:
+            print(f'Learning rate at epoch {epoch}: {scheduler.get_lr()[0]:0.9f}')  # changes every epoch
+            # lr scheduler
+            scheduler.step()           
+                    
+        with torch.no_grad():
+            train_loss_at_epoch = np.mean(losses)
+            train_iou_at_epoch = np.mean(mean_iou_scores)
+            train_acc_at_epoch = np.mean(accuracy)
+
+            train_loss_per_epoch.append(train_loss_at_epoch)
+            train_iou_per_epoch.append(train_iou_at_epoch)
+            train_acc_per_epoch.append(train_acc_at_epoch)
+
+            print("Finishing epoch {}, time elapsed {}".format(epoch, time.time() - ts))
+
+            valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = val(epoch)
+            valid_loss_per_epoch.append(valid_loss_at_epoch)
+            valid_iou_per_epoch.append(valid_iou_at_epoch)
+            valid_acc_per_epoch.append(valid_acc_at_epoch)
+
+            if valid_iou_at_epoch > best_iou_score:
+                best_iou_score = valid_iou_at_epoch
+                # save the best model
+            if valid_loss_at_epoch < best_loss:
+                print(f"Valid Loss {valid_loss_at_epoch} < Best Loss {best_loss}. (Valid IOU {valid_iou_at_epoch}) Saving Model...")
+                best_loss = valid_loss_at_epoch
+                early_stop_count = 0
+                torch.save(model.state_dict(), model_save_path)
+            else:
+                early_stop_count += 1
+                if early_stop_count > early_stop_tolerance:
+                    print("Early Stopping...")
+                    break
+    model.load_state_dict(torch.load(model_save_path))
+            
+    return best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
+    
+
+def val(epoch):
+    model.eval() # Put in eval mode (disables batchnorm/dropout) !
+    
+    losses = []
+    mean_iou_scores = []
+    accuracy = []
+
+    with torch.no_grad(): # we don't need to calculate the gradient in the validation/testing
+        for iter, (input, label) in enumerate(val_loader):
+            input = input.to(device)
+            label = label.to(device)
+            
+            output = model(input)
+            loss = criterion(output, label)
+            losses.append(loss.item())
+            _, pred = torch.max(output, dim=1)
+            acc = util.pixel_acc(pred, label)
+            accuracy.append(acc)
+            iou_score = util.iou(pred, label)
+            mean_iou_scores.append(iou_score)
+        loss_at_epoch = np.mean(losses)
+        iou_at_epoch = np.mean(mean_iou_scores)
+        acc_at_epoch = np.mean(accuracy)
+
+    print(f"Valid Loss at epoch: {epoch} is {loss_at_epoch}")
+    print(f"Valid IoU at epoch: {epoch} is {iou_at_epoch}")
+    print(f"Valid Pixel acc at epoch: {epoch} is {acc_at_epoch}")
+
+    model.train() #TURNING THE TRAIN MODE BACK ON TO ENABLE BATCHNORM/DROPOUT!!
+
+    return loss_at_epoch, iou_at_epoch, acc_at_epoch
+
+
+def modelTest():
+    model.eval()  # Put in eval mode (disables batchnorm/dropout) !
+
+    losses = []
+    mean_iou_scores = []
+    accuracy = []
+
+    with torch.no_grad():  # we don't need to calculate the gradient in the validation/testing
+
+        for iter, (input, label) in enumerate(test_loader):
+            input = input.to(device)
+            label = label.to(device)
+
+            output = model(input)
+            loss = criterion(output, label)
+            losses.append(loss.item())
+            _, pred = torch.max(output, dim=1)
+            acc = util.pixel_acc(pred, label)
+            accuracy.append(acc)
+            iou_score = util.iou(pred, label)
+            mean_iou_scores.append(iou_score)
+
+    test_loss = np.mean(losses)
+    test_iou = np.mean(mean_iou_scores)
+    test_acc = np.mean(accuracy)
+
+    model.train()  #TURNING THE TRAIN MODE BACK ON TO ENABLE BATCHNORM/DROPOUT!!
+
+    return test_loss, test_iou, test_acc
+
 
 if __name__ == "__main__":
 
-    experiment = Experiment(
-        model,
-        train_loader,
-        val_loader,
-        criterion,
-        optimizer,
-        scheduler,
-        device,
-        model_save_path
-    )
-
-    experiment.val(0)  # show the accuracy before training
+    val(0)  # show the accuracy before training
     
-    results = experiment.train()
-    
-    best_iou_score, \
-    train_loss_per_epoch, \
-    train_iou_per_epoch, \
-    train_acc_per_epoch, \
-    valid_loss_per_epoch, \
-    valid_iou_per_epoch, \
-    valid_acc_per_epoch = results
-    
+    best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch = train()
     print(f"Best IoU score: {best_iou_score}")
     util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, name='Loss')
     util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, name='Accuracy')
     util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, name='Intersection over Union')
     
-    test_loss, test_iou, test_acc = experiment.test()
+    test_loss, test_iou, test_acc = modelTest()
     print(f"Test Loss is {test_loss}")
     print(f"Test IoU is {test_iou}")
     print(f"Test Pixel acc is {test_acc}")
+    
+
     
     # ------ GET SAMPLE IMAGE FOR REPORT -------
     test_sample_dataset = voc.VOC(root, 'test', transforms=sample_transform)

@@ -22,6 +22,9 @@ import src.models.customfcn1 as customfcn1
 import src.models.customfcn2 as customfcn2
 from src.models.basic_fcn import *
 
+from tqdm.auto import tqdm
+from typing import Dict, List, Tuple
+
 MODE = ['lr', 'weight', 'custom1']
 """
 None: baseline
@@ -34,41 +37,31 @@ None: baseline
 'unet': 5c (unet)
 """
 
-class MaskToTensor(object):
-    def __call__(self, img):
-        return torch.from_numpy(np.array(img, dtype=np.int32)).long()
-
-def init_weights(m):
-    if 'transfer' in MODE:
-        if isinstance(m, nn.ConvTranspose2d):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            torch.nn.init.normal_(m.bias.data) #xavier not applicable for biases
-    else:
-        if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            torch.nn.init.normal_(m.bias.data) #xavier not applicable for biases
-
-def getClassWeights(dataset, n_class):
-    cum_counts = torch.zeros(n_class)
-    for iter, (inputs, labels) in enumerate(train_loader_no_shuffle):
-        labels = torch.squeeze(labels) # 224 x 224
-        vals, counts = labels.unique(return_counts = True)
-        for v, c in zip(vals, counts):
-            cum_counts[v.item()] += c.item()
-            
-        #print(f"Cumulative counts at iter {iter}: {cum_counts}")
-            
-    totalPixels = torch.sum(cum_counts)
-    classWeights = 1 - (cum_counts / totalPixels)
-    print(f"Class weights: {classWeights}")
-    return classWeights
-
 class Experiment(object):
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self,
+            model: torch.nn.Module, 
+            train_loader: torch.utils.data.DataLoader, 
+            val_loader: torch.utils.data.DataLoader,
+            criterion: torch.nn.Module, 
+            optimizer: torch.optim.Optimizer,
+            scheduler: torch.optim.lr_scheduler.LRScheduler,
+            device: torch.device,
+            model_save_path: str,
+        ) -> None:
 
-    def train():
+        self.model = model
+        self.train_loader = train_loader
+        self.val_loader = val_loader
+        self.criterion = criterion
+
+        self.optimizer = optimizer
+        self.scheduler = scheduler
+        self.device = device
+        self.model_save_path = model_save_path
+    
+    def train(self, epochs, early_stop_tolerance):
+        
         best_iou_score = 0.0
         best_loss = 100.0
         early_stop_count = 0
@@ -85,13 +78,13 @@ class Experiment(object):
             losses = []
             mean_iou_scores = []
             accuracy = []
-            for iter, (inputs, labels) in enumerate(train_loader):
+            for iter, (inputs, labels) in enumerate(self.train_loader):
                 # reset optimizer gradients
-                optimizer.zero_grad()
+                self.optimizer.zero_grad()
 
                 # both inputs and labels have to reside in the same device as the model's
-                inputs =  inputs.to(device)# transfer the input to the same device as the model's
-                labels =  labels.to(device) # transfer the labels to the same device as the model's
+                inputs =  inputs.to(self.device)# transfer the input to the same device as the model's
+                labels =  labels.to(self.device) # transfer the labels to the same device as the model's
                 
                 if 'augment' in MODE:
                     # due to crop transform
@@ -100,9 +93,9 @@ class Experiment(object):
                     b, ncrop, h, w = labels.size()
                     labels = labels.view(-1, h, w)
                 
-                outputs = model(inputs) # Compute outputs. we will not need to transfer the output, it will be automatically in the same device as the model's!
+                outputs = self.model(inputs) # Compute outputs. we will not need to transfer the output, it will be automatically in the same device as the model's!
 
-                loss = criterion(outputs, labels)  # calculate loss
+                loss = self.criterion(outputs, labels)  # calculate loss
 
                 with torch.no_grad():
                     losses.append(loss.item())
@@ -116,15 +109,15 @@ class Experiment(object):
                 loss.backward()
 
                 # update the weights
-                optimizer.step()
+                self.optimizer.step()
 
                 if iter % 10 == 0:
                     print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.item()))
 
             if 'lr' in MODE:
-                print(f'Learning rate at epoch {epoch}: {scheduler.get_lr()[0]:0.9f}')  # changes every epoch
+                print(f'Learning rate at epoch {epoch}: {self.scheduler.get_lr()[0]:0.9f}')  # changes every epoch
                 # lr scheduler
-                scheduler.step()           
+                self.scheduler.step()           
                         
             with torch.no_grad():
                 train_loss_at_epoch = np.mean(losses)
@@ -137,7 +130,8 @@ class Experiment(object):
 
                 print("Finishing epoch {}, time elapsed {}".format(epoch, time.time() - ts))
 
-                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = val(epoch)
+                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val(epoch)
+
                 valid_loss_per_epoch.append(valid_loss_at_epoch)
                 valid_iou_per_epoch.append(valid_iou_at_epoch)
                 valid_acc_per_epoch.append(valid_acc_at_epoch)
@@ -149,12 +143,77 @@ class Experiment(object):
                     print(f"Valid Loss {valid_loss_at_epoch} < Best Loss {best_loss}. (Valid IOU {valid_iou_at_epoch}) Saving Model...")
                     best_loss = valid_loss_at_epoch
                     early_stop_count = 0
-                    torch.save(model.state_dict(), model_save_path)
+                    torch.save(self.model.state_dict(), self.model_save_path)
                 else:
                     early_stop_count += 1
                     if early_stop_count > early_stop_tolerance:
                         print("Early Stopping...")
                         break
-        model.load_state_dict(torch.load(model_save_path))
+        self.model.load_state_dict(torch.load(self.model_save_path))
                 
         return best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
+    
+    def val(self, current_epoch):
+
+        self.model.eval() # Put in eval mode (disables batchnorm/dropout) !
+        
+        losses = []
+        mean_iou_scores = []
+        accuracy = []
+
+        with torch.no_grad(): # we don't need to calculate the gradient in the validation/testing
+            for iter, (input, label) in enumerate(self.val_loader):
+                input = input.to(self.device)
+                label = label.to(self.device)
+                
+                output = self.model(input)
+                loss = self.criterion(output, label)
+                losses.append(loss.item())
+                _, pred = torch.max(output, dim=1)
+                acc = util.pixel_acc(pred, label)
+                accuracy.append(acc)
+                iou_score = util.iou(pred, label)
+                mean_iou_scores.append(iou_score)
+            loss_at_epoch = np.mean(losses)
+            iou_at_epoch = np.mean(mean_iou_scores)
+            acc_at_epoch = np.mean(accuracy)
+
+        print(f"Valid Loss at epoch: {current_epoch} is {loss_at_epoch}")
+        print(f"Valid IoU at epoch: {current_epoch} is {iou_at_epoch}")
+        print(f"Valid Pixel acc at epoch: {current_epoch} is {acc_at_epoch}")
+
+        self.model.train() # TURNING THE TRAIN MODE BACK ON TO ENABLE BATCHNORM/DROPOUT!!
+
+        return loss_at_epoch, iou_at_epoch, acc_at_epoch
+    
+    def test(self):
+
+        self.model.eval()  # Put in eval mode (disables batchnorm/dropout) !
+
+        losses = []
+        mean_iou_scores = []
+        accuracy = []
+
+        with torch.no_grad():  # we don't need to calculate the gradient in the validation/testing
+
+            for iter, (input, label) in enumerate(self.test_loader):
+                input = input.to(self.device)
+                label = label.to(self.device)
+
+                output = self.model(input)
+                loss = self.criterion(output, label)
+                losses.append(loss.item())
+                _, pred = torch.max(output, dim=1)
+                acc = util.pixel_acc(pred, label)
+                accuracy.append(acc)
+                iou_score = util.iou(pred, label)
+                mean_iou_scores.append(iou_score)
+
+        test_loss = np.mean(losses)
+        test_iou = np.mean(mean_iou_scores)
+        test_acc = np.mean(accuracy)
+
+        self.model.train()  #TURNING THE TRAIN MODE BACK ON TO ENABLE BATCHNORM/DROPOUT!!
+
+        return test_loss, test_iou, test_acc
+    
