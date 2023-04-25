@@ -1,22 +1,20 @@
-import sys
-import os
-sys.path.append('/'.join(__file__.split('/')[:__file__.split('/').index('src')]))
 
-from basic_fcn import *
 import time
 from torch.utils.data import DataLoader
 import torch
 import gc
-import voc
 import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
 #import albumentations as A
 #import albumentations.pytorch
-import util
 import numpy as np
 from collections import Counter
 import random
 from matplotlib import pyplot as plt
+
+import src.utility.voc
+import src.utility.util
+from src.models.basic_fcn import *
 
 class MaskToTensor(object):
     def __call__(self, img):
