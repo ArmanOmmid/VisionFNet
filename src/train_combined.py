@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append('/'.join(__file__.split('/')[:__file__.split('/').index('src')]))
 
-from models.basic_fcn import *
+from src.models.basic_fcn import *
 import time
 from torch.utils.data import DataLoader
 import torch
