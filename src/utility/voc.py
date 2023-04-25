@@ -6,7 +6,7 @@ import numpy as np
 
 num_classes = 21
 ignore_label = 255
-root = './../datasets/VOC'
+root = './../../datasets/VOC'
 
 '''
 color map
