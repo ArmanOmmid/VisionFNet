@@ -1,4 +1,8 @@
 
+import sys
+import os
+print(sys.path)
+
 import time
 from torch.utils.data import DataLoader
 import torch
