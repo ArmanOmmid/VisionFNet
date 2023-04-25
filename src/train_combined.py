@@ -10,12 +10,12 @@ from collections import Counter
 import random
 from matplotlib import pyplot as plt
 
-import src.utility.util
-import src.utility.voc
-import src.models.transfer_fcn 
-import src.models.unet
-import src.models.customfcn1
-import src.models.customfcn2
+import src.utility.util as util
+import src.utility.voc as voc
+import src.models.transfer_fcn as transfer_fcn
+import src.models.unet as unet
+import src.models.customfcn1 as customfcn1
+import src.models.customfcn2 as customfcn2
 from src.models.basic_fcn import *
 
 MODE = ['lr', 'weight', 'custom1']

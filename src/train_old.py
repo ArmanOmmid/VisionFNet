@@ -12,8 +12,8 @@ from collections import Counter
 import random
 from matplotlib import pyplot as plt
 
-import src.utility.voc
-import src.utility.util
+import src.utility.voc as voc
+import src.utility.util as util
 from src.models.basic_fcn import *
 
 class MaskToTensor(object):
