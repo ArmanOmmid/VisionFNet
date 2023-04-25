@@ -73,11 +73,11 @@ def sample_transform(image, mask):
     
     return image, mask
 
-root = os.path.join(os.path.dirname(__init__.repository_root), "datasets", "VOC")
+voc_root = os.path.join(__init__.repository_root, "datasets", "VOC")
 
-train_dataset = voc.VOC(root, 'train', transforms=train_transform)
-val_dataset = voc.VOC(root, 'val', transforms=valtest_transform)
-test_dataset = voc.VOC(root, 'test', transforms=valtest_transform)
+train_dataset = voc.VOC(voc_root, 'train', transforms=train_transform)
+val_dataset = voc.VOC(voc_root, 'val', transforms=valtest_transform)
+test_dataset = voc.VOC(voc_root, 'test', transforms=valtest_transform)
 
 train_loader_no_shuffle = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
 
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     print(f"Test Pixel acc is {test_acc}")
     
     # ------ GET SAMPLE IMAGE FOR REPORT -------
-    test_sample_dataset = voc.VOC(root, 'test', transforms=sample_transform)
+    test_sample_dataset = voc.VOC(voc_root, 'test', transforms=sample_transform)
     test_sample_loader = DataLoader(dataset=test_sample_dataset, batch_size=1, shuffle=False)
     model.eval()
     # untransformed original image

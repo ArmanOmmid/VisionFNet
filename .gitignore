@@ -1,0 +1,6 @@
+
+datasets/*
+!datasets/.gitkeep
+
+weights/*
+!weights/.gitkeep
