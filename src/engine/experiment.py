@@ -25,18 +25,6 @@ from src.models.basic_fcn import *
 from tqdm.auto import tqdm
 from typing import Dict, List, Tuple
 
-MODE = ['lr', 'weight', 'custom1']
-"""
-None: baseline
-'lr': 4a (lr schedule)
-'augment': 4b (data augment)
-'weight': 4c (weight)
-'custom1': 5a-1 (custom1)
-'custom2': 5a-2 (custom2)
-'transfer': 5b (transfer)
-'unet': 5c (unet)
-"""
-
 class Experiment(object):
 
     def __init__(self,
@@ -47,7 +35,8 @@ class Experiment(object):
             optimizer: torch.optim.Optimizer,
             scheduler: torch.optim.lr_scheduler.LRScheduler,
             device: torch.device,
-            model_save_path: str,
+            mode: list,
+            model_save_path: str
         ) -> None:
 
         self.model = model
@@ -58,6 +47,8 @@ class Experiment(object):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.device = device
+
+        self.mode = mode
         self.model_save_path = model_save_path
     
     def train(self, epochs, early_stop_tolerance):
@@ -86,7 +77,7 @@ class Experiment(object):
                 inputs =  inputs.to(self.device)# transfer the input to the same device as the model's
                 labels =  labels.to(self.device) # transfer the labels to the same device as the model's
                 
-                if 'augment' in MODE:
+                if 'augment' in self.mode:
                     # due to crop transform
                     b, ncrop, c, h, w = inputs.size()
                     inputs = inputs.view(-1, c, h, w)
@@ -114,7 +105,7 @@ class Experiment(object):
                 if iter % 10 == 0:
                     print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.item()))
 
-            if 'lr' in MODE:
+            if 'lr' in self.mode:
                 print(f'Learning rate at epoch {epoch}: {self.scheduler.get_lr()[0]:0.9f}')  # changes every epoch
                 # lr scheduler
                 self.scheduler.step()           
