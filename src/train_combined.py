@@ -21,7 +21,9 @@ import src.models.unet as unet
 import src.models.customfcn1 as customfcn1
 import src.models.customfcn2 as customfcn2
 from src.models.basic_fcn import *
+
 from src.engine.experiment import Experiment
+from src.utility.dataprep import prepare_dataset
 
 MODE = ['lr', 'weight', 'custom1']
 """
@@ -37,42 +39,6 @@ None: baseline
 
 mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
-def train_transform(image, mask):
-    image = TF.to_tensor(image)
-    mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
-    image = TF.normalize(image, mean=mean_std[0], std=mean_std[1])
-
-    if 'augment' in MODE:
-        images = list(TF.ten_crop(image, 128))
-        masks = list(TF.ten_crop(mask, 128))
-        for i in range(10):
-            angles = [30, 60]
-            for angle in angles:
-                msk = masks[i].unsqueeze(0)
-                img = TF.rotate(images[i], angle)
-                msk = TF.rotate(msk, angle)
-                msk = msk.squeeze(0)
-                images.append(img)
-                masks.append(msk)
-                
-        image = torch.stack([img for img in images])
-        mask = torch.stack([msk for msk in masks])
-        
-    return image, mask
-
-def valtest_transform(image, mask):
-    image = TF.to_tensor(image)
-    mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
-    image = TF.normalize(image, mean=mean_std[0], std=mean_std[1])
-    
-    return image, mask
-
-def sample_transform(image, mask):
-    image = torch.from_numpy(np.array(image, dtype=np.int32)).long()
-    mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
-    
-    return image, mask
-
 epochs = 20
 n_class = 21
 learning_rate = 0.01
@@ -81,20 +47,7 @@ early_stop_tolerance = 8
 model_save_path = os.path.join(__init__.repository_root, "weights", "model.pth")
 voc_root = os.path.join(__init__.repository_root, "datasets", "VOC")
 
-train_dataset = voc.VOC(voc_root, 'train', transforms=train_transform)
-val_dataset = voc.VOC(voc_root, 'val', transforms=valtest_transform)
-test_dataset = voc.VOC(voc_root, 'test', transforms=valtest_transform)
-
-train_loader_no_shuffle = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
-
-if 'augment' in MODE:
-    train_loader = DataLoader(dataset=train_dataset, batch_size= 8, shuffle=True)
-    val_loader = DataLoader(dataset=val_dataset, batch_size= 8, shuffle=False)
-    test_loader = DataLoader(dataset=test_dataset, batch_size= 8, shuffle=False)
-else:
-    train_loader = DataLoader(dataset=train_dataset, batch_size= 16, shuffle=True)
-    val_loader = DataLoader(dataset=val_dataset, batch_size= 16, shuffle=False)
-    test_loader = DataLoader(dataset=test_dataset, batch_size= 16, shuffle=False)
+train_loader, val_loader, test_loader, train_loader_no_shuffle = prepare_dataset(voc_root)
 
 class MaskToTensor(object):
     def __call__(self, img):
