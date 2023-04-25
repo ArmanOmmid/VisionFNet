@@ -24,7 +24,8 @@ class VOC(data.Dataset):
         self.ignore_label = 255
         self.root = root
 
-        train, val, test = self.download_voc(root, year=year)
+        if not os.path.exists(root): 
+            train, val, test = self.download_voc(root, year=year)
         self.imgs = self.make_dataset(root, mode)
 
         if len(self.imgs) == 0:
