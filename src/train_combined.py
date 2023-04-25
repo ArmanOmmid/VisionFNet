@@ -1,4 +1,4 @@
-from basic_fcn import *
+from models.basic_fcn import *
 import time
 from torch.utils.data import DataLoader
 import torch
