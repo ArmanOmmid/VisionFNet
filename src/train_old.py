@@ -1,3 +1,4 @@
+import __init__
 
 import time
 from torch.utils.data import DataLoader
