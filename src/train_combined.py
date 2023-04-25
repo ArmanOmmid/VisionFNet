@@ -165,6 +165,8 @@ model = model.to(device) # transfer the model to the device
 
 if __name__ == "__main__":
 
+    print("Initializing Experiments")
+
     experiment = Experiment(
         model,
         train_loader,
@@ -179,6 +181,8 @@ if __name__ == "__main__":
 
     experiment.val(0)  # show the accuracy before training
     
+    print("Training")
+
     results = experiment.train()
     
     best_iou_score, \
