@@ -7,7 +7,7 @@ from PIL import Image
 from torch.utils import data
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
-from constants import ROOT_DATA_DIR, MEAN_STD
+from utility.constants import ROOT_DATA_DIR, MEAN_STD
 import torchvision.transforms.functional as TF
 
 def write_csv(df, path, mode):

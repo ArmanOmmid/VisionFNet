@@ -5,13 +5,13 @@ import os
 import time
 from datetime import datetime
 
-from constants import ROOT_STAT_DIR
-from dataset_factory import get_datasets
-from file_utils import read_file_in_dir, write_to_file_in_dir, log_to_file_in_dir
-from model_factory import get_model
+from data.dataset_factory import get_datasets
+from utility.constants import ROOT_STAT_DIR
+from utility.file_utils import read_file_in_dir, write_to_file_in_dir, log_to_file_in_dir
+from utility.model_factory import get_model
 
 import copy
-import util
+import utility.util as util
 
 # Class to encapsulate a neural experiment.
 # The boilerplate code to setup the experiment, log stats, checkpoints and plotting have been provided to you.
