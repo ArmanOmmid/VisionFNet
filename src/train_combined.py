@@ -179,7 +179,7 @@ if __name__ == "__main__":
         model_save_path
     )
 
-    experiment.val(0)  # show the accuracy before training
+    # experiment.val(0)  # show the accuracy before training
     
     print("Training")
 
