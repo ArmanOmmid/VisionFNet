@@ -5,10 +5,10 @@ import os
 import time
 from datetime import datetime
 
-from src.data.dataset_factory import get_datasets
-from src.utility.constants import ROOT_STAT_DIR
-from src.utility.file_utils import read_file_in_dir, write_to_file_in_dir, log_to_file_in_dir
-from src.utility.model_factory import get_model
+from data.dataset_factory import get_datasets
+from utility.constants import ROOT_STAT_DIR
+from utility.file_utils import read_file_in_dir, write_to_file_in_dir, log_to_file_in_dir
+from utility.model_factory import get_model
 
 import copy
 import utility.util as util
