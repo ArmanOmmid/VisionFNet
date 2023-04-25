@@ -1,5 +1,8 @@
 import __init__
 
+import sys
+import os
+
 import time
 from torch.utils.data import DataLoader
 import torch
@@ -30,6 +33,8 @@ None: baseline
 'transfer': 5b (transfer)
 'unet': 5c (unet)
 """
+
+root = os.path.join(os.path.dirname(__init__.repository_root), "datasets", "VOC")
 
 class MaskToTensor(object):
     def __call__(self, img):
@@ -100,9 +105,9 @@ def sample_transform(image, mask):
     return image, mask
 
 
-train_dataset = voc.VOC('train', transforms=train_transform)
-val_dataset = voc.VOC('val', transforms=valtest_transform)
-test_dataset = voc.VOC('test', transforms=valtest_transform)
+train_dataset = voc.VOC(root, 'train', transforms=train_transform)
+val_dataset = voc.VOC(root, 'val', transforms=valtest_transform)
+test_dataset = voc.VOC(root, 'test', transforms=valtest_transform)
 
 if 'augment' in MODE:
     train_loader = DataLoader(dataset=train_dataset, batch_size= 8, shuffle=True)
@@ -332,7 +337,7 @@ if __name__ == "__main__":
 
     
     # ------ GET SAMPLE IMAGE FOR REPORT -------
-    test_sample_dataset = voc.VOC('test', transforms=sample_transform)
+    test_sample_dataset = voc.VOC(root, 'test', transforms=sample_transform)
     test_sample_loader = DataLoader(dataset=test_sample_dataset, batch_size=1, shuffle=False)
     model.eval()
     # untransformed original image
