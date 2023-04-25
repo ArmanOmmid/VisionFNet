@@ -1,4 +1,5 @@
 
 import sys
 import os
-sys.path.append('/'.join(__file__.split('/')[:__file__.split('/').index('src')]))
+repository_root = '/'.join(__file__.split('/')[:__file__.split('/').index('src')])
+sys.path.append(repository_root)

@@ -3,10 +3,11 @@ import os
 from PIL import Image
 from torch.utils import data
 import numpy as np
+import src
 
 num_classes = 21
 ignore_label = 255
-root = './../../datasets/VOC'
+root = os.path.join(os.dirname(src.repository_root), "datasets", "VOC")
 
 '''
 color map
