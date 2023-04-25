@@ -40,7 +40,6 @@ class MaskToTensor(object):
     def __call__(self, img):
         return torch.from_numpy(np.array(img, dtype=np.int32)).long()
 
-
 def init_weights(m):
     if 'transfer' in MODE:
         if isinstance(m, nn.ConvTranspose2d):
@@ -109,6 +108,8 @@ train_dataset = voc.VOC(root, 'train', transforms=train_transform)
 val_dataset = voc.VOC(root, 'val', transforms=valtest_transform)
 test_dataset = voc.VOC(root, 'test', transforms=valtest_transform)
 
+train_loader_no_shuffle = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
+
 if 'augment' in MODE:
     train_loader = DataLoader(dataset=train_dataset, batch_size= 8, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size= 8, shuffle=False)
@@ -152,8 +153,6 @@ else:
 
 if 'lr' in MODE:
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
-
-train_loader_no_shuffle = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
 
 if 'weight' in MODE:
     classWeights = getClassWeights(train_loader_no_shuffle, n_class).to(device)

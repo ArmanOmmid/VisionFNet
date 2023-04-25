@@ -1,13 +1,74 @@
+import __init__
 
-import torch
+import sys
+import os
+
 import time
+from torch.utils.data import DataLoader
+import torch
+import gc
+import torchvision.transforms as standard_transforms
+import torchvision.transforms.functional as TF
+import numpy as np
+from collections import Counter
+import random
+from matplotlib import pyplot as plt
+
+import src.utility.util as util
+import src.utility.voc as voc
+import src.models.transfer_fcn as transfer_fcn
+import src.models.unet as unet
+import src.models.customfcn1 as customfcn1
+import src.models.customfcn2 as customfcn2
+from src.models.basic_fcn import *
+
+MODE = ['lr', 'weight', 'custom1']
+"""
+None: baseline
+'lr': 4a (lr schedule)
+'augment': 4b (data augment)
+'weight': 4c (weight)
+'custom1': 5a-1 (custom1)
+'custom2': 5a-2 (custom2)
+'transfer': 5b (transfer)
+'unet': 5c (unet)
+"""
+
+class MaskToTensor(object):
+    def __call__(self, img):
+        return torch.from_numpy(np.array(img, dtype=np.int32)).long()
+
+def init_weights(m):
+    if 'transfer' in MODE:
+        if isinstance(m, nn.ConvTranspose2d):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            torch.nn.init.normal_(m.bias.data) #xavier not applicable for biases
+    else:
+        if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+            torch.nn.init.xavier_uniform_(m.weight.data)
+            torch.nn.init.normal_(m.bias.data) #xavier not applicable for biases
+
+def getClassWeights(dataset, n_class):
+    cum_counts = torch.zeros(n_class)
+    for iter, (inputs, labels) in enumerate(train_loader_no_shuffle):
+        labels = torch.squeeze(labels) # 224 x 224
+        vals, counts = labels.unique(return_counts = True)
+        for v, c in zip(vals, counts):
+            cum_counts[v.item()] += c.item()
+            
+        #print(f"Cumulative counts at iter {iter}: {cum_counts}")
+            
+    totalPixels = torch.sum(cum_counts)
+    classWeights = 1 - (cum_counts / totalPixels)
+    print(f"Class weights: {classWeights}")
+    return classWeights
 
 class Experiment(object):
 
     def __init__(self) -> None:
         pass
 
-    def _train():
+    def train():
         best_iou_score = 0.0
         best_loss = 100.0
         early_stop_count = 0
