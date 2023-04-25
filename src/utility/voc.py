@@ -4,7 +4,6 @@ from PIL import Image
 from torch.utils import data
 import numpy as np
 
-
 class VOC(data.Dataset):
     def __init__(self, root, mode, transforms):
 
