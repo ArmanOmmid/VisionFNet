@@ -23,7 +23,7 @@ import src.models.customfcn2 as customfcn2
 from src.models.basic_fcn import *
 
 from src.engine.experiment import Experiment
-from src.utility.data_factory import prepare_dataset
+from src.utility.data_factory import prepare_dataset, sample_transform
 
 MODE = ['lr', 'weight', 'custom1']
 """
