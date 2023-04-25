@@ -73,6 +73,12 @@ def sample_transform(image, mask):
     
     return image, mask
 
+epochs = 20
+n_class = 21
+learning_rate = 0.01
+early_stop_tolerance = 8
+
+model_save_path = os.path.join(__init__.repository_root, "weights", "model.pth")
 voc_root = os.path.join(__init__.repository_root, "datasets", "VOC")
 
 train_dataset = voc.VOC(voc_root, 'train', transforms=train_transform)
@@ -89,12 +95,6 @@ else:
     train_loader = DataLoader(dataset=train_dataset, batch_size= 16, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size= 16, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size= 16, shuffle=False)
-
-epochs = 20
-n_class = 21
-learning_rate = 0.01
-early_stop_tolerance = 8
-model_save_path = 'model.pth'
 
 class MaskToTensor(object):
     def __call__(self, img):
