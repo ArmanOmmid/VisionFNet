@@ -1,0 +1,22 @@
+{
+  "experiment_name": "resunet",
+  "dataset": {
+    "img_size": 256,
+    "batch_size": 32,
+    "num_workers": 4
+  },
+  "experiment": {
+    "num_epochs": 20,
+    "lr_schedule": true,
+    "data_augment": false,
+    "class_weight": true,
+    "learning_rate": 0.01,
+    "n_class": 2,
+    "early_stop_tolerance": 8,
+    "model_save_path": "model.pth"
+  },
+  "model": {
+    "model_type": "ResUNet",
+    "transfer": true
+  }
+}
