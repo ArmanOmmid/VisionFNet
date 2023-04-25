@@ -1,11 +1,12 @@
 
 import os
+import torchvision
 from PIL import Image
 from torch.utils import data
 import numpy as np
 
 class VOC(data.Dataset):
-    def __init__(self, root, mode, transforms):
+    def __init__(self, root, mode, transforms, year="2007"):
 
         '''
         color map
@@ -23,9 +24,12 @@ class VOC(data.Dataset):
         self.ignore_label = 255
         self.root = root
 
+        train, val, test = self.download_voc(root, year=year)
         self.imgs = self.make_dataset(root, mode)
+
         if len(self.imgs) == 0:
             raise RuntimeError('Found 0 images, please check the data set')
+        
         self.mode = mode
         self.transforms = transforms
         self.width = 224
@@ -45,6 +49,12 @@ class VOC(data.Dataset):
 
     def __len__(self):
         return len(self.imgs)
+    
+    def download_voc(self, root, year="2007"):
+        self.train_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='train')
+        self.val_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='val')
+        self.test_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='test')
+        return self.train_dataset, self.val_dataset, self.test_dataset
     
     def make_dataset(self, root, mode):
         assert mode in ['train', 'val', 'test']
