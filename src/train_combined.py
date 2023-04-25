@@ -3,18 +3,18 @@ import time
 from torch.utils.data import DataLoader
 import torch
 import gc
-import voc
+import utility.voc
 import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
-import util
+import utility.util
 import numpy as np
 from collections import Counter
 import random
 from matplotlib import pyplot as plt
-import transfer_fcn 
-import unet
-import customfcn1
-import customfcn2
+import models.transfer_fcn 
+import models.unet
+import models.customfcn1
+import models.customfcn2
 
 MODE = ['lr', 'weight', 'custom1']
 """
