@@ -7,7 +7,7 @@ import src
 
 num_classes = 21
 ignore_label = 255
-root = os.path.join(os.dirname(src.repository_root), "datasets", "VOC")
+root = os.path.join(os.path.dirname(src.repository_root), "datasets", "VOC")
 
 '''
 color map
