@@ -173,6 +173,7 @@ if __name__ == "__main__":
         optimizer,
         scheduler,
         device,
+        MODE,
         model_save_path
     )
 
