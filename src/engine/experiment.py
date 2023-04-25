@@ -63,6 +63,9 @@ class Experiment(object):
         valid_loss_per_epoch = []
         valid_iou_per_epoch = []
         valid_acc_per_epoch = []
+
+        if os.path.exists(self.model_save_path)
+            self.model.load_state_dict(torch.load(self.model_save_path))
         
         for epoch in range(epochs):
             ts = time.time()
@@ -140,6 +143,7 @@ class Experiment(object):
                     if early_stop_count > early_stop_tolerance:
                         print("Early Stopping...")
                         break
+
         self.model.load_state_dict(torch.load(self.model_save_path))
                 
         return best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch

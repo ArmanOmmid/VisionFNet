@@ -21,7 +21,6 @@ import src.models.unet as unet
 import src.models.customfcn1 as customfcn1
 import src.models.customfcn2 as customfcn2
 from src.models.basic_fcn import *
-
 from src.engine.experiment import Experiment
 
 MODE = ['lr', 'weight', 'custom1']
