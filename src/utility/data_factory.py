@@ -80,7 +80,7 @@ def prepare_dataset(data_root, batch_size, augment):
 
     return train_loader, val_loader, test_loader, ordered_data, 21
 
-def getClassWeights(dataset, n_class):
+def get_class_weights(dataset, n_class):
     cum_counts = torch.zeros(n_class)
     for iter, (inputs, labels) in enumerate(dataset):
         labels = torch.squeeze(labels) # 224 x 224
@@ -89,6 +89,6 @@ def getClassWeights(dataset, n_class):
             cum_counts[v.item()] += c.item()
         #print(f"Cumulative counts at iter {iter}: {cum_counts}")
     totalPixels = torch.sum(cum_counts)
-    classWeights = 1 - (cum_counts / totalPixels)
-    print(f"Class weights: {classWeights}")
-    return classWeights
+    class_weights = 1 - (cum_counts / totalPixels)
+    print(f"Class weights: {class_weights}")
+    return class_weights

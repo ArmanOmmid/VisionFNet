@@ -22,7 +22,7 @@ import src.utility.voc as voc
 import src.arch as arch
 
 from src.engine.experiment import Experiment
-from src.utility.data_factory import prepare_dataset, sample_transform, getClassWeights
+from src.utility.data_factory import prepare_dataset, sample_transform, get_class_weights
 from src.utility.model_factory import init_weights, build_model
 
 parser = argparse.ArgumentParser(description='Argument Parser')
@@ -86,10 +86,14 @@ def main(args):
 
     """ Data """
     train_loader, val_loader, test_loader, ordered, classes = prepare_dataset(data_path, batch_size, augment)
-    if class_weights:
-        class_weights = getClassWeights(ordered, len(classes)).to(device)
+    if weighted_loss:
+        class_weights = get_class_weights(ordered, len(classes)).to(device)
+
+    """ Criteron """
+    if weighted_loss:
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
     else:
-        class_weights = False
+        criterion = nn.CrossEntropyLoss()
 
     """ Model """
     model = build_model(architecture, classes)
@@ -98,7 +102,7 @@ def main(args):
     """ Optimizer """
     if model.transfer:
         params_to_update = []
-        for name,param in model.named_parameters():
+        for name, param in model.named_parameters():
             if param.requires_grad == True:
                 params_to_update.append(param)
     else:
@@ -108,12 +112,6 @@ def main(args):
     """ Learning Rate Scheduler """
     if scheduler:
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
-
-    """ Criteron """
-    if weighted_loss:
-        criterion = nn.CrossEntropyLoss(weight=class_weights)
-    else:
-        criterion = nn.CrossEntropyLoss()
 
     """ Experiment """
     print("Initializing Experiments")
