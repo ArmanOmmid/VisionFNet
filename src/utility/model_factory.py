@@ -49,6 +49,6 @@ def build_model(name, class_count):
     elif name == 'custom2':
         model = arch.customfcn2.Custom_FCN2(n_class=class_count)
     else:
-        model = arch.FCN(n_class=class_count)
+        model = arch.basic_fcn.FCN(n_class=class_count)
 
     return model
