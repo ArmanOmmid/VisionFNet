@@ -33,7 +33,6 @@ class Experiment(object):
             criterion: torch.nn.Module, 
             optimizer: torch.optim.Optimizer,
             device: torch.device,
-            mode: list,
             save_path: str,
             scheduler=False # torch.optim.lr_scheduler.LRScheduler
         ) -> None:
@@ -47,7 +46,6 @@ class Experiment(object):
         self.scheduler = scheduler
         self.device = device
 
-        self.mode = mode
         self.save_path = save_path
     
     def train(self, epochs, early_stop_tolerance):
@@ -79,7 +77,7 @@ class Experiment(object):
                 inputs =  inputs.to(self.device)# transfer the input to the same device as the model's
                 labels =  labels.to(self.device) # transfer the labels to the same device as the model's
                 
-                if 'augment' in self.mode:
+                if self.model.augment:
                     # due to crop transform
                     b, ncrop, c, h, w = inputs.size()
                     inputs = inputs.view(-1, c, h, w)

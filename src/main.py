@@ -96,7 +96,7 @@ def main(args):
         criterion = nn.CrossEntropyLoss()
 
     """ Model """
-    model = build_model(architecture, classes)
+    model = build_model(architecture, classes, augment)
     model = model.to(device) # transfer the model to the device
 
     """ Optimizer """

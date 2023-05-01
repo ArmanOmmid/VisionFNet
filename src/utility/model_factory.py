@@ -33,12 +33,13 @@ def get_weight_initializer(transfer):
                 torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
     return init_weights
 
-def build_model(architecture, classes):
+def build_model(architecture, classes, augment):
 
     class_count = classes if isinstance(classes, int) else len(classes)
 
     attr = util.Attributes(
         transfer = False,
+        augment = augment
     )
 
     if architecture == 'unet':
