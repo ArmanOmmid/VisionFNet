@@ -8,6 +8,8 @@ import importlib
 
 this = sys.modules[__name__]
 
+from . import customfcn2
+
 print(type(this), this)
 
 dirname = os.path.dirname(__file__)
