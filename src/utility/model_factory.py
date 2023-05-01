@@ -34,7 +34,7 @@ def init_weights(module):
             torch.nn.init.xavier_uniform_(module.weight.data)
             torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
     else:
-        if isinstance(module, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
+        if isinstance(module, nn.Conv2d) or isinstance(module, nn.ConvTranspose2d):
             torch.nn.init.xavier_uniform_(module.weight.data)
             torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
 
