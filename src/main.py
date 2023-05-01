@@ -23,7 +23,7 @@ import src.arch as arch
 
 from src.engine.experiment import Experiment
 from src.utility.data_factory import prepare_dataset, sample_transform, get_class_weights
-from src.utility.model_factory import init_weights, build_model
+from src.utility.model_factory import build_model
 
 parser = argparse.ArgumentParser(description='Argument Parser')
 parser.add_argument('architecture', type=str,
