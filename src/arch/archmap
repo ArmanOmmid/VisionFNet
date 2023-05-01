@@ -10,7 +10,6 @@ Encoder:
     MLP
 Decoder:
     Classfier / Transposed Convs
-    
 
 ViT
 Patching:
