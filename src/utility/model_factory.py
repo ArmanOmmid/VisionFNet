@@ -31,20 +31,10 @@ def init_weights(module, transfer):
             torch.nn.init.xavier_uniform_(module.weight.data)
             torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
 
-def build_model(args, classes, class_weights):
-
-    """ Arguments """
-    architecture = args.architecture
-    epochs = args.epochs
-    batch_size = args.batch_size
-    learning_rate = args.learning_rate
-    weighted_loss = args.weighted_loss
-    augment = args.augment
-    scheduler = args.scheduler
+def build_model(architecture, classes):
 
     class_count = classes if isinstance(classes, int) else len(classes)
-
-    """ New """
+    
     attr = util.Attributes(
         transfer = False,
     )

@@ -40,9 +40,9 @@ parser.add_argument('-a', '--augment', action='store_true',
                     help='Weighted Loss')
 parser.add_argument('-s', '--scheduler',  action='store_true',
                     help='Weighted Loss')
-parser.add_argument('-D', '--data_path', type=str, default=os.path.join(__init__.repository_root, "datasets", "VOC"),
+parser.add_argument('-D', '--data_path', default=False,
                     help='Weighted Loss')
-parser.add_argument('-S', '--save_path', type=str, default=os.path.join(__init__.repository_root, "weights", "model.pth"),
+parser.add_argument('-S', '--save_path', default=False,
                     help='Weighted Loss')
 parser.add_argument('-L', '--load_path', default=False,
                     help='Weighted Loss')
@@ -63,21 +63,37 @@ def main(args):
     save_path = args.save_path
     load_path = args.load_path
 
-    """ Other Values """
+    if data_path:
+        if not os.path.exists(data_path):
+            raise NotADirectoryError("Dataset Path Does Not Exist {}".format(data_path)) 
+    else:
+        data_path = os.path.join(__init__.repository_root, "datasets", "VOC")
 
+    if save_path:
+        save_path_dir = os.path.basename(save_path)
+        if not os.path.exists(save_path_dir):
+            raise NotADirectoryError("Save Path Directory Does Not Exist {}".format(save_path_dir))
+    else:
+        save_path = os.path.join(__init__.repository_root, "weights", "model.pth"),
+
+    if load_path:
+        if not os.path.exists(load_path):
+            raise FileNotFoundError("Load Path Does Not Exist {}".format(load_path))
+
+    """ Other Values """
     mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     early_stop_tolerance = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    """ Data """
     train_loader, val_loader, test_loader, ordered, classes = prepare_dataset(data_path, batch_size, augment)
-    
     if class_weights:
         class_weights = getClassWeights(ordered, len(classes)).to(device)
     else:
         class_weights = False
 
     """ Model """
-    model = build_model(args, classes)
+    model = build_model(architecture, classes)
     model = model.to(device) # transfer the model to the device
 
     """ Optimizer """
@@ -101,9 +117,7 @@ def main(args):
         criterion = nn.CrossEntropyLoss()
 
     """ Experiment """
-
     print("Initializing Experiments")
-
     experiment = Experiment(
         model,
         train_loader,
@@ -140,7 +154,7 @@ def main(args):
     print(f"Test Pixel acc is {test_acc}")
     
     # ------ GET SAMPLE IMAGE FOR REPORT -------
-    test_sample_dataset = voc.VOC(voc_root, 'test', transforms=sample_transform)
+    test_sample_dataset = voc.VOC(data_path, 'test', transforms=sample_transform)
     test_sample_loader = DataLoader(dataset=test_sample_dataset, batch_size=1, shuffle=False)
     model.eval()
     # untransformed original image
