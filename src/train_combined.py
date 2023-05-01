@@ -30,7 +30,7 @@ parser.add_argument('architecture', type=str,
                     help='Model Architecture')
 parser.add_argument('-e', '--epochs', type=int, default=10,
                     help='Epochs')
-parser.add_argument('-b', 'batch_size', type=int, default=8,
+parser.add_argument('-b', '--batch_size', type=int, default=8,
                     help='Epochs')
 parser.add_argument('-l', '--learning_rate', type=int, default=0.01,
                     help='Learning Rate')
