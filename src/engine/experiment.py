@@ -2,25 +2,24 @@ import __init__
 
 import sys
 import os
-
 import time
-from torch.utils.data import DataLoader
-import torch
 import gc
+import random
+from collections import Counter
+import argparse
+
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
 import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
+
 import numpy as np
-from collections import Counter
-import random
 from matplotlib import pyplot as plt
 
 import src.utility.util as util
 import src.utility.voc as voc
-import src.models.transfer_fcn as transfer_fcn
-import src.models.unet as unet
-import src.models.customfcn1 as customfcn1
-import src.models.customfcn2 as customfcn2
-from src.models.basic_fcn import *
+from src.arch import *
 
 from tqdm.auto import tqdm
 from typing import Dict, List, Tuple
