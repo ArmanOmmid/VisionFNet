@@ -78,7 +78,11 @@ def prepare_dataset(data_root, batch_size, augment):
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
+    print(train_loader.__dict__)
+
     classes = dict(Counter(train_loader.targets))
+
+    raise classes
 
     return train_loader, val_loader, test_loader, ordered_data, classes
 
