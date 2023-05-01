@@ -72,7 +72,7 @@ def prepare_dataset(voc_root, batch_size):
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
-    return train_loader, val_loader, test_loader, train_loader_no_shuffle
+    return train_loader, val_loader, test_loader, train_loader_no_shuffle, train_dataset
 
 def getClassWeights(dataset, n_class):
     cum_counts = torch.zeros(n_class)

@@ -25,28 +25,24 @@ from src.engine.experiment import Experiment
 from src.utility.data_factory import prepare_dataset, sample_transform, getClassWeights
 from src.utility.model_factory import init_weights, build_model
 
-# parser = argparse.ArgumentParser(description='Argument Parser')
-# parser.add_argument('--arch', type=str,
-#                     help='arch')
-# parser.add_argument('epochs', type=int,
-#                     help='Epochs')
+parser = argparse.ArgumentParser(description='Argument Parser')
+parser.add_argument('arch', type=str,
+                    help='arch')
+parser.add_argument('epochs', type=int,
+                    help='Epochs')
+parser.add_argument('--weighted', type=int,
+                    help='Weighted Loss')
+parser.add_argument('--augment', type=int,
+                    help='Weighted Loss')
+parser.add_argument('--scheduler', type=int,
+                    help='Weighted Loss')
 
 MODE = ['lr', 'weight', 'custom1']
 SET = ['name', 'lr', 'weight', 'transfer', 'augment']
 
 transfer = False
 augment = False
-
-"""
-None: baseline
-'lr': 4a (lr schedule)
-'augment': 4b (data augment)
-'weight': 4c (weight)
-'custom1': 5a-1 (custom1)
-'custom2': 5a-2 (custom2)
-'transfer': 5b (transfer)
-'unet': 5c (unet)
-"""
+scheduler = None
 
 mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
@@ -75,8 +71,8 @@ if 'transfer' in MODE:
 else:
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
 
-if 'lr' in MODE:
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
+# if 'lr' in MODE:
+#     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
 
 if 'weight' in MODE:
     classWeights = getClassWeights(train_loader_no_shuffle, class_count).to(device)
@@ -97,10 +93,10 @@ if __name__ == "__main__":
         val_loader,
         criterion,
         optimizer,
-        scheduler,
         device,
         MODE,
-        model_save_path
+        model_save_path, 
+        scheduler=scheduler
     )
 
     # experiment.val(0)  # show the accuracy before training
