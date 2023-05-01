@@ -3,10 +3,8 @@ import __init__
 import sys
 import os
 import time
-import gc
 import random
 from collections import Counter
-import argparse
 
 import torch
 import torch.nn as nn
@@ -15,11 +13,9 @@ import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
 
 import numpy as np
-from matplotlib import pyplot as plt
 
 import src.utility.util as util
 import src.utility.voc as voc
-import src.arch as arch
 
 mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 

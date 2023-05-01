@@ -2,23 +2,12 @@ import __init__
 
 import sys
 import os
-import time
-import gc
-import random
 from collections import Counter
-import argparse
 
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
-import torchvision.transforms as standard_transforms
-import torchvision.transforms.functional as TF
-
-import numpy as np
-from matplotlib import pyplot as plt
 
 import src.utility.util as util
-import src.utility.voc as voc
 import src.arch as arch
 
 def get_weight_initializer(transfer):
