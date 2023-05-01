@@ -26,28 +26,32 @@ MODE = ['lr', 'weight', 'custom1']
 
 mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
-def train_transform(image, mask):
-    image = TF.to_tensor(image)
-    mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
-    image = TF.normalize(image, mean=mean_std[0], std=mean_std[1])
+def get_train_transform(augment):
 
-    # if 'augment' in MODE:
-    #     images = list(TF.ten_crop(image, 128))
-    #     masks = list(TF.ten_crop(mask, 128))
-    #     for i in range(10):
-    #         angles = [30, 60]
-    #         for angle in angles:
-    #             msk = masks[i].unsqueeze(0)
-    #             img = TF.rotate(images[i], angle)
-    #             msk = TF.rotate(msk, angle)
-    #             msk = msk.squeeze(0)
-    #             images.append(img)
-    #             masks.append(msk)
-                
-    #     image = torch.stack([img for img in images])
-    #     mask = torch.stack([msk for msk in masks])
-        
-    return image, mask
+    def train_transform(image, mask):
+        image = TF.to_tensor(image)
+        mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
+        image = TF.normalize(image, mean=mean_std[0], std=mean_std[1])
+
+        if augment:
+            images = list(TF.ten_crop(image, 128))
+            masks = list(TF.ten_crop(mask, 128))
+            for i in range(10):
+                angles = [30, 60]
+                for angle in angles:
+                    msk = masks[i].unsqueeze(0)
+                    img = TF.rotate(images[i], angle)
+                    msk = TF.rotate(msk, angle)
+                    msk = msk.squeeze(0)
+                    images.append(img)
+                    masks.append(msk)
+                    
+            image = torch.stack([img for img in images])
+            mask = torch.stack([msk for msk in masks])
+            
+        return image, mask
+
+    return train_transform
 
 def valtest_transform(image, mask):
     image = TF.to_tensor(image)
@@ -60,19 +64,24 @@ def sample_transform(image, mask):
     image = torch.from_numpy(np.array(image, dtype=np.int32)).long()
     mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
 
-def prepare_dataset(voc_root, batch_size):
+def prepare_dataset(voc_root, batch_size, augment):
+
+    train_transform = get_train_transform(augment)
 
     train_dataset = voc.VOC(voc_root, 'train', transforms=train_transform)
     val_dataset = voc.VOC(voc_root, 'val', transforms=valtest_transform)
     test_dataset = voc.VOC(voc_root, 'test', transforms=valtest_transform)
 
-    train_loader_no_shuffle = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
+    classes = train_dataset.classes
+    ordered_data = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
-    return train_loader, val_loader, test_loader, train_loader_no_shuffle, train_dataset
+    classes = dict(Counter(train_loader.targets))
+
+    return train_loader, val_loader, test_loader, ordered_data, classes
 
 def getClassWeights(dataset, n_class):
     cum_counts = torch.zeros(n_class)

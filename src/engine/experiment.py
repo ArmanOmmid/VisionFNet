@@ -35,7 +35,7 @@ class Experiment(object):
             device: torch.device,
             mode: list,
             model_save_path: str,
-            scheduler=None # torch.optim.lr_scheduler.LRScheduler
+            scheduler=False # torch.optim.lr_scheduler.LRScheduler
         ) -> None:
 
         self.model = model
@@ -107,7 +107,7 @@ class Experiment(object):
                 if iter % 10 == 0:
                     print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.item()))
 
-            if self.scheduler is not None:
+            if self.scheduler:
                 print(f'Learning rate at epoch {epoch}: {self.scheduler.get_lr()[0]:0.9f}')  # changes every epoch
                 # lr scheduler
                 self.scheduler.step()           

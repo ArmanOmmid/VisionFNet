@@ -12,9 +12,20 @@ palette = np.resize(palette, (len(palette)//3, 3))
 # move to tensor because vmap needs a function with tensor output
 palette = torch.tensor(palette)
 
+
 class MaskToTensor(object):
     def __call__(self, img):
         return torch.from_numpy(np.array(img, dtype=np.int32)).long()
+    
+
+class Attributes(object):
+
+    def __init__(self, *args, **kwargs) -> None:
+        self.__dict__.update(kwargs)
+
+    def __call__(self, object):
+        object.__dict__.update(self.__dict__)
+
 
 def iou(pred, target, n_classes = 21):
     ious = []

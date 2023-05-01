@@ -26,64 +26,81 @@ from src.utility.data_factory import prepare_dataset, sample_transform, getClass
 from src.utility.model_factory import init_weights, build_model
 
 parser = argparse.ArgumentParser(description='Argument Parser')
-parser.add_argument('arch', type=str,
-                    help='arch')
-parser.add_argument('epochs', type=int,
+parser.add_argument('architecture', type=str,
+                    help='Model Architecture')
+parser.add_argument('-e', 'epochs', type=int, default=10,
                     help='Epochs')
-parser.add_argument('--weighted', type=int,
+parser.add_argument('-b', 'batch_size', type=int, default=8,
+                    help='Epochs')
+parser.add_argument('-l', '--learning_rate', type=int, default=0.01,
+                    help='Learning Rate')
+parser.add_argument('-w', '--weighted_loss', action='store_true',
                     help='Weighted Loss')
-parser.add_argument('--augment', type=int,
+parser.add_argument('-a', '--augment', action='store_true',
                     help='Weighted Loss')
-parser.add_argument('--scheduler', type=int,
+parser.add_argument('-s', '--scheduler',  action='store_true',
+                    help='Weighted Loss')
+parser.add_argument('-D', '--data_path', type=str, default=os.path.join(__init__.repository_root, "datasets", "VOC"),
+                    help='Weighted Loss')
+parser.add_argument('-S', '--save_path', type=str, default=os.path.join(__init__.repository_root, "weights", "model.pth"),
+                    help='Weighted Loss')
+parser.add_argument('-L', '--load_path', default=False,
                     help='Weighted Loss')
 
-MODE = ['lr', 'weight', 'custom1']
-SET = ['name', 'lr', 'weight', 'transfer', 'augment']
+def main(args):
 
-transfer = False
-augment = False
-scheduler = None
+    """ Arguments """
+    architecture = args.architecture
+    epochs = args.epochs
+    batch_size = args.batch_size
+    learning_rate = args.learning_rate
+    weighted_loss = args.weighted_loss
+    augment = args.augment # False
+    scheduler = args.scheduler
 
-mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    """ Paths """
+    data_path = args.data_path
+    save_path = args.save_path
+    load_path = args.load_path
 
-epochs = 20
-class_count = 21
-learning_rate = 0.01
-early_stop_tolerance = 8
+    """ Other Values """
 
-model_save_path = os.path.join(__init__.repository_root, "weights", "model.pth")
-voc_root = os.path.join(__init__.repository_root, "datasets", "VOC")
+    mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    early_stop_tolerance = 8
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-train_loader, val_loader, test_loader, train_loader_no_shuffle = prepare_dataset(voc_root, augment)
-
-model = build_model(MODE, class_count)
+    train_loader, val_loader, test_loader, ordered, classes = prepare_dataset(data_path, batch_size, augment)
     
-model.apply(init_weights, transfer)
+    if class_weights:
+        class_weights = getClassWeights(ordered, len(classes)).to(device)
+    else:
+        class_weights = False
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # determine which device to use (cuda or cpu)
+    """ Model """
+    model = build_model(args, classes)
+    model = model.to(device) # transfer the model to the device
 
-if 'transfer' in MODE:
-    params_to_update = []
-    for name,param in model.named_parameters():
-        if param.requires_grad == True:
-            params_to_update.append(param)
-    optimizer = torch.optim.Adam(params_to_update, lr = learning_rate, weight_decay=0.001)
-else:
-    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
+    """ Optimizer """
+    if model.transfer:
+        params_to_update = []
+        for name,param in model.named_parameters():
+            if param.requires_grad == True:
+                params_to_update.append(param)
+    else:
+        params_to_update = model.parameters()
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.001)
 
-# if 'lr' in MODE:
-#     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
+    """ Learning Rate Scheduler """
+    if scheduler:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
 
-if 'weight' in MODE:
-    classWeights = getClassWeights(train_loader_no_shuffle, class_count).to(device)
-    criterion = nn.CrossEntropyLoss(weight=classWeights)
-else:
-    criterion = nn.CrossEntropyLoss() 
+    """ Criteron """
+    if weighted_loss:
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
+    else:
+        criterion = nn.CrossEntropyLoss()
 
-model = model.to(device) # transfer the model to the device
-
-
-if __name__ == "__main__":
+    """ Experiment """
 
     print("Initializing Experiments")
 
@@ -94,8 +111,7 @@ if __name__ == "__main__":
         criterion,
         optimizer,
         device,
-        MODE,
-        model_save_path, 
+        save_path, 
         scheduler=scheduler
     )
 
@@ -144,4 +160,10 @@ if __name__ == "__main__":
     # housekeeping
     gc.collect()
     torch.cuda.empty_cache()
+
+
+if __name__ == "__main__":
+
+    args = parser.parse_args()
+    main(args)
 

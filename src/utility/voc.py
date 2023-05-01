@@ -55,7 +55,11 @@ class VOC(data.Dataset):
         self.train_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='train')
         self.val_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='val')
         self.test_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='test')
-        self.classes = self.train_dataset.classes
+
+        set = self.train_dataset
+        print(type(set), len(set))
+
+        raise Exception()
 
         return self.train_dataset, self.val_dataset, self.test_dataset
     
