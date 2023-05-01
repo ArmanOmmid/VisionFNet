@@ -21,7 +21,7 @@ import src.utility.util as util
 import src.utility.voc as voc
 import src.arch as arch
 
-print(type(this), this)
+print(type(arch), arch)
 print(dir(arch))
 raise Exception()
 
