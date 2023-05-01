@@ -23,6 +23,7 @@ import src.arch as arch
 
 print(type(arch), arch)
 print(dir(arch))
+x = arch.customfcn2.Custom_FCN2(n_class=2)
 raise Exception()
 
 from src.engine.experiment import Experiment
