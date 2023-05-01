@@ -74,7 +74,7 @@ def main(args):
         if not os.path.exists(save_path_dir):
             raise NotADirectoryError("Save Path Directory Does Not Exist {}".format(save_path_dir))
     else:
-        save_path = os.path.join(__init__.repository_root, "weights", "model.pth"),
+        save_path = os.path.join(__init__.repository_root, "weights", "model.pth")
 
     if load_path:
         if not os.path.exists(load_path):
