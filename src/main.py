@@ -167,14 +167,12 @@ def main(args):
     util.save_sample(np.array(orig_inp[0].cpu(), dtype=np.uint8), label[0].cpu(), pred[0].cpu())
     model.train()
     # -------------------------------------------
-    
-    # housekeeping
-    gc.collect()
-    torch.cuda.empty_cache()
-
 
 if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args)
+
+    gc.collect()
+    torch.cuda.empty_cache()
 
