@@ -6,15 +6,18 @@ sys.path.append(repository_root)
 
 import importlib
 
-from . import *
+this = sys.modules[__name__]
+
+print(type(this), this)
+
 dirname = os.path.dirname(__file__)
 
-# modules = [
-#     (this, name, importlib.import_module(name)) for name in dirname
-#     if name != '__init__py' and name[:-3] != '.py'
-# ]
+modules = [
+    (this, name, importlib.import_module(name)) for name in dirname
+    if name != '__init__py' and name[:-3] != '.py'
+]
 
-# map(setattr, modules)
+map(setattr, modules)
 
 # for module in os.listdir(dirname):
 #     if module == '__init__.py' or module[-3:] != '.py':
