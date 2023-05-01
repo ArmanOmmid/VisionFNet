@@ -31,21 +31,21 @@ def train_transform(image, mask):
     mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
     image = TF.normalize(image, mean=mean_std[0], std=mean_std[1])
 
-    if 'augment' in MODE:
-        images = list(TF.ten_crop(image, 128))
-        masks = list(TF.ten_crop(mask, 128))
-        for i in range(10):
-            angles = [30, 60]
-            for angle in angles:
-                msk = masks[i].unsqueeze(0)
-                img = TF.rotate(images[i], angle)
-                msk = TF.rotate(msk, angle)
-                msk = msk.squeeze(0)
-                images.append(img)
-                masks.append(msk)
+    # if 'augment' in MODE:
+    #     images = list(TF.ten_crop(image, 128))
+    #     masks = list(TF.ten_crop(mask, 128))
+    #     for i in range(10):
+    #         angles = [30, 60]
+    #         for angle in angles:
+    #             msk = masks[i].unsqueeze(0)
+    #             img = TF.rotate(images[i], angle)
+    #             msk = TF.rotate(msk, angle)
+    #             msk = msk.squeeze(0)
+    #             images.append(img)
+    #             masks.append(msk)
                 
-        image = torch.stack([img for img in images])
-        mask = torch.stack([msk for msk in masks])
+    #     image = torch.stack([img for img in images])
+    #     mask = torch.stack([msk for msk in masks])
         
     return image, mask
 
@@ -60,7 +60,7 @@ def sample_transform(image, mask):
     image = torch.from_numpy(np.array(image, dtype=np.int32)).long()
     mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
 
-def prepare_dataset(voc_root):
+def prepare_dataset(voc_root, batch_size):
 
     train_dataset = voc.VOC(voc_root, 'train', transforms=train_transform)
     val_dataset = voc.VOC(voc_root, 'val', transforms=valtest_transform)
@@ -68,14 +68,9 @@ def prepare_dataset(voc_root):
 
     train_loader_no_shuffle = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
 
-    if 'augment' in MODE:
-        train_loader = DataLoader(dataset=train_dataset, batch_size= 8, shuffle=True)
-        val_loader = DataLoader(dataset=val_dataset, batch_size= 8, shuffle=False)
-        test_loader = DataLoader(dataset=test_dataset, batch_size= 8, shuffle=False)
-    else:
-        train_loader = DataLoader(dataset=train_dataset, batch_size= 16, shuffle=True)
-        val_loader = DataLoader(dataset=val_dataset, batch_size= 16, shuffle=False)
-        test_loader = DataLoader(dataset=test_dataset, batch_size= 16, shuffle=False)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader, test_loader, train_loader_no_shuffle
 

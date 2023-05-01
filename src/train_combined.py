@@ -35,6 +35,9 @@ from src.utility.model_factory import init_weights, build_model
 MODE = ['lr', 'weight', 'custom1']
 SET = ['name', 'lr', 'weight', 'transfer', 'augment']
 
+transfer = False
+augment = False
+
 """
 None: baseline
 'lr': 4a (lr schedule)
@@ -56,11 +59,11 @@ early_stop_tolerance = 8
 model_save_path = os.path.join(__init__.repository_root, "weights", "model.pth")
 voc_root = os.path.join(__init__.repository_root, "datasets", "VOC")
 
-train_loader, val_loader, test_loader, train_loader_no_shuffle = prepare_dataset(voc_root)
+train_loader, val_loader, test_loader, train_loader_no_shuffle = prepare_dataset(voc_root, augment)
 
 model = build_model(MODE, class_count)
     
-model.apply(init_weights)
+model.apply(init_weights, transfer)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # determine which device to use (cuda or cpu)
 

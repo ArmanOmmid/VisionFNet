@@ -23,13 +23,8 @@ import src.arch as arch
 
 MODE = ['lr', 'weight', 'custom1']
 
-
-class MaskToTensor(object):
-    def __call__(self, img):
-        return torch.from_numpy(np.array(img, dtype=np.int32)).long()
-
-def init_weights(module):
-    if 'transfer' in MODE:
+def init_weights(module, decoder_only):
+    if decoder_only:
         if isinstance(module, nn.ConvTranspose2d):
             torch.nn.init.xavier_uniform_(module.weight.data)
             torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
