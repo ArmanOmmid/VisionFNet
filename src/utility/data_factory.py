@@ -21,9 +21,6 @@ import src.utility.util as util
 import src.utility.voc as voc
 import src.arch as arch
 
-
-MODE = ['lr', 'weight', 'custom1']
-
 mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
 def get_train_transform(augment):
@@ -64,15 +61,17 @@ def sample_transform(image, mask):
     image = torch.from_numpy(np.array(image, dtype=np.int32)).long()
     mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
 
-def prepare_dataset(voc_root, batch_size, augment):
+def prepare_dataset(data_root, batch_size, augment):
 
+    year="2007"
+    if not os.path.exists(data_root):
+        voc.download_voc(data_root, year=year)
     train_transform = get_train_transform(augment)
 
-    train_dataset = voc.VOC(voc_root, 'train', transforms=train_transform)
-    val_dataset = voc.VOC(voc_root, 'val', transforms=valtest_transform)
-    test_dataset = voc.VOC(voc_root, 'test', transforms=valtest_transform)
+    train_dataset = voc.VOC(data_root, 'train', transforms=train_transform, year=year)
+    val_dataset = voc.VOC(data_root, 'val', transforms=valtest_transform, year=year)
+    test_dataset = voc.VOC(data_root, 'test', transforms=valtest_transform, year=year)
 
-    classes = train_dataset.classes
     ordered_data = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)

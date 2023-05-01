@@ -81,7 +81,6 @@ def main(args):
             raise FileNotFoundError("Load Path Does Not Exist {}".format(load_path))
 
     """ Other Values """
-    mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     early_stop_tolerance = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
