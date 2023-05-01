@@ -12,11 +12,9 @@ print(type(this), this)
 
 dirname = os.path.dirname(__file__)
 
-mod = importlib.import_module('basic_fcn')
-
 modules = [
     (this, name, importlib.import_module(name)) for name in dirname
-    if name != '__init__py' and name[:-3] != '.py'
+    if name[:-3] == '.py' and name != '__init__py'
 ]
 
 map(setattr, modules)
