@@ -8,7 +8,9 @@ import importlib
 
 this = sys.modules[__name__]
 
-from . import customfcn2
+# from . import customfcn2
+
+exec("from . import {}".format('customfcn2'))
 
 print(type(this), this)
 
