@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 
 import src.utility.util as util
 import src.utility.voc as voc
-from src.arch import *
+import src.arch as arch
 
 from tqdm.auto import tqdm
 from typing import Dict, List, Tuple

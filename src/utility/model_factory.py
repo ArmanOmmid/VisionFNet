@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 
 import src.utility.util as util
 import src.utility.voc as voc
-from src.arch import *
+import src.arch as arch
 
 MODE = ['lr', 'weight', 'custom1']
 class MaskToTensor(object):
@@ -39,14 +39,14 @@ def init_weights(m):
 def build_model(name, class_count):
 
     if 'unet' in MODE:
-        model = unet.UNet(n_class=class_count)
+        model = arch.unet.UNet(n_class=class_count)
     elif 'transfer' in MODE:
-        model = transfer_fcn.Resnet_FCN(n_class=class_count)
+        model = arch.transfer_fcn.Resnet_FCN(n_class=class_count)
     elif 'custom1' in MODE:
-        model = customfcn1.Custom_FCN1(n_class=class_count)
+        model = arch.customfcn1.Custom_FCN1(n_class=class_count)
     elif 'custom2' in MODE:
-        model = customfcn2.Custom_FCN2(n_class=class_count)
+        model = arch.customfcn2.Custom_FCN2(n_class=class_count)
     else:
-        model = FCN(n_class=class_count)
+        model = arch.FCN(n_class=class_count)
 
     return model

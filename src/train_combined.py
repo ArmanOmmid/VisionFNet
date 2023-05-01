@@ -19,7 +19,7 @@ from matplotlib import pyplot as plt
 
 import src.utility.util as util
 import src.utility.voc as voc
-from src.arch import *
+import src.arch as arch
 
 from src.engine.experiment import Experiment
 from src.utility.data_factory import prepare_dataset, sample_transform, getClassWeights
