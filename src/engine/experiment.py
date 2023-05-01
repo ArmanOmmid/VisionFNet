@@ -34,7 +34,7 @@ class Experiment(object):
             optimizer: torch.optim.Optimizer,
             device: torch.device,
             mode: list,
-            model_save_path: str,
+            save_path: str,
             scheduler=False # torch.optim.lr_scheduler.LRScheduler
         ) -> None:
 
