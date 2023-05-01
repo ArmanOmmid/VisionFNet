@@ -2,16 +2,19 @@ import __init__
 
 import sys
 import os
-
 import time
-from torch.utils.data import DataLoader
-import torch
 import gc
+import random
+from collections import Counter
+import argparse
+
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
 import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
+
 import numpy as np
-from collections import Counter
-import random
 from matplotlib import pyplot as plt
 
 import src.utility.util as util
@@ -21,6 +24,13 @@ from src.models import *
 from src.engine.experiment import Experiment
 from src.utility.data_factory import prepare_dataset, sample_transform, getClassWeights
 from src.utility.model_factory import init_weights, build_model
+
+# parser = argparse.ArgumentParser(description='Argument Parser')
+# parser.add_argument('--arch', type=str,
+#                     help='arch')
+# parser.add_argument('epochs', type=int,
+#                     help='Epochs')
+
 
 MODE = ['lr', 'weight', 'custom1']
 """
