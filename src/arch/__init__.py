@@ -4,6 +4,8 @@ import os
 repository_root = '/'.join(__file__.split('/')[:__file__.split('/').index('src')])
 sys.path.append(repository_root)
 
+import importlib
+
 dirname = os.path.dirname(__file__)
 __all__ = [
     module for module in os.listdir(dirname)
@@ -11,8 +13,6 @@ __all__ = [
 ]
 
 map(__import__, __all__)
-
-print("test")
 
 # for module in os.listdir(dirname):
 #     if module == '__init__.py' or module[-3:] != '.py':
