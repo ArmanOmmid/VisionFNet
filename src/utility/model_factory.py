@@ -21,20 +21,22 @@ import src.utility.util as util
 import src.utility.voc as voc
 import src.arch as arch
 
-def init_weights(module, transfer):
-    if transfer:
-        if isinstance(module, nn.ConvTranspose2d):
-            torch.nn.init.xavier_uniform_(module.weight.data)
-            torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
-    else:
-        if isinstance(module, nn.Conv2d) or isinstance(module, nn.ConvTranspose2d):
-            torch.nn.init.xavier_uniform_(module.weight.data)
-            torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
+def get_weight_initializer(transfer):
+    def init_weights(module):
+        if transfer:
+            if isinstance(module, nn.ConvTranspose2d):
+                torch.nn.init.xavier_uniform_(module.weight.data)
+                torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
+        else:
+            if isinstance(module, nn.Conv2d) or isinstance(module, nn.ConvTranspose2d):
+                torch.nn.init.xavier_uniform_(module.weight.data)
+                torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
+    return init_weights
 
 def build_model(architecture, classes):
 
     class_count = classes if isinstance(classes, int) else len(classes)
-    
+
     attr = util.Attributes(
         transfer = False,
     )
@@ -57,6 +59,7 @@ def build_model(architecture, classes):
 
     attr(model)
 
-    model.apply(init_weights, model.transfer)
+    init_weights = get_weight_initializer(model.transfer)
+    model.apply(init_weights)
 
     return model
