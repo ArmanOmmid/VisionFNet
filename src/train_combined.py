@@ -21,11 +21,6 @@ import src.utility.util as util
 import src.utility.voc as voc
 import src.arch as arch
 
-print(type(arch), arch)
-print(dir(arch))
-x = arch.customfcn2.Custom_FCN2(n_class=2)
-raise Exception()
-
 from src.engine.experiment import Experiment
 from src.utility.data_factory import prepare_dataset, sample_transform, getClassWeights
 from src.utility.model_factory import init_weights, build_model
