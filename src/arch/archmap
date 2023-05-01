@@ -1,0 +1,24 @@
+
+
+
+FNet
+Patching:
+    Conv, Layernorm, activation
+    + positioning
+Encoder:
+    Fourier
+    MLP
+Decoder:
+    Classfier / Transposed Convs
+    
+
+ViT
+Patching:
+    Conv, Layernorm, activation
+    + positioning
+Encoder:
+    Attention
+    MLP
+Decoder:
+    Classfier / Transposed Convs
+

@@ -31,7 +31,6 @@ from src.utility.model_factory import init_weights, build_model
 # parser.add_argument('epochs', type=int,
 #                     help='Epochs')
 
-
 MODE = ['lr', 'weight', 'custom1']
 SET = ['name', 'lr', 'weight', 'transfer', 'augment']
 
