@@ -48,7 +48,7 @@ class Experiment(object):
         self.device = device
 
         self.mode = mode
-        self.model_save_path = model_save_path
+        self.save_path = save_path
     
     def train(self, epochs, early_stop_tolerance):
         
@@ -63,8 +63,8 @@ class Experiment(object):
         valid_iou_per_epoch = []
         valid_acc_per_epoch = []
 
-        if os.path.exists(self.model_save_path):
-            self.model.load_state_dict(torch.load(self.model_save_path))
+        if os.path.exists(self.save_path):
+            self.model.load_state_dict(torch.load(self.save_path))
         
         for epoch in range(epochs):
             ts = time.time()
