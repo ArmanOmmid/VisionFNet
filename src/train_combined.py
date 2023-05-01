@@ -23,7 +23,8 @@ import src.models.customfcn2 as customfcn2
 from src.models.basic_fcn import *
 
 from src.engine.experiment import Experiment
-from src.utility.data_factory import prepare_dataset, sample_transform
+from src.utility.data_factory import prepare_dataset, sample_transform, getClassWeights
+from src.utility.model_factory import init_weights, build_model
 
 MODE = ['lr', 'weight', 'custom1']
 """
@@ -40,7 +41,7 @@ None: baseline
 mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
 epochs = 20
-n_class = 21
+class_count = 21
 learning_rate = 0.01
 early_stop_tolerance = 8
 
@@ -53,39 +54,7 @@ class MaskToTensor(object):
     def __call__(self, img):
         return torch.from_numpy(np.array(img, dtype=np.int32)).long()
 
-def init_weights(m):
-    if 'transfer' in MODE:
-        if isinstance(m, nn.ConvTranspose2d):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            torch.nn.init.normal_(m.bias.data) #xavier not applicable for biases
-    else:
-        if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
-            torch.nn.init.xavier_uniform_(m.weight.data)
-            torch.nn.init.normal_(m.bias.data) #xavier not applicable for biases
-
-def getClassWeights(dataset, n_class):
-    cum_counts = torch.zeros(n_class)
-    for iter, (inputs, labels) in enumerate(train_loader_no_shuffle):
-        labels = torch.squeeze(labels) # 224 x 224
-        vals, counts = labels.unique(return_counts = True)
-        for v, c in zip(vals, counts):
-            cum_counts[v.item()] += c.item()
-        #print(f"Cumulative counts at iter {iter}: {cum_counts}")
-    totalPixels = torch.sum(cum_counts)
-    classWeights = 1 - (cum_counts / totalPixels)
-    print(f"Class weights: {classWeights}")
-    return classWeights
-
-if 'unet' in MODE:
-    model = unet.UNet(n_class=n_class)
-elif 'transfer' in MODE:
-    model = transfer_fcn.Resnet_FCN(n_class=n_class)
-elif 'custom1' in MODE:
-    model = customfcn1.Custom_FCN1(n_class=n_class)
-elif 'custom2' in MODE:
-    model = customfcn2.Custom_FCN2(n_class=n_class)
-else:
-    model = FCN(n_class=n_class)
+model = build_model(MODE, class_count)
     
 
 model.apply(init_weights)
@@ -105,8 +74,8 @@ if 'lr' in MODE:
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
 
 if 'weight' in MODE:
-    classWeights = getClassWeights(train_loader_no_shuffle, n_class).to(device)
-    criterion = nn.CrossEntropyLoss(weight=classWeights) 
+    classWeights = getClassWeights(train_loader_no_shuffle, class_count).to(device)
+    criterion = nn.CrossEntropyLoss(weight=classWeights)
 else:
     criterion = nn.CrossEntropyLoss() 
 
