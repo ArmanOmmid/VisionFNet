@@ -28,7 +28,7 @@ from src.utility.model_factory import init_weights, build_model
 parser = argparse.ArgumentParser(description='Argument Parser')
 parser.add_argument('architecture', type=str,
                     help='Model Architecture')
-parser.add_argument('-e', 'epochs', type=int, default=10,
+parser.add_argument('-e', '--epochs', type=int, default=10,
                     help='Epochs')
 parser.add_argument('-b', 'batch_size', type=int, default=8,
                     help='Epochs')
