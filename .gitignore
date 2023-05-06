@@ -4,3 +4,5 @@ datasets/*
 
 checkpoints/*
 !checkpoints/.gitignore
+
+__pycache__

@@ -22,7 +22,7 @@ import src.utility.voc as voc
 import src.arch as arch
 
 from src.engine.experiment import Experiment
-from src.utility.data_factory import prepare_dataset, sample_transform, get_class_weights
+from src.utility.data_factory import prepare_loaders, prepare_dataset, sample_transform, get_class_weights
 from src.utility.model_factory import build_model
 
 parser = argparse.ArgumentParser(description='Argument Parser')
@@ -37,19 +37,24 @@ parser.add_argument('-l', '--learning_rate', type=int, default=0.01,
 parser.add_argument('-w', '--weighted_loss', action='store_true',
                     help='Weighted Loss')
 parser.add_argument('-a', '--augment', action='store_true',
-                    help='Weighted Loss')
+                    help='Augmentation of Data')
 parser.add_argument('-s', '--scheduler',  action='store_true',
-                    help='Weighted Loss')
+                    help='Learning Rate Scheduler')
+
 parser.add_argument('-D', '--data_path', default=False,
-                    help='Weighted Loss')
+                    help="Path to locate (or download) data from")
+parser.add_argument('-N', '--dataset_name', default=False,
+                    help="Name of the dataset")
 parser.add_argument('-S', '--save_path', default=False,
-                    help='Weighted Loss')
+                    help="Path to save model weights to")
 parser.add_argument('-L', '--load_path', default=False,
-                    help='Weighted Loss')
+                    help="Path to load model weights from")
+parser.add_argument('--download', action='store_true',
+                    help="Download dataset if it doesn't exist")
 
 def main(args):
 
-    """ Arguments """
+    """ Hyperparameters """
     architecture = args.architecture
     epochs = args.epochs
     batch_size = args.batch_size
@@ -58,8 +63,12 @@ def main(args):
     augment = args.augment # False
     scheduler = args.scheduler
 
-    """ Paths """
+    """ Data """
     data_path = args.data_path
+    dataset_name = args.dataset_name
+    download = args.download
+
+    """ Weights """
     save_path = args.save_path
     load_path = args.load_path
 
@@ -67,7 +76,10 @@ def main(args):
         if not os.path.exists(data_path):
             raise NotADirectoryError("Dataset Path Does Not Exist {}".format(data_path)) 
     else:
-        data_path = os.path.join(__init__.repository_root, "datasets", "VOC")
+        data_path = os.path.join(__init__.repository_root, "datasets")
+
+    if not dataset_name:
+        dataset_name = "VOCSegmentation"
 
     if save_path:
         save_path_dir = os.path.basename(save_path)
@@ -85,7 +97,17 @@ def main(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     """ Data """
-    train_loader, val_loader, test_loader, ordered, classes = prepare_dataset(data_path, batch_size, augment)
+    train_loader, val_loader, test_loader, class_names = prepare_loaders(data_path, dataset_name, None, batch_size=8, num_workers=1, download=download)
+
+    print(len(train_loader), len(val_loader), len(test_loader), len(class_names))
+
+    raise Exception("STOP")
+    
+    train_loader, val_loader, test_loader, ordered, classes = prepare_dataset("datasets/VOC", batch_size, augment)
+
+    print(len(train_loader), len(val_loader), len(test_loader), 21)
+    raise Exception("STOP")
+    
     if weighted_loss:
         class_weights = get_class_weights(ordered, len(classes)).to(device)
 
@@ -119,6 +141,7 @@ def main(args):
         model,
         train_loader,
         val_loader,
+        test_loader,
         criterion,
         optimizer,
         device,

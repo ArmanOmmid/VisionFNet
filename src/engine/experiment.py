@@ -30,6 +30,7 @@ class Experiment(object):
             model: torch.nn.Module, 
             train_loader: torch.utils.data.DataLoader, 
             val_loader: torch.utils.data.DataLoader,
+            test_loader: torch.utils.data.DataLoader,
             criterion: torch.nn.Module, 
             optimizer: torch.optim.Optimizer,
             device: torch.device,
@@ -40,6 +41,7 @@ class Experiment(object):
         self.model = model
         self.train_loader = train_loader
         self.val_loader = val_loader
+        self.test_loader = test_loader
         self.criterion = criterion
 
         self.optimizer = optimizer
