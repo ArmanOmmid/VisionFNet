@@ -7,7 +7,7 @@ CSE 252D Project
 
 ## Literature
 - [Literature Review Document](https://docs.google.com/document/d/1xCkQum8OBOQRYxY33V0xMXn1oMtji6PcdViTTMMiuPU/edit#heading=h.o7vz5d2yp7eg)
-- [Survey Paper](./PDFs/A_Survey_on_Vision_Transformer.pdf)
+- [A Survey on Vision Transformer (Han 2022)](./PDFs/A_Survey_on_Vision_Transformer.pdf)
 
 ## Technical Papers
 - [FNet: Mixing Tokens with Fourier Transforms](https://arxiv.org/pdf/2105.03824v4.pdf)
