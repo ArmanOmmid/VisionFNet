@@ -136,14 +136,14 @@ class Experiment(object):
                     print(f"Valid Loss {valid_loss_at_epoch} < Best Loss {best_loss}. (Valid IOU {valid_iou_at_epoch}) Saving Model...")
                     best_loss = valid_loss_at_epoch
                     early_stop_count = 0
-                    torch.save(self.model.state_dict(), self.model_save_path)
+                    torch.save(self.model.state_dict(), self.save_path)
                 else:
                     early_stop_count += 1
                     if early_stop_count > early_stop_tolerance:
                         print("Early Stopping...")
                         break
 
-        self.model.load_state_dict(torch.load(self.model_save_path))
+        self.model.load_state_dict(torch.load(self.save_path))
                 
         return best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
     
