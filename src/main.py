@@ -23,12 +23,14 @@ from matplotlib import pyplot as plt
 import src.utility.util as util
 import src.utility.voc as voc
 import src.arch as arch
-from src.utility.transforms import EnsureRGB
-from src.utility.interactive import show_data
 
 from src.engine.experiment import Experiment
-from src.utility.data_factory import prepare_loaders, prepare_dataset, sample_transform, get_class_weights
 from src.utility.model_factory import build_model
+from src.utility.data_factory import prepare_loaders, get_class_weights
+from src.utility.data_info import get_task_type, get_targets
+from src.utility.transforms import sample_transform
+from src.utility.interactive import show_data
+from src.utility.voc import VOCSegmentation
 
 parser = argparse.ArgumentParser(description='Argument Parser')
 parser.add_argument('architecture', type=str,
@@ -80,14 +82,20 @@ def main(args):
     save_path = args.save_path
     load_path = args.load_path
 
+    """ Data and Path Preperations """
+
+    if not dataset_name:
+        dataset_name = "VOCSegmentation"
+
+    task_type = get_task_type(dataset_name)
+    if task_type is None:
+        raise Exception("Invalid Dataset Name ( Or Unregistered in 'src/utility/data_factory :: get_task_type() )")
+
     if data_path:
         if not os.path.exists(data_path):
             raise NotADirectoryError("Dataset Path Does Not Exist {}".format(data_path)) 
     else:
         data_path = os.path.join(__init__.repository_root, "datasets")
-
-    if not dataset_name:
-        dataset_name = "VOCSegmentation"
 
     if save_path:
         save_path_dir = os.path.basename(save_path)
@@ -104,23 +112,18 @@ def main(args):
     early_stop_tolerance = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    IMG_SIZE = 224 
-    example_transforms = transforms.Compose([
-        transforms.Resize((IMG_SIZE, IMG_SIZE)),
-        transforms.ToTensor(),
-        EnsureRGB
-    ])         
-
+    transform_info = None
 
     """ Data """
-    train_loader, val_loader, test_loader, class_names = prepare_loaders(data_path, dataset_name, transform=example_transforms, 
+    train_loader, val_loader, test_loader, class_names = prepare_loaders(data_path, dataset_name, transform_info=transform_info, 
                                                                          batch_size=batch_size, num_workers=num_workers, download=download)
 
-    show_data(train_loader, class_names)
-    raise Exception("STOP")
-    
     if weighted_loss:
-        class_weights = get_class_weights(ordered, len(classes)).to(device)
+        class_weights = get_class_weights(train_loader, len(class_names)).to(device)
+
+    interactive_data_showcase = False
+    if interactive_data_showcase:
+        show_data(train_loader, class_names)
 
     """ Criteron """
     if weighted_loss:
@@ -129,7 +132,7 @@ def main(args):
         criterion = nn.CrossEntropyLoss()
 
     """ Model """
-    model = build_model(architecture, classes, augment)
+    model = build_model(architecture, len(class_names), augment)
     model = model.to(device) # transfer the model to the device
 
     """ Optimizer """
@@ -185,7 +188,7 @@ def main(args):
     print(f"Test Pixel acc is {test_acc}")
     
     # ------ GET SAMPLE IMAGE FOR REPORT -------
-    test_sample_dataset = voc.VOC(data_path, 'test', transforms=sample_transform)
+    test_sample_dataset = VOCSegmentation(data_path.rstrip('/') + '/' + "VOCSegmentation", year='2007', image_set='test', transform=sample_transform)
     test_sample_loader = DataLoader(dataset=test_sample_dataset, batch_size=1, shuffle=False)
     model.eval()
     # untransformed original image

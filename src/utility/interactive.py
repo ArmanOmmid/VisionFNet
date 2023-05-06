@@ -1,9 +1,13 @@
 import matplotlib.pyplot as plt
+from src.utility.data_info import get_task_type
 
 def show_data(loader, class_names=None):
 
     num_workers = loader.num_workers
     loader.num_workers = 0 # Changing this temporarily lets us exist enumeration faster; it hangs temporarily otherwise
+
+    if get_task_type(loader) == 'segmentation': 
+        class_names = None # Can't do this for segmentation masks
 
     for i, batch in enumerate(loader):
         image_batch, label_batch = batch

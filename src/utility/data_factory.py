@@ -9,92 +9,97 @@ from collections import Counter
 import torch
 import torch.nn as nn
 import torchvision
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils.class_weight import compute_class_weight
 import numpy as np
 
 import src.utility.util as util
 import src.utility.voc as voc
+from src.utility.data_info import get_targets, get_base_dataset, get_dataset_name, get_task_type, get_indices
+from src.utility.transforms import ViT_Transform, VOC_Transform
+from src.utility.voc import VOCSegmentation
 
-# For COV Segmentation
-mean_std = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-
-def train_val_split(train_val_dataset, val_proportion, indices=None, targets='targets', slice_targets=False):
-    train_targets = np.array(getattr(train_val_dataset, targets)) if not slice_targets else np.array(getattr(train_val_dataset, targets))[:, 1]
+def train_val_split(dataset, split_proportion=1/6, indices=None):
+    all_targets = get_targets(dataset)
     if indices is None:
-        indices = np.arange(train_targets.shape[0])
+        targets = all_targets
+        indices = np.arange(targets.shape[0])
     else:
-        train_targets = train_targets[indices]
-    train_indices, val_indices = train_test_split(indices, test_size=val_proportion, stratify=train_targets)
+        targets = all_targets[indices]
+    train_indices, val_indices = train_test_split(indices, test_size=split_proportion, stratify=targets)
 
-    train_dataset = torch.utils.data.Subset(train_val_dataset, train_indices)
-    val_dataset = torch.utils.data.Subset(train_val_dataset, val_indices)
+    train_dataset = Subset(dataset, train_indices)
+    val_dataset = Subset(dataset, val_indices)
 
     # Subset.dataset.indices for indices
     return train_dataset, val_dataset
 
-def prepare_loaders(data_folder_path, dataset_name, transform, batch_size=8, num_workers=1, download=False):
+def prepare_loaders(data_folder_path, dataset_name, transform_info, batch_size=8, num_workers=1, download=False):
     data_folder_path = data_folder_path.rstrip('/') + '/'
 
+    task_type = get_task_type(dataset_name)
+    if task_type == 'classification':
+        image_size = 224
+        transform = ViT_Transform(image_size)
+    elif task_type == 'segmentation':
+        augment = False
+        # Set Transform Manually Below for VOCSegmentation
+
     # Classification 
-    if dataset_name == "CIFAR10": # 10 Classes
+    if dataset_name == 'CIFAR10': # 10 Classes
         train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
         test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6)
+        train_dataset, val_dataset = train_val_split(train_val_dataset)
         class_names = train_val_dataset.classes
 
-    elif dataset_name == "CIFAR100": # 100 Classes
-        train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
-        test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6)
+    elif dataset_name == 'CIFAR100': # 100 Classes
+        train_val_dataset = torchvision.datasets.CIFAR100(data_folder_path + "CIFAR100/train", download=download, train=True, transform=transform)
+        test_dataset = torchvision.datasets.CIFAR100(data_folder_path + "CIFAR100/test", download=download, train=False, transform=transform)
+        train_dataset, val_dataset = train_val_split(train_val_dataset)
         class_names = train_val_dataset.classes 
 
-    elif dataset_name == "MNIST": # 10 Classes
-        train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
-        test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6)
+    elif dataset_name == 'MNIST': # 10 Classes
+        train_val_dataset = torchvision.datasets.MNIST(data_folder_path + "MNIST/train", download=download, train=True, transform=transform)
+        test_dataset = torchvision.datasets.MNIST(data_folder_path + "MNIST/test", download=download, train=False, transform=transform)
+        train_dataset, val_dataset = train_val_split(train_val_dataset)
         class_names = train_val_dataset.classes 
 
-    elif dataset_name == "FashionMNIST": # 10 Classes
-        train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
-        test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6)
+    elif dataset_name == 'FashionMNIST': # 10 Classes
+        train_val_dataset = torchvision.datasets.FashionMNIST(data_folder_path + "FashionMNIST/train", download=download, train=True, transform=transform)
+        test_dataset = torchvision.datasets.FashionMNIST(data_folder_path + "FashionMNIST/test", download=download, train=False, transform=transform)
+        train_dataset, val_dataset = train_val_split(train_val_dataset)
         class_names = train_val_dataset.classes 
 
-    elif dataset_name == "StanfordCars": # 196 Classes
-        train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
-        test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6, targets='_labels')
+    elif dataset_name == 'StanfordCars': # 196 Classes
+        train_val_dataset = torchvision.datasets.StanfordCars(data_folder_path + "StanfordCars/train", download=download, train=True, transform=transform)
+        test_dataset = torchvision.datasets.StanfordCars(data_folder_path + "StanfordCars/test", download=download, train=False, transform=transform)
+        train_dataset, val_dataset = train_val_split(train_val_dataset)
         class_names = train_val_dataset.classes 
 
-    elif dataset_name == "Food101": # 101 Classes ; HUGE dataset...
-        train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
-        test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6, targets='_samples', slice_targets=True)
+    elif dataset_name == 'Food101': # 101 Classes ; HUGE dataset...
+        train_val_dataset = torchvision.datasets.Food101(data_folder_path + "Food101/train", download=download, train=True, transform=transform)
+        test_dataset = torchvision.datasets.Food101(data_folder_path + "Food101/test", download=download, train=False, transform=transform)
+        train_dataset, val_dataset = train_val_split(train_val_dataset)
         class_names = train_val_dataset.classes 
 
-    elif dataset_name == "Caltech256": # 256 Classes
+    elif dataset_name == 'Caltech256': # 256 Classes
         Caltech256 = torchvision.datasets.Caltech256(data_folder_path + "Caltech256", download=download, transform=transform)
-        train_val_dataset, test_dataset, = train_val_split(Caltech256, 1/6, targets='y')
-        # TODO : Ensure you can make subsets on subsets
-        train_dataset, val_dataset = train_val_split(Caltech256, 1/6, indices=train_val_dataset.indices, targets='y') # What is the targets on a subset?
+        train_val_dataset, test_dataset = train_val_split(Caltech256)
+        train_dataset, val_dataset = train_val_split(Caltech256, indices=train_val_dataset.indices)
         class_names = Caltech256.categories
     
     # Segmentation 
-    elif dataset_name == "VOCSegmentation":
+    elif dataset_name == 'VOCSegmentation':
         year = '2007'
-        train_dataset = torchvision.datasets.VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='train', transform=transform)
-        val_dataset = torchvision.datasets.VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='val', transform=transform)
-        test_dataset = torchvision.datasets.VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='test', transform=transform)
-        class_names = ['person', 
-                   'bird', 'cat', 'cow', 'dog', 'horse', 'sheep', 
-                   'aeroplane', 'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 
-                   'bottle', 'chair', 'dining table', 'potted plant', 'sofa', 'tv/monitor', 
-                   'background']
+        train_dataset = VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='train', transform=VOC_Transform(augment))
+        val_dataset = VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='val', transform=VOC_Transform())
+        test_dataset = VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='test', transform=VOC_Transform())
+        class_names = train_dataset.classes
 
     # Datset Not Found
     else:
@@ -106,72 +111,30 @@ def prepare_loaders(data_folder_path, dataset_name, transform, batch_size=8, num
 
     return train_loader, val_loader, test_loader, class_names
 
-def get_train_transform(augment):
-
-    def train_transform(image, mask):
-        image = TF.to_tensor(image)
-        mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
-        image = TF.normalize(image, mean=mean_std[0], std=mean_std[1])
-
-        if augment:
-            images = list(TF.ten_crop(image, 128))
-            masks = list(TF.ten_crop(mask, 128))
-            for i in range(10):
-                angles = [30, 60]
-                for angle in angles:
-                    msk = masks[i].unsqueeze(0)
-                    img = TF.rotate(images[i], angle)
-                    msk = TF.rotate(msk, angle)
-                    msk = msk.squeeze(0)
-                    images.append(img)
-                    masks.append(msk)
-                    
-            image = torch.stack([img for img in images])
-            mask = torch.stack([msk for msk in masks])
-            
-        return image, mask
-
-    return train_transform
-
-def valtest_transform(image, mask):
-    image = TF.to_tensor(image)
-    mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
-    image = TF.normalize(image, mean=mean_std[0], std=mean_std[1])
-    
-    return image, mask
-
-def sample_transform(image, mask):
-    image = torch.from_numpy(np.array(image, dtype=np.int32)).long()
-    mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
-
-def prepare_dataset(data_root, batch_size, augment):
-
-    year="2007"
-    if not os.path.exists(data_root):
-        voc.download_voc(data_root, year=year)
-    train_transform = get_train_transform(augment)
-
-    train_dataset = voc.VOC(data_root, 'train', transforms=train_transform, year=year)
-    val_dataset = voc.VOC(data_root, 'val', transforms=valtest_transform, year=year)
-    test_dataset = voc.VOC(data_root, 'test', transforms=valtest_transform, year=year)
-
-    ordered_data = DataLoader(dataset=train_dataset, batch_size=1, shuffle=False)
-
-    train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
-    test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False)
-
-    return train_loader, val_loader, test_loader, ordered_data, 21
-
 def get_class_weights(dataset, n_class):
-    cum_counts = torch.zeros(n_class)
-    for iter, (inputs, labels) in enumerate(dataset):
-        labels = torch.squeeze(labels) # 224 x 224
-        vals, counts = labels.unique(return_counts = True)
-        for v, c in zip(vals, counts):
-            cum_counts[v.item()] += c.item()
-        #print(f"Cumulative counts at iter {iter}: {cum_counts}")
-    totalPixels = torch.sum(cum_counts)
-    class_weights = 1 - (cum_counts / totalPixels)
-    print(f"Class weights: {class_weights}")
+    task_type = get_task_type(dataset)
+
+    if task_type == 'segmentation':
+        dataset = get_base_dataset(dataset)
+        dataset = DataLoader(dataset=dataset, batch_size=1, shuffle=False)
+        cum_counts = torch.zeros(n_class)
+        for iter, (inputs, labels) in enumerate(dataset):
+            labels = torch.squeeze(labels) # 224 x 224
+            vals, counts = labels.unique(return_counts = True)
+            for v, c in zip(vals, counts):
+                cum_counts[v.item()] += c.item()
+            #print(f"Cumulative counts at iter {iter}: {cum_counts}")
+        totalPixels = torch.sum(cum_counts)
+        class_weights = 1 - (cum_counts / totalPixels)
+        print(f"Class weights: {class_weights}")
+
+    elif task_type == 'classification':
+        indices = get_indices(dataset)
+        targets = get_targets(dataset)[indices]
+        class_weights = compute_class_weight(class_weight='balanced',
+                                        classes=np.unique(targets),
+                                        y=targets)
+        class_weights = torch.from_numpy(class_weights)
+        print(f"Class weights: {class_weights}")
+        
     return class_weights

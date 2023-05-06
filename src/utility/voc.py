@@ -5,14 +5,10 @@ from PIL import Image
 from torch.utils import data
 import numpy as np
 
-def download_voc(root, year="2007"):
-    train_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='train')
-    val_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='val')
-    test_dataset = torchvision.datasets.VOCSegmentation(root=root, year=year, download=True, image_set='test')
-    return train_dataset, val_dataset, test_dataset
+class VOCSegmentation(data.Dataset):
+    def __init__(self, root, image_set, download, transform, year='2007'):
 
-class VOC(data.Dataset):
-    def __init__(self, root, mode, transforms, year="2007"):
+        assert image_set in ['train', 'val', 'test']
 
         '''
         color map
@@ -30,13 +26,23 @@ class VOC(data.Dataset):
         self.ignore_label = 255
         self.root = root
 
-        self.imgs = self.make_dataset(root, mode)
+        self.classes = ['person', 
+                   'bird', 'cat', 'cow', 'dog', 'horse', 'sheep', 
+                   'aeroplane', 'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 
+                   'bottle', 'chair', 'dining table', 'potted plant', 'sofa', 'tv/monitor', 
+                   'background']
+
+        if download:
+            # Surrogate
+            torchvision.datasets.VOCSegmentation(root=root, image_set=image_set, download=True, year=year)
+
+        self.imgs = self.make_dataset(root, image_set)
 
         if len(self.imgs) == 0:
             raise RuntimeError('Found 0 images, please check the data set')
         
-        self.mode = mode
-        self.transforms = transforms
+        self.image_set = image_set
+        self.transform = transform
         self.width = 224
         self.height = 224
 
@@ -46,7 +52,7 @@ class VOC(data.Dataset):
         img = np.array(Image.open(img_path).convert('RGB').resize((self.width, self.height)))
         mask = np.array(Image.open(mask_path).resize((self.width, self.height)))
         
-        img, mask = self.transforms(image=img, mask=mask)
+        img, mask = self.transform(image=img, mask=mask)
 
         mask[mask == self.ignore_label] = 0
 
@@ -55,13 +61,12 @@ class VOC(data.Dataset):
     def __len__(self):
         return len(self.imgs)
     
-    def make_dataset(self, root, mode):
-        assert mode in ['train', 'val', 'test']
+    def make_dataset(self, root, image_set):
         items = []
         img_path = os.path.join(root, 'VOCdevkit', 'VOC2007', 'JPEGImages')
         mask_path = os.path.join(root, 'VOCdevkit', 'VOC2007', 'SegmentationClass')
         data_list = [l.strip('\n') for l in open(os.path.join(
-            root, 'VOCdevkit', 'VOC2007', 'ImageSets', 'Segmentation', mode + '.txt')).readlines()]
+            root, 'VOCdevkit', 'VOC2007', 'ImageSets', 'Segmentation', image_set + '.txt')).readlines()]
         for it in data_list:
             item = (os.path.join(img_path, it + '.jpg'), os.path.join(mask_path, it + '.png'))
             items.append(item)
