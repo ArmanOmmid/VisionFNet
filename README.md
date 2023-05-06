@@ -11,7 +11,7 @@ CSE 252D Project
 
 ## Technical Papers
 - [FNet: Mixing Tokens with Fourier Transforms](https://arxiv.org/pdf/2105.03824v4.pdf)
-- [An Image is Worth 16x16 Words](https://arxiv.org/pdf/2010.11929v2.pdf)
+- [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale ](https://arxiv.org/pdf/2010.11929v2.pdf)
 
 ## YouTube Links
 - [FNet](https://youtu.be/j7pWPdGEfMA)
