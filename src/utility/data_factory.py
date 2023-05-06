@@ -35,7 +35,7 @@ def train_val_split(train_val_dataset, val_proportion, indices=None, targets='ta
     val_dataset = torch.utils.data.Subset(train_val_dataset, val_indices)
 
     # Subset.dataset.indices for indices
-    return train_dataset, val_dataset, train_indices, val_indices
+    return train_dataset, val_dataset
 
 def prepare_loaders(data_folder_path, dataset_name, transform, batch_size=8, num_workers=1, download=False):
     data_folder_path = data_folder_path.rstrip('/') + '/'
@@ -44,44 +44,44 @@ def prepare_loaders(data_folder_path, dataset_name, transform, batch_size=8, num
     if dataset_name == "CIFAR10": # 10 Classes
         train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
         test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset, _, _ = train_val_split(train_val_dataset, 1/6)
+        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6)
         class_names = train_val_dataset.classes
 
     elif dataset_name == "CIFAR100": # 100 Classes
         train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
         test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset, _, _ = train_val_split(train_val_dataset, 1/6)
+        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6)
         class_names = train_val_dataset.classes 
 
     elif dataset_name == "MNIST": # 10 Classes
         train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
         test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset, _, _ = train_val_split(train_val_dataset, 1/6)
+        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6)
         class_names = train_val_dataset.classes 
 
     elif dataset_name == "FashionMNIST": # 10 Classes
         train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
         test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset, _, _ = train_val_split(train_val_dataset, 1/6)
+        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6)
         class_names = train_val_dataset.classes 
 
     elif dataset_name == "StanfordCars": # 196 Classes
         train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
         test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset, _, _ = train_val_split(train_val_dataset, 1/6, targets='_labels')
+        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6, targets='_labels')
         class_names = train_val_dataset.classes 
 
     elif dataset_name == "Food101": # 101 Classes ; HUGE dataset...
         train_val_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/train", download=download, train=True, transform=transform)
         test_dataset = torchvision.datasets.CIFAR10(data_folder_path + "CIFAR10/test", download=download, train=False, transform=transform)
-        train_dataset, val_dataset, _, _ = train_val_split(train_val_dataset, 1/6, targets='_samples', slice_targets=True)
+        train_dataset, val_dataset = train_val_split(train_val_dataset, 1/6, targets='_samples', slice_targets=True)
         class_names = train_val_dataset.classes 
 
     elif dataset_name == "Caltech256": # 256 Classes
         Caltech256 = torchvision.datasets.Caltech256(data_folder_path + "Caltech256", download=download, transform=transform)
-        _, test_dataset, train_val_indices, test_indices = train_val_split(Caltech256, 1/6, targets='y')
+        train_val_dataset, test_dataset, = train_val_split(Caltech256, 1/6, targets='y')
         # TODO : Ensure you can make subsets on subsets
-        train_dataset, val_dataset, _, _ = train_val_split(Caltech256, 1/6, indices=train_val_indices, targets='y') # What is the targets on a subset?
+        train_dataset, val_dataset = train_val_split(Caltech256, 1/6, indices=train_val_dataset.indices, targets='y') # What is the targets on a subset?
         class_names = Caltech256.categories
     
     # Segmentation 
@@ -175,5 +175,3 @@ def get_class_weights(dataset, n_class):
     class_weights = 1 - (cum_counts / totalPixels)
     print(f"Class weights: {class_weights}")
     return class_weights
-
-

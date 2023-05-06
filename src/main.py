@@ -7,10 +7,13 @@ import gc
 import random
 from collections import Counter
 import argparse
+import dill
+import pickle
 
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torchvision import transforms
 import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
 
@@ -20,6 +23,8 @@ from matplotlib import pyplot as plt
 import src.utility.util as util
 import src.utility.voc as voc
 import src.arch as arch
+from src.utility.transforms import EnsureRGB
+from src.utility.interactive import show_data
 
 from src.engine.experiment import Experiment
 from src.utility.data_factory import prepare_loaders, prepare_dataset, sample_transform, get_class_weights
@@ -40,6 +45,8 @@ parser.add_argument('-a', '--augment', action='store_true',
                     help='Augmentation of Data')
 parser.add_argument('-s', '--scheduler',  action='store_true',
                     help='Learning Rate Scheduler')
+parser.add_argument('-n', '--num_workers',  type=int, default=0,
+                    help='Number of GPU Workers (Processes)')
 
 parser.add_argument('-D', '--data_path', default=False,
                     help="Path to locate (or download) data from")
@@ -62,6 +69,7 @@ def main(args):
     weighted_loss = args.weighted_loss
     augment = args.augment # False
     scheduler = args.scheduler
+    num_workers = args.num_workers
 
     """ Data """
     data_path = args.data_path
@@ -96,16 +104,19 @@ def main(args):
     early_stop_tolerance = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    IMG_SIZE = 224 
+    example_transforms = transforms.Compose([
+        transforms.Resize((IMG_SIZE, IMG_SIZE)),
+        transforms.ToTensor(),
+        EnsureRGB
+    ])         
+
+
     """ Data """
-    train_loader, val_loader, test_loader, class_names = prepare_loaders(data_path, dataset_name, None, batch_size=8, num_workers=1, download=download)
-    
-    # train_loader, val_loader, test_loader, ordered, classes = prepare_dataset("datasets/VOC", batch_size, augment)
+    train_loader, val_loader, test_loader, class_names = prepare_loaders(data_path, dataset_name, transform=example_transforms, 
+                                                                         batch_size=batch_size, num_workers=num_workers, download=download)
 
-
-    print(len(train_loader), len(val_loader), len(test_loader), 21)
-
-    print(train_loader.dataset.__dict__.keys())
-
+    show_data(train_loader, class_names)
     raise Exception("STOP")
     
     if weighted_loss:
