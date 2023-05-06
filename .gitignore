@@ -1,6 +1,6 @@
 
 datasets/*
-!datasets/.gitkeep
+!datasets/.gitignore
 
 checkpoints/*
-!checkpoints/.gitkeep
+!checkpoints/.gitignore
