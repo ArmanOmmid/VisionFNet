@@ -98,14 +98,14 @@ def main(args):
 
     """ Data """
     train_loader, val_loader, test_loader, class_names = prepare_loaders(data_path, dataset_name, None, batch_size=8, num_workers=1, download=download)
-
-    print(len(train_loader), len(val_loader), len(test_loader), len(class_names))
-
-    raise Exception("STOP")
     
-    train_loader, val_loader, test_loader, ordered, classes = prepare_dataset("datasets/VOC", batch_size, augment)
+    # train_loader, val_loader, test_loader, ordered, classes = prepare_dataset("datasets/VOC", batch_size, augment)
+
 
     print(len(train_loader), len(val_loader), len(test_loader), 21)
+
+    print(train_loader.dataset.__dict__.keys())
+
     raise Exception("STOP")
     
     if weighted_loss:
