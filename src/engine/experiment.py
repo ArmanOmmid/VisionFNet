@@ -73,10 +73,10 @@ class Experiment(object):
     
     def train(self, num_epochs, early_stop_tolerance):
         
-        best_loss = 100.0
         early_stop_count = 0
 
-        best_val_accuracy = 0
+        best_loss = 100.0
+        best_accuracy = 0.0
         self.best_model_weights = copy.deepcopy(self.model.state_dict())
 
         train_loss_per_epoch = []
@@ -109,34 +109,42 @@ class Experiment(object):
                         
             with torch.no_grad():
                 train_loss_at_epoch = np.mean(losses)
-                train_iou_at_epoch = np.mean(mean_iou_scores)
                 train_acc_at_epoch = np.mean(accuracy)
 
                 train_loss_per_epoch.append(train_loss_at_epoch)
-                train_iou_per_epoch.append(train_iou_at_epoch)
                 train_acc_per_epoch.append(train_acc_at_epoch)
+
+                if self.segmentation:
+                    train_iou_at_epoch = np.mean(mean_iou_scores)
+                    train_iou_per_epoch.append(train_iou_at_epoch)
 
                 print("Finishing epoch {}, time elapsed {}".format(epoch, time.time() - ts))
 
                 valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val_loop(epoch)
 
                 valid_loss_per_epoch.append(valid_loss_at_epoch)
-                valid_iou_per_epoch.append(valid_iou_at_epoch)
                 valid_acc_per_epoch.append(valid_acc_at_epoch)
+                if self.segmentation:
+                    valid_iou_per_epoch.append(valid_iou_at_epoch)
 
-                if valid_iou_at_epoch > best_iou_score:
-                    best_iou_score = valid_iou_at_epoch
-                    # save the best model
-                if valid_loss_at_epoch < best_loss:
-                    print(f"Valid Loss {valid_loss_at_epoch} < Best Loss {best_loss}. (Valid IOU {valid_iou_at_epoch}) Saving Model...")
-                    best_loss = valid_loss_at_epoch
-                    early_stop_count = 0
-                    torch.save(self.model.state_dict(), self.save_path)
-                else:
-                    early_stop_count += 1
-                    if early_stop_count > early_stop_tolerance:
-                        print("Early Stopping...")
-                        break
+                if self.segmentation:
+
+                    if valid_iou_at_epoch > best_iou_score:
+                        best_iou_score = valid_iou_at_epoch
+                        # save the best model
+
+                    if valid_loss_at_epoch < best_loss:
+                        print(f"Valid Loss {valid_loss_at_epoch} < Best Loss {best_loss}. (Valid IOU {valid_iou_at_epoch}) Saving Model...")
+                        best_loss = valid_loss_at_epoch
+                        early_stop_count = 0
+                        torch.save(self.model.state_dict(), self.save_path)
+                        self.best_model_weights = copy.deepcopy(self.model.state_dict())
+                        
+                    else:
+                        early_stop_count += 1
+                        if early_stop_count > early_stop_tolerance:
+                            print("Early Stopping...")
+                            break
 
         self.model.load_state_dict(torch.load(self.save_path))
                 
