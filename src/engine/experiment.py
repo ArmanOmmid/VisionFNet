@@ -78,7 +78,7 @@ class Experiment(object):
             losses, mean_iou_scores, accuracy = self.train_loop(epoch)
 
             if self.scheduler:
-                print(f'Learning rate at epoch {epoch}: {self.scheduler.get_last_lr():0.9f}')
+                print(f'Learning rate at epoch {epoch}: {self.scheduler.get_last_lr()[-1]:0.9f}')
                 self.scheduler.step()
                         
             with torch.no_grad():
