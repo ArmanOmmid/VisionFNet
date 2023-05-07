@@ -204,7 +204,7 @@ def main(args):
                     running_corrects += torch.sum(preds == labels.data)
 
                     if iter % 100 == 0:
-                        print("Iteration [{}/{}]".format(iter, int(dataset_sizes[phase]/batch_size)))
+                        print("Iteration [{} / {}]".format(iter, int(dataset_sizes[phase]/batch_size)))
 
                 if phase == 'train':
                     scheduler.step()

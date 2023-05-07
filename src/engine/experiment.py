@@ -195,8 +195,8 @@ class Experiment(object):
                 iou_score = util.iou(preds, labels)
                 mean_iou_scores.append(iou_score)
 
-            if iter % 10 == 0:
-                print("Iteration[{}] | Loss: {}".format(iter, loss.item()))
+            if iter % 100 == 0:
+                print("Iteration[{} / {}] | Loss: {}".format(iter, int(dataset_size/self.train_loader.batch_size), loss.item()))
 
         train_loss_at_epoch = np.mean(losses)
         train_acc_at_epoch = np.mean(accuracy)
