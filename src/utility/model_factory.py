@@ -17,8 +17,7 @@ def get_weight_initializer():
         # module_name = module.__class__.__name__ # For if you want to check which module this is 
         # list(module.parameters()) # This will list out the associated parameters. For non-containers, this is usually between 0-2 (weights and bias)
         invalid_layers = ["LayerNorm"]
-        if module.__class__.__name__ not in invalid_layers:
-            return
+        if module.__class__.__name__ in invalid_layers: return
         try:
             if hasattr(module, 'weight') and module.weight is not None and module.weight.requires_grad:
                 torch.nn.init.xavier_uniform_(module.weight.data)
