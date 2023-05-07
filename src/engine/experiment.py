@@ -193,8 +193,8 @@ class Experiment(object):
                 iou_score = util.iou(preds, labels)
                 mean_iou_scores.append(iou_score)
 
-            if iter % 100 == 0:
-                print("Iteration[{} / {}] | Loss: {}".format(iter, int(dataset_size/self.train_loader.batch_size), loss.item()))
+            # if iter % 100 == 0:
+            #     print("Iteration[{} / {}] | Loss: {}".format(iter, int(dataset_size/self.train_loader.batch_size), loss.item()))
 
         if self.classification:
             loss_at_epoch = running_loss / dataset_size
