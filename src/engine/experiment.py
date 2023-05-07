@@ -92,8 +92,9 @@ class Experiment(object):
             valid_iou_per_epoch = []
         
         for epoch in range(num_epochs):
-            print('\n', '-' * 20)
-            print(f'Epoch {epoch}/{num_epochs - 1}')
+            print('')
+            print('-' * 20)
+            print("Epoch {} / {}".format(epoch, num_epochs-1))
             print('-' * 20)
 
             if self.scheduler:
@@ -107,7 +108,7 @@ class Experiment(object):
 
             valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
 
-            print("Epoch {} | Time Elapsed: {}".format(epoch, time.time() - ts))
+            print("Epoch {} | Time Elapsed: {} | Loss: {}".format(epoch, time.time() - ts), valid_loss_at_epoch)
             
             # Append results 
             train_loss_per_epoch.append(train_loss_at_epoch)
@@ -119,10 +120,6 @@ class Experiment(object):
             valid_acc_per_epoch.append(valid_acc_at_epoch)
             if self.segmentation:
                 valid_iou_per_epoch.append(valid_iou_at_epoch)
-
-            # print(f"Valid Loss:  {epoch} : {valid_loss_at_epoch}")
-            # print(f"Valid Pixel: {epoch} : {valid_acc_at_epoch}")
-            # print(f"Valid IoU:   {epoch} : {valid_iou_at_epoch}")
 
             # Decide criteria for saving model
             save_model = False
