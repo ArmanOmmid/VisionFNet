@@ -178,7 +178,7 @@ def main(args):
                 running_corrects = 0
 
                 # Iterate over data.
-                for inputs, labels in data_loaders[phase]:
+                for iter, (inputs, labels) in enumerate(data_loaders[phase]):
                     inputs = inputs.to(device)
                     labels = labels.to(device)
 
@@ -200,6 +200,9 @@ def main(args):
                     # statistics
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
+
+                    print("Iteration [{}]".format(iter))
+
                 if phase == 'train':
                     scheduler.step()
 
