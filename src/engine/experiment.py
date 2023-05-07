@@ -199,6 +199,7 @@ class Experiment(object):
         if self.classification:
             loss_at_epoch = running_loss / dataset_size
             acc_at_epoch = running_corrects.double() /dataset_size
+            iou_at_epoch = None
         elif self.segmentation:
             loss_at_epoch = np.mean(losses)
             acc_at_epoch = np.mean(accuracy)
@@ -242,6 +243,7 @@ class Experiment(object):
         if self.classification:
             loss_at_epoch = running_loss / dataset_size
             acc_at_epoch = running_corrects.double() /dataset_size
+            iou_at_epoch = None
         elif self.segmentation:
             loss_at_epoch = np.mean(losses)
             acc_at_epoch = np.mean(accuracy)
@@ -290,6 +292,7 @@ class Experiment(object):
         if self.classification:
             loss_at_epoch = running_loss / dataset_size
             acc_at_epoch = running_corrects.double() /dataset_size
+            iou_at_epoch = None
         elif self.segmentation:
             loss_at_epoch = np.mean(losses)
             acc_at_epoch = np.mean(accuracy)
