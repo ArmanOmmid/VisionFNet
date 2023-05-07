@@ -223,7 +223,7 @@ def main(args):
         model.load_state_dict(best_model_wts)
         return model
     
-    # model = train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25)
+    model = train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25)
 
     """ Experiment """
     print("Initializing Experiments")
