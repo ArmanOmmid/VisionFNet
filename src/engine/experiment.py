@@ -179,6 +179,7 @@ class Experiment(object):
             self.optimizer.zero_grad()
             with torch.enable_grad(): # torch.set_grad_enabled(True)
                 outputs = self.model(inputs)
+                _, preds = torch.max(outputs, dim=1)
                 loss = self.criterion(outputs, labels)
 
                 loss.backward()
@@ -189,7 +190,6 @@ class Experiment(object):
                 running_corrects += torch.sum(preds == labels.data)
             elif self.segmentation:
                 losses.append(loss.item())
-                _, preds = torch.max(outputs, dim=1)
                 acc = util.pixel_acc(preds, labels)
                 accuracy.append(acc)
                 iou_score = util.iou(preds, labels)
@@ -224,6 +224,7 @@ class Experiment(object):
             
             with torch.no_grad():
                 outputs = self.model(inputs)
+                _, preds = torch.max(outputs, dim=1)
                 loss = self.criterion(outputs, labels)
 
             if self.classification:
@@ -231,7 +232,6 @@ class Experiment(object):
                 running_corrects += torch.sum(preds == labels.data)
             elif self.segmentation:
                 losses.append(loss.item())
-                _, preds = torch.max(outputs, dim=1)
                 acc = util.pixel_acc(preds, labels)
                 accuracy.append(acc)
                 iou_score = util.iou(preds, labels)
@@ -272,6 +272,7 @@ class Experiment(object):
 
             with torch.no_grad():
                 outputs = model(inputs)
+                _, preds = torch.max(outputs, dim=1)
                 loss = self.criterion(outputs, labels)
 
             if self.classification:
@@ -279,7 +280,6 @@ class Experiment(object):
                 running_corrects += torch.sum(preds == labels.data)
             elif self.segmentation:
                 losses.append(loss.item())
-                _, preds = torch.max(outputs, dim=1)
                 acc = util.pixel_acc(preds, labels)
                 accuracy.append(acc)
                 iou_score = util.iou(preds, labels)

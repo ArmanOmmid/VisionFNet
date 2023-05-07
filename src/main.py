@@ -239,8 +239,6 @@ def main(args):
         save_path,
         load_path
     )
-
-    # experiment.val(0)  # show the accuracy before training
     
     print("Training")
 
