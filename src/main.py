@@ -244,7 +244,7 @@ def main(args):
     
     print("Training")
 
-    results = experiment.train(epochs, early_stop_tolerance)
+    results = experiment.run(epochs, early_stop_tolerance)
     
     model, \
     best_iou_score, \

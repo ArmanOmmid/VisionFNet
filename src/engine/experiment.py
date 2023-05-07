@@ -71,7 +71,7 @@ class Experiment(object):
 
         self.best_model_weights = None
     
-    def train(self, num_epochs, early_stop_tolerance):
+    def run(self, num_epochs, early_stop_tolerance):
         
         early_stop_count = 0
 
@@ -103,7 +103,7 @@ class Experiment(object):
             if self.segmentation:
                 mean_iou_scores = []
 
-            losses, accuracy, mean_iou_scores = self.train_loop(epoch)
+            losses, accuracy, mean_iou_scores = self.train(epoch)
 
             self.scheduler.step()
                         
@@ -120,7 +120,7 @@ class Experiment(object):
 
                 print("Finishing epoch {}, time elapsed {}".format(epoch, time.time() - ts))
 
-                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val_loop(epoch)
+                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val(epoch)
 
                 valid_loss_per_epoch.append(valid_loss_at_epoch)
                 valid_acc_per_epoch.append(valid_acc_at_epoch)
@@ -148,12 +148,15 @@ class Experiment(object):
                     if early_stop_count > early_stop_tolerance:
                         print("Early Stopping...")
                         break
-
+        
+        # Save the best weights and return them with all the training data
         self.model.load_state_dict(best_model_weights)
 
         return self.model, best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
     
-    def train_loop(self, current_epoch):
+    def train(self, current_epoch):
+
+        self.model.train()
 
         losses = []
         accuracy = []
@@ -192,7 +195,7 @@ class Experiment(object):
 
         return losses, accuracy, mean_iou_scores
 
-    def val_loop(self, current_epoch):
+    def val(self, current_epoch):
 
         self.model.eval() # Put in eval mode (disables batchnorm/dropout) !
         
@@ -208,11 +211,13 @@ class Experiment(object):
                 output = self.model(input)
                 loss = self.criterion(output, label)
                 losses.append(loss.item())
+
                 _, pred = torch.max(output, dim=1)
                 acc = util.pixel_acc(pred, label)
                 accuracy.append(acc)
                 iou_score = util.iou(pred, label)
                 mean_iou_scores.append(iou_score)
+
             loss_at_epoch = np.mean(losses)
             iou_at_epoch = np.mean(mean_iou_scores)
             acc_at_epoch = np.mean(accuracy)
@@ -220,8 +225,6 @@ class Experiment(object):
         print(f"Valid Loss at epoch: {current_epoch} is {loss_at_epoch}")
         print(f"Valid IoU at epoch: {current_epoch} is {iou_at_epoch}")
         print(f"Valid Pixel acc at epoch: {current_epoch} is {acc_at_epoch}")
-
-        self.model.train() # TURNING THE TRAIN MODE BACK ON TO ENABLE BATCHNORM/DROPOUT!!
 
         return loss_at_epoch, iou_at_epoch, acc_at_epoch
     
@@ -251,8 +254,6 @@ class Experiment(object):
         test_loss = np.mean(losses)
         test_iou = np.mean(mean_iou_scores)
         test_acc = np.mean(accuracy)
-
-        self.model.train()  #TURNING THE TRAIN MODE BACK ON TO ENABLE BATCHNORM/DROPOUT!!
 
         return test_loss, test_iou, test_acc
     
