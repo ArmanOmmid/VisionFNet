@@ -203,7 +203,8 @@ def main(args):
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
 
-                    print("Iteration [{}]".format(iter))
+                    if iter % 100 == 0:
+                        print("Iteration [{}]".format(iter))
 
                 if phase == 'train':
                     scheduler.step()
