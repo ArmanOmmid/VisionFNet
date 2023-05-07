@@ -7,6 +7,7 @@ import gc
 import random
 from collections import Counter
 import argparse
+import copy
 
 import torch
 import torch.nn as nn
@@ -39,9 +40,18 @@ class Experiment(object):
         ) -> None:
 
         self.model = model
+
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.test_loader = test_loader
+
+        self.data_loaders = {
+            'train': train_loader,
+            'val' : val_loader,
+            'test' : test_loader
+        }
+        self.dataset_sizes = {mode: len(loader.dataset) for mode, loader in self.data_loaders.items()}
+
         self.criterion = criterion
 
         self.optimizer = optimizer
@@ -49,12 +59,18 @@ class Experiment(object):
         self.device = device
 
         self.save_path = save_path
+
+        self.best_model_weights = None
     
     def train(self, num_epochs, early_stop_tolerance):
         
         best_iou_score = 0.0
         best_loss = 100.0
         early_stop_count = 0
+
+        best_val_accuracy = 0
+        self.best_model_weights = copy.deepcopy(self.model.state_dict())
+
         train_loss_per_epoch = []
         train_iou_per_epoch = []
         train_acc_per_epoch = []
@@ -70,6 +86,9 @@ class Experiment(object):
             print(f'Epoch {epoch}/{num_epochs - 1}')
             print('-' * 10)
 
+            if self.scheduler:
+                print(f'Learning Rate at epoch {epoch}: {self.scheduler.get_last_lr()[0]:0.9f}')
+
             ts = time.time()
             losses = []
             mean_iou_scores = []
@@ -77,9 +96,7 @@ class Experiment(object):
 
             losses, mean_iou_scores, accuracy = self.train_loop(epoch)
 
-            if self.scheduler:
-                print(f'Learning rate at epoch {epoch}: {self.scheduler.get_last_lr()[-1]:0.9f}')
-                self.scheduler.step()
+            self.scheduler.step()
                         
             with torch.no_grad():
                 train_loss_at_epoch = np.mean(losses)
@@ -124,12 +141,10 @@ class Experiment(object):
 
         for iter, (inputs, labels) in enumerate(self.train_loader):
 
-            # reset optimizer gradients
-            self.optimizer.zero_grad()
+            inputs =  inputs.to(self.device)
+            labels =  labels.to(self.device)
 
-            # both inputs and labels have to reside in the same device as the model's
-            inputs =  inputs.to(self.device)# transfer the input to the same device as the model's
-            labels =  labels.to(self.device) # transfer the labels to the same device as the model's
+            self.optimizer.zero_grad()
             
             if self.model.augment:
                 # due to crop transform
@@ -139,8 +154,7 @@ class Experiment(object):
                 labels = labels.view(-1, h, w)
             
             outputs = self.model(inputs) # Compute outputs. we will not need to transfer the output, it will be automatically in the same device as the model's!
-
-            loss = self.criterion(outputs, labels)  # calculate loss
+            loss = self.criterion(outputs, labels)
 
             with torch.no_grad():
                 losses.append(loss.item())
@@ -149,11 +163,8 @@ class Experiment(object):
                 accuracy.append(acc)
                 iou_score = util.iou(pred, labels)
                 mean_iou_scores.append(iou_score)
-                
-            # backpropagate
+            
             loss.backward()
-
-            # update the weights
             self.optimizer.step()
 
             if iter % 10 == 0:
