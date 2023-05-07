@@ -24,6 +24,7 @@ import src.arch as arch
 
 from tqdm.auto import tqdm
 from typing import Dict, List, Tuple
+from src.utility.data_info import get_task_type
 
 class Experiment(object):
 
@@ -46,6 +47,9 @@ class Experiment(object):
         self.val_loader = val_loader
         self.test_loader = test_loader
 
+        self.task = get_task_type(self.train_loader)
+        self.segmentation = bool(self.task == 'segmentation')
+
         self.data_loaders = {
             'train': train_loader,
             'val' : val_loader,
@@ -63,27 +67,28 @@ class Experiment(object):
         self.load_path = load_path
 
         if self.load_path:
-            self.load_path 
             self.model.load_state_dict(torch.load(self.load_path))
 
         self.best_model_weights = None
     
     def train(self, num_epochs, early_stop_tolerance):
         
-        best_iou_score = 0.0
-        best_loss = 100.0
+        best_loss = np.inf
         early_stop_count = 0
 
         best_val_accuracy = 0
         self.best_model_weights = copy.deepcopy(self.model.state_dict())
 
         train_loss_per_epoch = []
-        train_iou_per_epoch = []
         train_acc_per_epoch = []
         
         valid_loss_per_epoch = []
-        valid_iou_per_epoch = []
         valid_acc_per_epoch = []
+
+        if self.segmentation:
+            best_iou_score = 0.0
+            train_iou_per_epoch = []
+            valid_iou_per_epoch = []
         
         for epoch in range(num_epochs):
             print(f'Epoch {epoch}/{num_epochs - 1}')
@@ -94,10 +99,11 @@ class Experiment(object):
 
             ts = time.time()
             losses = []
-            mean_iou_scores = []
             accuracy = []
+            if self.segmentation:
+                mean_iou_scores = []
 
-            losses, mean_iou_scores, accuracy = self.train_loop(epoch)
+            losses, accuracy, mean_iou_scores = self.train_loop(epoch)
 
             self.scheduler.step()
                         
