@@ -98,7 +98,7 @@ class Experiment(object):
             print('-' * 20)
 
             if self.scheduler:
-                print(f'Learning Rate at epoch {epoch}: {self.scheduler.get_last_lr()[0]:0.9f}')
+                print("Learning Rate: {}".format(self.scheduler.get_last_lr()[0]))
 
             ts = time.time()
 
