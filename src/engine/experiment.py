@@ -76,6 +76,10 @@ class Experiment(object):
             accuracy = []
 
             losses, mean_iou_scores, accuracy = self.train_loop(epoch)
+
+            if self.scheduler:
+                print(f'Learning rate at epoch {epoch}: {self.scheduler.get_last_lr:0.9f}')
+                self.scheduler.step()
                         
             with torch.no_grad():
                 train_loss_at_epoch = np.mean(losses)
@@ -154,11 +158,6 @@ class Experiment(object):
 
             if iter % 10 == 0:
                 print("epoch{}, iter{}, loss: {}".format(current_epoch, iter, loss.item()))
-
-            if self.scheduler:
-                print(f'Learning rate at epoch {current_epoch}: {self.scheduler.get_last_lr:0.9f}')  # changes every epoch
-                # lr scheduler
-                self.scheduler.step()
 
         return losses, accuracy, mean_iou_scores
 
