@@ -112,7 +112,7 @@ class Experiment(object):
 
                 print("Finishing epoch {}, time elapsed {}".format(epoch, time.time() - ts))
 
-                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val()
+                valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
 
                 valid_loss_per_epoch.append(valid_loss_at_epoch)
                 valid_acc_per_epoch.append(valid_acc_at_epoch)
