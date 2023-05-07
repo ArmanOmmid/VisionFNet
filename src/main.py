@@ -147,6 +147,8 @@ def main(args):
     """ Learning Rate Scheduler """
     if scheduler:
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
+    else:
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
     def train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25):
         since = time.time()

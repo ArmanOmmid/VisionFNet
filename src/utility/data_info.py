@@ -13,8 +13,7 @@ def get_base_dataset(dataset):
 
 def get_dataset_name(dataset): # Infer this from the class folder name
     dataset = get_base_dataset(dataset)
-    print(dataset.__class__.__name__)
-    return str(dataset.__class__.__name__)
+    return dataset.__class__.__name__
 
 def get_task_type(dataset):
     if not isinstance(dataset, str):
