@@ -102,48 +102,46 @@ class Experiment(object):
             train_loss_at_epoch, train_acc_at_epoch, train_iou_at_epoch = self.train()
 
             self.scheduler.step()
-                        
-            with torch.no_grad():
 
-                train_loss_per_epoch.append(train_loss_at_epoch)
-                train_acc_per_epoch.append(train_acc_at_epoch)
-                if self.segmentation:
-                    train_iou_per_epoch.append(train_iou_at_epoch)
+            train_loss_per_epoch.append(train_loss_at_epoch)
+            train_acc_per_epoch.append(train_acc_at_epoch)
+            if self.segmentation:
+                train_iou_per_epoch.append(train_iou_at_epoch)
 
-                print("Finishing epoch {}, time elapsed {}".format(epoch, time.time() - ts))
+            print("Epoch {} | Time Elapsed: {}".format(epoch, time.time() - ts))
 
-                valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
+            valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
 
-                valid_loss_per_epoch.append(valid_loss_at_epoch)
-                valid_acc_per_epoch.append(valid_acc_at_epoch)
-                if self.segmentation:
-                    valid_iou_per_epoch.append(valid_iou_at_epoch)
+            valid_loss_per_epoch.append(valid_loss_at_epoch)
+            valid_acc_per_epoch.append(valid_acc_at_epoch)
+            if self.segmentation:
+                valid_iou_per_epoch.append(valid_iou_at_epoch)
 
-                print(f"Valid Loss:  {epoch} : {valid_loss_at_epoch}")
-                print(f"Valid Pixel: {epoch} : {valid_acc_at_epoch}")
-                print(f"Valid IoU:   {epoch} : {valid_iou_at_epoch}")
+            print(f"Valid Loss:  {epoch} : {valid_loss_at_epoch}")
+            print(f"Valid Pixel: {epoch} : {valid_acc_at_epoch}")
+            print(f"Valid IoU:   {epoch} : {valid_iou_at_epoch}")
 
-                # Decide criteria for saving model
-                save_model = False
-                if self.segmentation:
-                    if valid_iou_at_epoch > best_iou_score:
-                        best_iou_score = valid_loss_at_epoch
-                        save_model = True
-                else:
-                    if valid_acc_at_epoch > best_accuracy:
-                        best_accuracy = valid_acc_at_epoch
-                        save_model = True
+            # Decide criteria for saving model
+            save_model = False
+            if self.segmentation:
+                if valid_iou_at_epoch > best_iou_score:
+                    best_iou_score = valid_loss_at_epoch
+                    save_model = True
+            else:
+                if valid_acc_at_epoch > best_accuracy:
+                    best_accuracy = valid_acc_at_epoch
+                    save_model = True
 
-                # Save best model
-                if save_model:
-                    early_stop_count = 0
-                    torch.save(self.model.state_dict(), self.save_path)
-                    best_model_weights = copy.deepcopy(self.model.state_dict())
-                else:
-                    early_stop_count += 1
-                    if early_stop_count > early_stop_tolerance:
-                        print("Early Stopping...")
-                        break
+            # Save best model
+            if save_model:
+                early_stop_count = 0
+                torch.save(self.model.state_dict(), self.save_path)
+                best_model_weights = copy.deepcopy(self.model.state_dict())
+            else:
+                early_stop_count += 1
+                if early_stop_count > early_stop_tolerance:
+                    print("Early Stopping...")
+                    break
         
         # Save the best weights and return them with all the training data
         self.model.load_state_dict(best_model_weights)
