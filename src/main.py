@@ -259,13 +259,14 @@ def main(args):
     util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, name='Accuracy')
     util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, name='Intersection over Union')
     
+    print('-' * 20)
     test_loss, test_iou, test_acc = experiment.test()
     print(f"Test Loss is {test_loss}")
     print(f"Test IoU is {test_iou}")
     print(f"Test Pixel acc is {test_acc}")
     
     # ------ GET SAMPLE IMAGE FOR REPORT -------
-    test_sample_dataset = VOCSegmentation(data_path.rstrip('/') + '/' + "VOCSegmentation", year='2007', image_set='test', transform=sample_transform)
+    test_sample_dataset = VOCSegmentation(data_path.rstrip('/') + '/' + "VOCSegmentation", year='2007', download=False, image_set='test', transform=sample_transform)
     test_sample_loader = DataLoader(dataset=test_sample_dataset, batch_size=1, shuffle=False)
     model.eval()
     # untransformed original image

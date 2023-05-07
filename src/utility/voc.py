@@ -6,7 +6,7 @@ from torch.utils import data
 import numpy as np
 
 class VOCSegmentation(data.Dataset):
-    def __init__(self, root, image_set, download, transform, year='2007'):
+    def __init__(self, root, download, image_set, transform, year='2007'):
 
         assert image_set in ['train', 'val', 'test']
 
