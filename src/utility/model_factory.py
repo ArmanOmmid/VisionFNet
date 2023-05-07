@@ -6,7 +6,7 @@ from collections import Counter
 
 import torch
 import torch.nn as nn
-from torchvision.models import resnet50, ResNet50_Weights
+import torchvision
 
 import src.utility.util as util
 import src.arch as arch
@@ -37,7 +37,6 @@ def build_model(architecture, classes, augment):
 
     elif architecture == 'transfer':
         model = arch.transfer_fcn.Resnet_FCN(n_class=class_count)
-        attr.transfer = True
 
     elif architecture == 'custom1':
         model = arch.customfcn1.Custom_FCN1(n_class=class_count)
@@ -46,10 +45,9 @@ def build_model(architecture, classes, augment):
         model = arch.customfcn2.Custom_FCN2(n_class=class_count)
     
     elif architecture == 'resnet':
-        weights = ResNet50_Weights.DEFAULT
-        model = resnet50(weights=weights) # /Users/armanommid/.cache/torch/hub/checkpoints/resnet50-11ad3fa6.pth
+        weights = torchvision.models.ResNet50_Weights.DEFAULT
+        model = torchvision.models.resnet50(weights=weights) # /Users/armanommid/.cache/torch/hub/checkpoints/resnet50-11ad3fa6.pth
         for param in model.parameters():
-            # print(param)
             param.requires_grad = False
         in_features = model.fc.in_features
         model.fc = nn.Sequential(
@@ -57,7 +55,16 @@ def build_model(architecture, classes, augment):
         )
 
         model_base_transform = weights.transforms
-        attr.transfer = True
+
+    elif architecture == 'vit':
+        weights = torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
+        model = torchvision.models.vit_b_16(weights=weights)
+        for param in model.parameters():
+            param.requires_grad = False
+        model.heads = nn.Sequential(
+            nn.LayerNorm(normalized_shape=768),
+            nn.Linear(in_features=768, out_features=class_count)
+        )
 
     else:
         model = arch.basic_fcn.FCN(n_class=class_count)
