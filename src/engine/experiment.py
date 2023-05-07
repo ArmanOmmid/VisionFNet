@@ -88,7 +88,7 @@ class Experiment(object):
 
                 print("Finishing epoch {}, time elapsed {}".format(epoch, time.time() - ts))
 
-                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val(epoch)
+                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val_loop(epoch)
 
                 valid_loss_per_epoch.append(valid_loss_at_epoch)
                 valid_iou_per_epoch.append(valid_iou_at_epoch)
@@ -156,7 +156,7 @@ class Experiment(object):
                 print("epoch{}, iter{}, loss: {}".format(current_epoch, iter, loss.item()))
 
             if self.scheduler:
-                print(f'Learning rate at epoch {current_epoch}: {self.scheduler.get_lr()[0]:0.9f}')  # changes every epoch
+                print(f'Learning rate at epoch {current_epoch}: {self.scheduler.get_last_lr:0.9f}')  # changes every epoch
                 # lr scheduler
                 self.scheduler.step()
 
