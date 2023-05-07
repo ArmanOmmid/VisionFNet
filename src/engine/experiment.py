@@ -109,7 +109,7 @@ class Experiment(object):
 
             valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
 
-            print("Epoch {} | Time Elapsed: {} | Loss: {}".format(epoch, time.time() - ts), valid_loss_at_epoch)
+            print("Epoch {} | Time Elapsed: {} | Loss: {}".format(epoch, (time.time() - ts), valid_loss_at_epoch))
             
             # Append results 
             train_loss_per_epoch.append(train_loss_at_epoch)
