@@ -57,3 +57,4 @@ def VOC_Transform(augment=False):
 def sample_transform(image, mask):
     image = torch.from_numpy(np.array(image, dtype=np.int32)).long()
     mask = torch.from_numpy(np.array(mask, dtype=np.int32)).long()
+    return image, mask
