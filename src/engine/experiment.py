@@ -73,7 +73,7 @@ class Experiment(object):
     
     def train(self, num_epochs, early_stop_tolerance):
         
-        best_loss = np.inf
+        best_loss = 100.0
         early_stop_count = 0
 
         best_val_accuracy = 0
