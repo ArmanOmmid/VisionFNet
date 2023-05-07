@@ -91,8 +91,9 @@ class Experiment(object):
             valid_iou_per_epoch = []
         
         for epoch in range(num_epochs):
+            print('\n', '-' * 20)
             print(f'Epoch {epoch}/{num_epochs - 1}')
-            print('-' * 10)
+            print('-' * 20)
 
             if self.scheduler:
                 print(f'Learning Rate at epoch {epoch}: {self.scheduler.get_last_lr()[0]:0.9f}')
@@ -117,9 +118,9 @@ class Experiment(object):
             if self.segmentation:
                 valid_iou_per_epoch.append(valid_iou_at_epoch)
 
-            print(f"Valid Loss:  {epoch} : {valid_loss_at_epoch}")
-            print(f"Valid Pixel: {epoch} : {valid_acc_at_epoch}")
-            print(f"Valid IoU:   {epoch} : {valid_iou_at_epoch}")
+            # print(f"Valid Loss:  {epoch} : {valid_loss_at_epoch}")
+            # print(f"Valid Pixel: {epoch} : {valid_acc_at_epoch}")
+            # print(f"Valid IoU:   {epoch} : {valid_iou_at_epoch}")
 
             # Decide criteria for saving model
             save_model = False
