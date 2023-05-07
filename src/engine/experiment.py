@@ -195,11 +195,15 @@ class Experiment(object):
             if iter % 100 == 0:
                 print("Iteration[{} / {}] | Loss: {}".format(iter, int(dataset_size/self.train_loader.batch_size), loss.item()))
 
-        train_loss_at_epoch = np.mean(losses)
-        train_acc_at_epoch = np.mean(accuracy)
-        train_iou_at_epoch = np.mean(mean_iou_scores)
+        if self.classification:
+            loss_at_epoch = running_loss / dataset_size
+            acc_at_epoch = running_corrects.double() /dataset_size
+        elif self.segmentation:
+            loss_at_epoch = np.mean(losses)
+            acc_at_epoch = np.mean(accuracy)
+            iou_at_epoch = np.mean(mean_iou_scores)
 
-        return train_loss_at_epoch, train_acc_at_epoch, train_iou_at_epoch
+        return loss_at_epoch, acc_at_epoch, iou_at_epoch
 
     def val(self):
 
@@ -283,12 +287,12 @@ class Experiment(object):
                 mean_iou_scores.append(iou_score)
 
         if self.classification:
-            test_loss = running_loss / dataset_size
-            test_acc = running_corrects.double() /dataset_size
+            loss_at_epoch = running_loss / dataset_size
+            acc_at_epoch = running_corrects.double() /dataset_size
         elif self.segmentation:
-            test_loss = np.mean(losses)
-            test_acc = np.mean(accuracy)
-            test_iou = np.mean(mean_iou_scores)
+            loss_at_epoch = np.mean(losses)
+            acc_at_epoch = np.mean(accuracy)
+            iou_at_epoch = np.mean(mean_iou_scores)
 
-        return test_loss, test_acc, test_iou
+        return loss_at_epoch, acc_at_epoch, iou_at_epoch
     
