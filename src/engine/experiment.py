@@ -127,6 +127,10 @@ class Experiment(object):
                 if self.segmentation:
                     valid_iou_per_epoch.append(valid_iou_at_epoch)
 
+                print(f"Valid Loss:  {epoch} : {valid_loss_at_epoch}")
+                print(f"Valid Pixel: {epoch} : {valid_acc_at_epoch}")
+                print(f"Valid IoU:   {epoch} : {valid_iou_at_epoch}")
+
                 # Decide criteria for saving model
                 save_model = False
                 if self.segmentation:
@@ -181,6 +185,7 @@ class Experiment(object):
 
             with torch.no_grad():
                 losses.append(loss.item())
+
                 _, pred = torch.max(outputs, dim=1)
                 acc = util.pixel_acc(pred, labels)
                 accuracy.append(acc)
@@ -204,14 +209,15 @@ class Experiment(object):
         accuracy = []
 
         with torch.no_grad(): # we don't need to calculate the gradient in the validation/testing
+
             for iter, (input, label) in enumerate(self.val_loader):
                 input = input.to(self.device)
                 label = label.to(self.device)
                 
                 output = self.model(input)
                 loss = self.criterion(output, label)
-                losses.append(loss.item())
 
+                losses.append(loss.item())
                 _, pred = torch.max(output, dim=1)
                 acc = util.pixel_acc(pred, label)
                 accuracy.append(acc)
@@ -219,14 +225,10 @@ class Experiment(object):
                 mean_iou_scores.append(iou_score)
 
             loss_at_epoch = np.mean(losses)
-            iou_at_epoch = np.mean(mean_iou_scores)
             acc_at_epoch = np.mean(accuracy)
+            iou_at_epoch = np.mean(mean_iou_scores)
 
-        print(f"Valid Loss at epoch: {current_epoch} is {loss_at_epoch}")
-        print(f"Valid IoU at epoch: {current_epoch} is {iou_at_epoch}")
-        print(f"Valid Pixel acc at epoch: {current_epoch} is {acc_at_epoch}")
-
-        return loss_at_epoch, iou_at_epoch, acc_at_epoch
+        return loss_at_epoch, acc_at_epoch, iou_at_epoch
     
     def test(self):
 
@@ -244,6 +246,7 @@ class Experiment(object):
 
                 output = self.model(input)
                 loss = self.criterion(output, label)
+
                 losses.append(loss.item())
                 _, pred = torch.max(output, dim=1)
                 acc = util.pixel_acc(pred, label)
@@ -255,5 +258,5 @@ class Experiment(object):
         test_iou = np.mean(mean_iou_scores)
         test_acc = np.mean(accuracy)
 
-        return test_loss, test_iou, test_acc
+        return test_loss, test_acc, test_iou
     

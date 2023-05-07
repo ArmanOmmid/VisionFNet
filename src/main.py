@@ -261,10 +261,10 @@ def main(args):
     util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, name='Intersection over Union')
     
     print('-' * 20)
-    test_loss, test_iou, test_acc = experiment.test()
-    print(f"Test Loss is {test_loss}")
-    print(f"Test IoU is {test_iou}")
-    print(f"Test Pixel acc is {test_acc}")
+    test_loss, test_acc, test_iou = experiment.test()
+    print(f"Test Loss {test_loss}")
+    print(f"Test Accuracy {test_acc}")
+    print(f"Test IoU {test_iou}")
     
     # ------ GET SAMPLE IMAGE FOR REPORT -------
     test_sample_dataset = VOCSegmentation(data_path.rstrip('/') + '/' + "VOCSegmentation", year='2007', download=False, image_set='test', transform=sample_transform)
