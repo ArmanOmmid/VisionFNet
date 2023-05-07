@@ -48,6 +48,7 @@ class Experiment(object):
         self.test_loader = test_loader
 
         self.task = get_task_type(self.train_loader)
+        self.classification = bool(self.task == 'classification')
         self.segmentation = bool(self.task == 'segmentation')
 
         self.data_loaders = {
@@ -104,14 +105,15 @@ class Experiment(object):
 
             self.scheduler.step()
 
+            valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
+
+            print("Epoch {} | Time Elapsed: {}".format(epoch, time.time() - ts))
+            
+            # Append results 
             train_loss_per_epoch.append(train_loss_at_epoch)
             train_acc_per_epoch.append(train_acc_at_epoch)
             if self.segmentation:
                 train_iou_per_epoch.append(train_iou_at_epoch)
-
-            print("Epoch {} | Time Elapsed: {}".format(epoch, time.time() - ts))
-
-            valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
 
             valid_loss_per_epoch.append(valid_loss_at_epoch)
             valid_acc_per_epoch.append(valid_acc_at_epoch)
@@ -151,11 +153,17 @@ class Experiment(object):
     
     def train(self):
 
+        dataset_size = len(self.train_loader.dataset)
+
         self.model.train() # Turn train() back on in case it was turned off
 
-        losses = []
-        accuracy = []
-        mean_iou_scores = []
+        if self.classification:
+            running_loss = 0.0
+            running_corrects = 0.0
+        elif self.segmentation:
+            losses = []
+            accuracy = []
+            mean_iou_scores = []
 
         for iter, (inputs, labels) in enumerate(self.train_loader):
 
@@ -176,45 +184,63 @@ class Experiment(object):
                 loss.backward()
                 self.optimizer.step()
             
-            losses.append(loss.item())
-            _, pred = torch.max(outputs, dim=1)
-            acc = util.pixel_acc(pred, labels)
-            accuracy.append(acc)
-            iou_score = util.iou(pred, labels)
-            mean_iou_scores.append(iou_score)
-
-            train_loss_at_epoch = np.mean(losses)
-            train_acc_at_epoch = np.mean(accuracy)
-            train_iou_at_epoch = np.mean(mean_iou_scores)
+            if self.classification:
+                running_loss += loss.item() * inputs.size(0)
+                running_corrects += torch.sum(preds == labels.data)
+            elif self.segmentation:
+                losses.append(loss.item())
+                _, preds = torch.max(outputs, dim=1)
+                acc = util.pixel_acc(preds, labels)
+                accuracy.append(acc)
+                iou_score = util.iou(preds, labels)
+                mean_iou_scores.append(iou_score)
 
             if iter % 10 == 0:
                 print("Iteration[{}] | Loss: {}".format(iter, loss.item()))
+
+        train_loss_at_epoch = np.mean(losses)
+        train_acc_at_epoch = np.mean(accuracy)
+        train_iou_at_epoch = np.mean(mean_iou_scores)
 
         return train_loss_at_epoch, train_acc_at_epoch, train_iou_at_epoch
 
     def val(self):
 
+        dataset_size = len(self.val_loader.dataset)
+
         self.model.eval() # Put in eval mode (disables batchnorm/dropout) !
         
-        losses = []
-        accuracy = []
-        mean_iou_scores = []
+        if self.classification:
+            running_loss = 0.0
+            running_corrects = 0.0
+        elif self.segmentation:
+            losses = []
+            accuracy = []
+            mean_iou_scores = []
 
-        for iter, (input, label) in enumerate(self.val_loader):
-            input = input.to(self.device)
-            label = label.to(self.device)
+        for iter, (inputs, labels) in enumerate(self.val_loader):
+            inputs = inputs.to(self.device)
+            labels = labels.to(self.device)
             
             with torch.no_grad():
-                output = self.model(input)
-                loss = self.criterion(output, label)
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, labels)
 
-            losses.append(loss.item())
-            _, pred = torch.max(output, dim=1)
-            acc = util.pixel_acc(pred, label)
-            accuracy.append(acc)
-            iou_score = util.iou(pred, label)
-            mean_iou_scores.append(iou_score)
+            if self.classification:
+                running_loss += loss.item() * inputs.size(0)
+                running_corrects += torch.sum(preds == labels.data)
+            elif self.segmentation:
+                losses.append(loss.item())
+                _, preds = torch.max(outputs, dim=1)
+                acc = util.pixel_acc(preds, labels)
+                accuracy.append(acc)
+                iou_score = util.iou(preds, labels)
+                mean_iou_scores.append(iou_score)
 
+        if self.classification:
+            loss_at_epoch = running_loss / dataset_size
+            acc_at_epoch = running_corrects.double() /dataset_size
+        elif self.segmentation:
             loss_at_epoch = np.mean(losses)
             acc_at_epoch = np.mean(accuracy)
             iou_at_epoch = np.mean(mean_iou_scores)
@@ -228,30 +254,44 @@ class Experiment(object):
         if data_loader is None:
             test_loader = self.test_loader
 
+        dataset_size = len(test_loader.dataset)
+
         model.eval()  # Put in eval mode (disables batchnorm/dropout) !
 
-        losses = []
-        accuracy = []
-        mean_iou_scores = []
+        if self.classification:
+            running_loss = 0.0
+            running_corrects = 0.0
+        elif self.segmentation:
+            losses = []
+            accuracy = []
+            mean_iou_scores = []
 
-        for iter, (input, label) in enumerate(test_loader):
-            input = input.to(self.device)
-            label = label.to(self.device)
+        for iter, (inputs, labels) in enumerate(test_loader):
+            inputs = inputs.to(self.device)
+            labels = labels.to(self.device)
 
             with torch.no_grad():
-                output = model(input)
-                loss = self.criterion(output, label)
+                outputs = model(inputs)
+                loss = self.criterion(outputs, labels)
 
-            losses.append(loss.item())
-            _, pred = torch.max(output, dim=1)
-            acc = util.pixel_acc(pred, label)
-            accuracy.append(acc)
-            iou_score = util.iou(pred, label)
-            mean_iou_scores.append(iou_score)
+            if self.classification:
+                running_loss += loss.item() * inputs.size(0)
+                running_corrects += torch.sum(preds == labels.data)
+            elif self.segmentation:
+                losses.append(loss.item())
+                _, preds = torch.max(outputs, dim=1)
+                acc = util.pixel_acc(preds, labels)
+                accuracy.append(acc)
+                iou_score = util.iou(preds, labels)
+                mean_iou_scores.append(iou_score)
 
+        if self.classification:
+            test_loss = running_loss / dataset_size
+            test_acc = running_corrects.double() /dataset_size
+        elif self.segmentation:
             test_loss = np.mean(losses)
-            test_iou = np.mean(mean_iou_scores)
             test_acc = np.mean(accuracy)
+            test_iou = np.mean(mean_iou_scores)
 
         return test_loss, test_acc, test_iou
     
