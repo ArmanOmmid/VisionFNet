@@ -152,7 +152,7 @@ class Experiment(object):
     
     def train(self):
 
-        self.model.train()
+        self.model.train() # Turn train() back on in case it was turned off
 
         losses = []
         accuracy = []
@@ -162,30 +162,27 @@ class Experiment(object):
 
             inputs =  inputs.to(self.device)
             labels =  labels.to(self.device)
-
-            self.optimizer.zero_grad()
             
             if self.model.augment:
-                # due to crop transform
                 b, ncrop, c, h, w = inputs.size()
                 inputs = inputs.view(-1, c, h, w)
                 b, ncrop, h, w = labels.size()
                 labels = labels.view(-1, h, w)
             
-            outputs = self.model(inputs)
-            loss = self.criterion(outputs, labels)
+            self.optimizer.zero_grad()
+            with torch.enable_grad(): # torch.set_grad_enabled(True)
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, labels)
 
-            loss.backward()
-            self.optimizer.step()
-
-            with torch.no_grad():
-                losses.append(loss.item())
-
-                _, pred = torch.max(outputs, dim=1)
-                acc = util.pixel_acc(pred, labels)
-                accuracy.append(acc)
-                iou_score = util.iou(pred, labels)
-                mean_iou_scores.append(iou_score)
+                loss.backward()
+                self.optimizer.step()
+            
+            losses.append(loss.item())
+            _, pred = torch.max(outputs, dim=1)
+            acc = util.pixel_acc(pred, labels)
+            accuracy.append(acc)
+            iou_score = util.iou(pred, labels)
+            mean_iou_scores.append(iou_score)
 
             train_loss_at_epoch = np.mean(losses)
             train_acc_at_epoch = np.mean(accuracy)
@@ -201,24 +198,23 @@ class Experiment(object):
         self.model.eval() # Put in eval mode (disables batchnorm/dropout) !
         
         losses = []
-        mean_iou_scores = []
         accuracy = []
+        mean_iou_scores = []
 
-        with torch.no_grad(): # we don't need to calculate the gradient in the validation/testing
-
-            for iter, (input, label) in enumerate(self.val_loader):
-                input = input.to(self.device)
-                label = label.to(self.device)
-                
+        for iter, (input, label) in enumerate(self.val_loader):
+            input = input.to(self.device)
+            label = label.to(self.device)
+            
+            with torch.no_grad():
                 output = self.model(input)
                 loss = self.criterion(output, label)
 
-                losses.append(loss.item())
-                _, pred = torch.max(output, dim=1)
-                acc = util.pixel_acc(pred, label)
-                accuracy.append(acc)
-                iou_score = util.iou(pred, label)
-                mean_iou_scores.append(iou_score)
+            losses.append(loss.item())
+            _, pred = torch.max(output, dim=1)
+            acc = util.pixel_acc(pred, label)
+            accuracy.append(acc)
+            iou_score = util.iou(pred, label)
+            mean_iou_scores.append(iou_score)
 
             loss_at_epoch = np.mean(losses)
             acc_at_epoch = np.mean(accuracy)
@@ -226,33 +222,37 @@ class Experiment(object):
 
         return loss_at_epoch, acc_at_epoch, iou_at_epoch
     
-    def test(self):
+    def test(self, model=None, data_loader=None):
 
-        self.model.eval()  # Put in eval mode (disables batchnorm/dropout) !
+        if model is None:
+            model = self.model
+        if data_loader is None:
+            test_loader = self.test_loader
+
+        model.eval()  # Put in eval mode (disables batchnorm/dropout) !
 
         losses = []
-        mean_iou_scores = []
         accuracy = []
+        mean_iou_scores = []
 
-        with torch.no_grad():  # we don't need to calculate the gradient in the validation/testing
+        for iter, (input, label) in enumerate(test_loader):
+            input = input.to(self.device)
+            label = label.to(self.device)
 
-            for iter, (input, label) in enumerate(self.test_loader):
-                input = input.to(self.device)
-                label = label.to(self.device)
-
-                output = self.model(input)
+            with torch.no_grad():
+                output = model(input)
                 loss = self.criterion(output, label)
 
-                losses.append(loss.item())
-                _, pred = torch.max(output, dim=1)
-                acc = util.pixel_acc(pred, label)
-                accuracy.append(acc)
-                iou_score = util.iou(pred, label)
-                mean_iou_scores.append(iou_score)
+            losses.append(loss.item())
+            _, pred = torch.max(output, dim=1)
+            acc = util.pixel_acc(pred, label)
+            accuracy.append(acc)
+            iou_score = util.iou(pred, label)
+            mean_iou_scores.append(iou_score)
 
-        test_loss = np.mean(losses)
-        test_iou = np.mean(mean_iou_scores)
-        test_acc = np.mean(accuracy)
+            test_loss = np.mean(losses)
+            test_iou = np.mean(mean_iou_scores)
+            test_acc = np.mean(accuracy)
 
         return test_loss, test_acc, test_iou
     
