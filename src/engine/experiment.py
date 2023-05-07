@@ -36,7 +36,8 @@ class Experiment(object):
             optimizer: torch.optim.Optimizer,
             scheduler: torch.optim.lr_scheduler.LRScheduler,
             device: torch.device,
-            save_path: str,
+            save_path = False,
+            load_path = False
         ) -> None:
 
         self.model = model
@@ -59,6 +60,11 @@ class Experiment(object):
         self.device = device
 
         self.save_path = save_path
+        self.load_path = load_path
+
+        if self.load_path:
+            self.load_path 
+            self.model.load_state_dict(torch.load(self.load_path))
 
         self.best_model_weights = None
     
@@ -78,9 +84,6 @@ class Experiment(object):
         valid_loss_per_epoch = []
         valid_iou_per_epoch = []
         valid_acc_per_epoch = []
-
-        if os.path.exists(self.save_path):
-            self.model.load_state_dict(torch.load(self.save_path))
         
         for epoch in range(num_epochs):
             print(f'Epoch {epoch}/{num_epochs - 1}')
