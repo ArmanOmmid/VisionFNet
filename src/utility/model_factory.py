@@ -24,7 +24,7 @@ def get_weight_initializer():
             if hasattr(module, 'bias') and module.bias is not None and module.bias.requires_grad:
                 torch.nn.init.normal_(module.bias.data) # xavier not applicable for biases
         except Exception as E:
-            print(module.__class__.__name__)
+            print("Invalid Layer (Please Register It): ", module.__class__.__name__)
             raise E
     return init_weights
 
