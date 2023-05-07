@@ -33,9 +33,9 @@ class Experiment(object):
             test_loader: torch.utils.data.DataLoader,
             criterion: torch.nn.Module, 
             optimizer: torch.optim.Optimizer,
+            scheduler: torch.optim.lr_scheduler.LRScheduler,
             device: torch.device,
             save_path: str,
-            scheduler=False # torch.optim.lr_scheduler.LRScheduler
         ) -> None:
 
         self.model = model
