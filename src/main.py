@@ -157,7 +157,7 @@ def main(args):
     else:
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1) # LR = gamma * LR every 7 epochs
 
-    def train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25):
+    def train_model(model, criterion, optimizer, scheduler, data_loaders, batch_size, device, num_epochs=25):
         since = time.time()
 
         dataset_sizes = {mode: len(loader.dataset) for mode, loader in data_loaders.items()}
@@ -204,7 +204,7 @@ def main(args):
                     running_corrects += torch.sum(preds == labels.data)
 
                     if iter % 100 == 0:
-                        print("Iteration [{}]".format(iter))
+                        print("Iteration [{}/{}]".format(iter, int(dataset_sizes[phase]/batch_size)))
 
                 if phase == 'train':
                     scheduler.step()
@@ -229,7 +229,7 @@ def main(args):
         model.load_state_dict(best_model_wts)
         return model
     
-    model = train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25)
+    model = train_model(model, criterion, optimizer, scheduler, data_loaders, batch_size, device, num_epochs=25)
 
     """ Experiment """
     print("Initializing Experiments")
