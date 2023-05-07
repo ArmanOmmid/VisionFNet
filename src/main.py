@@ -9,6 +9,7 @@ from collections import Counter
 import argparse
 import dill
 import pickle
+import copy
 
 import torch
 import torch.nn as nn
@@ -117,6 +118,12 @@ def main(args):
     """ Data """
     train_loader, val_loader, test_loader, class_names = prepare_loaders(data_path, dataset_name, transform_info=transform_info, 
                                                                          batch_size=batch_size, num_workers=num_workers, download=download)
+    data_loaders = {
+        'train': train_loader,
+        'val' : val_loader,
+        'test' : test_loader
+    }
+    dataset_sizes = {mode: len(loader.dataset) for mode, loader in data_loaders.items()}
 
     if weighted_loss:
         class_weights = get_class_weights(train_loader, len(class_names)).to(device)
@@ -132,22 +139,86 @@ def main(args):
         criterion = nn.CrossEntropyLoss()
 
     """ Model """
-    model = build_model(architecture, len(class_names), augment)
+    model, model_base_transform = build_model(architecture, len(class_names), augment)
     model = model.to(device) # transfer the model to the device
 
     """ Optimizer """
-    if model.transfer:
-        params_to_update = []
-        for name, param in model.named_parameters():
-            if param.requires_grad == True:
-                params_to_update.append(param)
-    else:
-        params_to_update = model.parameters()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=0.001)
+    learnable_parameters = [param for param in model.parameters() if param.requires_grad]
+    optimizer = torch.optim.Adam(learnable_parameters, lr=learning_rate, weight_decay=0.001)
 
     """ Learning Rate Scheduler """
     if scheduler:
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
+
+    def train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25):
+        since = time.time()
+
+        dataset_sizes = {mode: len(loader.dataset) for mode, loader in data_loaders.items()}
+
+        best_model_wts = copy.deepcopy(model.state_dict())
+        best_acc = 0.0
+
+        for epoch in range(num_epochs):
+            print(f'Epoch {epoch}/{num_epochs - 1}')
+            print('-' * 10)
+
+            # Each epoch has a training and validation phase
+            for phase in ['train', 'val']:
+                if phase == 'train':
+                    model.train()  # Set model to training mode
+                else:
+                    model.eval()   # Set model to evaluate mode
+
+                running_loss = 0.0
+                running_corrects = 0
+
+                # Iterate over data.
+                for inputs, labels in data_loaders[phase]:
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
+
+                    # zero the parameter gradients
+                    optimizer.zero_grad()
+
+                    # forward
+                    # track history if only in train
+                    with torch.set_grad_enabled(phase == 'train'):
+                        outputs = model(inputs)
+                        _, preds = torch.max(outputs, 1)
+                        loss = criterion(outputs, labels)
+
+                        # backward + optimize only if in training phase
+                        if phase == 'train':
+                            loss.backward()
+                            optimizer.step()
+
+                    # statistics
+                    running_loss += loss.item() * inputs.size(0)
+                    running_corrects += torch.sum(preds == labels.data)
+                if phase == 'train':
+                    scheduler.step()
+
+                epoch_loss = running_loss / dataset_sizes[phase]
+                epoch_acc = running_corrects.double() / dataset_sizes[phase]
+
+                print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
+
+                # deep copy the model
+                if phase == 'val' and epoch_acc > best_acc:
+                    best_acc = epoch_acc
+                    best_model_wts = copy.deepcopy(model.state_dict())
+
+            print()
+
+            time_elapsed = time.time() - since
+            print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
+            print(f'Best val Acc: {best_acc:4f}')
+
+            # load best model weights
+            model.load_state_dict(best_model_wts)
+            return model
+    
+    model = train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25)
 
     """ Experiment """
     print("Initializing Experiments")

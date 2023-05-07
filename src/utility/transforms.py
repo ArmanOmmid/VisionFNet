@@ -14,6 +14,9 @@ import numpy as np
 def EnsureRGB(x): # torch.transforms.Lambda can't be pickled : transforms.Lambda(lambda x: (x.repeat(3, 1, 1) if x.size(0)==1 else x))
     return x.repeat(3, 1, 1) if x.size(0)==1 else x
 
+def ConvertRGB(x): # torch.transforms.Lambda can't be pickled : transforms.Lambda(lambda x: x.convert('RGB')), # Turns to RGB
+    return x.convert('RGB')
+
 def ViT_Transform(image_size):
     ViT_Transform = transforms.Compose([
         transforms.Resize((image_size, image_size)),

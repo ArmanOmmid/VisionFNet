@@ -6,20 +6,20 @@ from collections import Counter
 
 import torch
 import torch.nn as nn
+from torchvision.models import resnet50, ResNet50_Weights
 
 import src.utility.util as util
 import src.arch as arch
 
-def get_weight_initializer(transfer):
+def get_weight_initializer():
     def init_weights(module):
-        if transfer:
-            if isinstance(module, nn.ConvTranspose2d):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
-        else:
-            if isinstance(module, nn.Conv2d) or isinstance(module, nn.ConvTranspose2d):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                torch.nn.init.normal_(module.bias.data) #xavier not applicable for biases
+        # children_size = len([None for _ in module.children()]) # Its a non-container module if this is 0; but we don't need this
+        # module_name = module.__class__.__name__ # For if you want to check which module this is 
+        # list(module.parameters()) # This will list out the associated parameters. For non-containers, this is usually between 0-2 (weights and bias)
+        if hasattr(module, 'weight') and module.weight is not None and module.weight.requires_grad:
+            torch.nn.init.xavier_uniform_(module.weight.data)
+        if hasattr(module, 'bias') and module.bias is not None and module.bias.requires_grad:
+            torch.nn.init.normal_(module.bias.data) # xavier not applicable for biases
     return init_weights
 
 def build_model(architecture, classes, augment):
@@ -27,9 +27,10 @@ def build_model(architecture, classes, augment):
     class_count = classes if isinstance(classes, int) else len(classes)
 
     attr = util.Attributes(
-        transfer = False,
         augment = augment
     )
+
+    model_base_transform = None
 
     if architecture == 'unet':
         model = arch.unet.UNet(n_class=class_count)
@@ -43,13 +44,27 @@ def build_model(architecture, classes, augment):
 
     elif architecture == 'custom2':
         model = arch.customfcn2.Custom_FCN2(n_class=class_count)
+    
+    elif architecture == 'resnet':
+        weights = ResNet50_Weights.DEFAULT
+        model = resnet50(weights=weights) # /Users/armanommid/.cache/torch/hub/checkpoints/resnet50-11ad3fa6.pth
+        for param in model.parameters():
+            # print(param)
+            param.requires_grad = False
+        in_features = model.fc.in_features
+        model.fc = nn.Sequential(
+            nn.Linear(in_features, class_count)
+        )
+
+        model_base_transform = weights.transforms
+        attr.transfer = True
 
     else:
         model = arch.basic_fcn.FCN(n_class=class_count)
 
     attr(model)
 
-    init_weights = get_weight_initializer(model.transfer)
+    init_weights = get_weight_initializer()
     model.apply(init_weights)
 
-    return model
+    return model, model_base_transform
