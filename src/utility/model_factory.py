@@ -16,7 +16,7 @@ def get_weight_initializer():
         # children_size = len([None for _ in module.children()]) # Its a non-container module if this is 0; but we don't need this
         # module_name = module.__class__.__name__ # For if you want to check which module this is 
         # list(module.parameters()) # This will list out the associated parameters. For non-containers, this is usually between 0-2 (weights and bias)
-        invalid_layers = ["LayerNorm"]
+        invalid_layers = ["BatchNorm", "LayerNorm"]
         if module.__class__.__name__ in invalid_layers: return
         try:
             if hasattr(module, 'weight') and module.weight is not None and module.weight.requires_grad:
