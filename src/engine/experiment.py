@@ -77,7 +77,7 @@ class Experiment(object):
 
         best_loss = 100.0
         best_accuracy = 0.0
-        self.best_model_weights = copy.deepcopy(self.model.state_dict())
+        best_model_weights = copy.deepcopy(self.model.state_dict())
 
         train_loss_per_epoch = []
         train_acc_per_epoch = []
@@ -127,28 +127,31 @@ class Experiment(object):
                 if self.segmentation:
                     valid_iou_per_epoch.append(valid_iou_at_epoch)
 
+                # Decide criteria for saving model
+                save_model = False
                 if self.segmentation:
-
                     if valid_iou_at_epoch > best_iou_score:
-                        best_iou_score = valid_iou_at_epoch
-                        # save the best model
+                        best_iou_score = valid_loss_at_epoch
+                        save_model = True
+                else:
+                    if valid_acc_at_epoch > best_accuracy:
+                        best_accuracy = valid_acc_at_epoch
+                        save_model = True
 
-                    if valid_loss_at_epoch < best_loss:
-                        print(f"Valid Loss {valid_loss_at_epoch} < Best Loss {best_loss}. (Valid IOU {valid_iou_at_epoch}) Saving Model...")
-                        best_loss = valid_loss_at_epoch
-                        early_stop_count = 0
-                        torch.save(self.model.state_dict(), self.save_path)
-                        self.best_model_weights = copy.deepcopy(self.model.state_dict())
-                        
-                    else:
-                        early_stop_count += 1
-                        if early_stop_count > early_stop_tolerance:
-                            print("Early Stopping...")
-                            break
+                # Save best model
+                if save_model:
+                    early_stop_count = 0
+                    torch.save(self.model.state_dict(), self.save_path)
+                    best_model_weights = copy.deepcopy(self.model.state_dict())
+                else:
+                    early_stop_count += 1
+                    if early_stop_count > early_stop_tolerance:
+                        print("Early Stopping...")
+                        break
 
-        self.model.load_state_dict(torch.load(self.save_path))
-                
-        return best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
+        self.model.load_state_dict(best_model_weights)
+
+        return self.model, best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
     
     def train_loop(self, current_epoch):
 

@@ -246,6 +246,7 @@ def main(args):
 
     results = experiment.train(epochs, early_stop_tolerance)
     
+    model, \
     best_iou_score, \
     train_loss_per_epoch, \
     train_iou_per_epoch, \
