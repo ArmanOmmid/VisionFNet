@@ -57,8 +57,12 @@ parser.add_argument('-S', '--save_path', default=False,
                     help="Path to save model weights to")
 parser.add_argument('-L', '--load_path', default=False,
                     help="Path to load model weights from")
+
+
 parser.add_argument('--download', action='store_true',
                     help="Download dataset if it doesn't exist")
+parser.add_argument('--pretrained', action='store_true',
+                    help="Pretrained Weights")
 
 def main(args):
 
@@ -80,6 +84,7 @@ def main(args):
     """ Weights """
     save_path = args.save_path
     load_path = args.load_path
+    pretrained = args.pretrained
 
     """ Data and Path Preperations """
 
@@ -137,7 +142,7 @@ def main(args):
         criterion = nn.CrossEntropyLoss()
 
     """ Model """
-    model, model_base_transform = build_model(architecture, len(class_names), augment)
+    model, model_base_transform = build_model(architecture, len(class_names), pretrained, augment)
     model = model.to(device) # transfer the model to the device
 
     """ Optimizer """
@@ -148,7 +153,7 @@ def main(args):
     if scheduler:
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
     else:
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1) # LR = gamma * LR every 7 epochs
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1) # LR = gamma * LR every 7 epochs
 
     def train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25):
         since = time.time()
@@ -218,7 +223,7 @@ def main(args):
         model.load_state_dict(best_model_wts)
         return model
     
-    model = train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25)
+    # model = train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25)
 
     """ Experiment """
     print("Initializing Experiments")
@@ -229,9 +234,9 @@ def main(args):
         test_loader,
         criterion,
         optimizer,
+        scheduler,
         device,
-        save_path, 
-        scheduler=scheduler
+        save_path,
     )
 
     # experiment.val(0)  # show the accuracy before training

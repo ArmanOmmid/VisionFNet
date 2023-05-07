@@ -50,7 +50,7 @@ class Experiment(object):
 
         self.save_path = save_path
     
-    def train(self, epochs, early_stop_tolerance):
+    def train(self, num_epochs, early_stop_tolerance):
         
         best_iou_score = 0.0
         best_loss = 100.0
@@ -66,51 +66,16 @@ class Experiment(object):
         if os.path.exists(self.save_path):
             self.model.load_state_dict(torch.load(self.save_path))
         
-        for epoch in range(epochs):
+        for epoch in range(num_epochs):
+            print(f'Epoch {epoch}/{num_epochs - 1}')
+            print('-' * 10)
+
             ts = time.time()
             losses = []
             mean_iou_scores = []
             accuracy = []
-            for iter, (inputs, labels) in enumerate(self.train_loader):
-                # reset optimizer gradients
-                self.optimizer.zero_grad()
 
-                # both inputs and labels have to reside in the same device as the model's
-                inputs =  inputs.to(self.device)# transfer the input to the same device as the model's
-                labels =  labels.to(self.device) # transfer the labels to the same device as the model's
-                
-                if self.model.augment:
-                    # due to crop transform
-                    b, ncrop, c, h, w = inputs.size()
-                    inputs = inputs.view(-1, c, h, w)
-                    b, ncrop, h, w = labels.size()
-                    labels = labels.view(-1, h, w)
-                
-                outputs = self.model(inputs) # Compute outputs. we will not need to transfer the output, it will be automatically in the same device as the model's!
-
-                loss = self.criterion(outputs, labels)  # calculate loss
-
-                with torch.no_grad():
-                    losses.append(loss.item())
-                    _, pred = torch.max(outputs, dim=1)
-                    acc = util.pixel_acc(pred, labels)
-                    accuracy.append(acc)
-                    iou_score = util.iou(pred, labels)
-                    mean_iou_scores.append(iou_score)
-                    
-                # backpropagate
-                loss.backward()
-
-                # update the weights
-                self.optimizer.step()
-
-                if iter % 10 == 0:
-                    print("epoch{}, iter{}, loss: {}".format(epoch, iter, loss.item()))
-
-            if self.scheduler:
-                print(f'Learning rate at epoch {epoch}: {self.scheduler.get_lr()[0]:0.9f}')  # changes every epoch
-                # lr scheduler
-                self.scheduler.step()           
+            losses, mean_iou_scores, accuracy = self.train_loop(epoch)
                         
             with torch.no_grad():
                 train_loss_at_epoch = np.mean(losses)
@@ -147,7 +112,57 @@ class Experiment(object):
                 
         return best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
     
-    def val(self, current_epoch):
+    def train_loop(self, current_epoch):
+
+        losses = []
+        accuracy = []
+        mean_iou_scores = []
+
+        for iter, (inputs, labels) in enumerate(self.train_loader):
+
+            # reset optimizer gradients
+            self.optimizer.zero_grad()
+
+            # both inputs and labels have to reside in the same device as the model's
+            inputs =  inputs.to(self.device)# transfer the input to the same device as the model's
+            labels =  labels.to(self.device) # transfer the labels to the same device as the model's
+            
+            if self.model.augment:
+                # due to crop transform
+                b, ncrop, c, h, w = inputs.size()
+                inputs = inputs.view(-1, c, h, w)
+                b, ncrop, h, w = labels.size()
+                labels = labels.view(-1, h, w)
+            
+            outputs = self.model(inputs) # Compute outputs. we will not need to transfer the output, it will be automatically in the same device as the model's!
+
+            loss = self.criterion(outputs, labels)  # calculate loss
+
+            with torch.no_grad():
+                losses.append(loss.item())
+                _, pred = torch.max(outputs, dim=1)
+                acc = util.pixel_acc(pred, labels)
+                accuracy.append(acc)
+                iou_score = util.iou(pred, labels)
+                mean_iou_scores.append(iou_score)
+                
+            # backpropagate
+            loss.backward()
+
+            # update the weights
+            self.optimizer.step()
+
+            if iter % 10 == 0:
+                print("epoch{}, iter{}, loss: {}".format(current_epoch, iter, loss.item()))
+
+            if self.scheduler:
+                print(f'Learning rate at epoch {current_epoch}: {self.scheduler.get_lr()[0]:0.9f}')  # changes every epoch
+                # lr scheduler
+                self.scheduler.step()
+
+        return losses, accuracy, mean_iou_scores
+
+    def val_loop(self, current_epoch):
 
         self.model.eval() # Put in eval mode (disables batchnorm/dropout) !
         

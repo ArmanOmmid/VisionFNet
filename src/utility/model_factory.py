@@ -28,7 +28,7 @@ def get_weight_initializer():
             raise E
     return init_weights
 
-def build_model(architecture, classes, augment):
+def build_model(architecture, classes, pretrained=False, augment=False):
 
     class_count = classes if isinstance(classes, int) else len(classes)
 
@@ -51,7 +51,7 @@ def build_model(architecture, classes, augment):
         model = arch.customfcn2.Custom_FCN2(n_class=class_count)
     
     elif architecture == 'resnet':
-        weights = torchvision.models.ResNet50_Weights.DEFAULT
+        weights = None if not pretrained else torchvision.models.ResNet50_Weights.DEFAULT
         model = torchvision.models.resnet50(weights=weights) # /Users/armanommid/.cache/torch/hub/checkpoints/resnet50-11ad3fa6.pth
         for param in model.parameters():
             param.requires_grad = False
@@ -63,7 +63,7 @@ def build_model(architecture, classes, augment):
         model_base_transform = weights.transforms
 
     elif architecture == 'vit':
-        weights = torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
+        weights = None if not pretrained else torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
         model = torchvision.models.vit_b_16(weights=weights)
         for param in model.parameters():
             param.requires_grad = False
