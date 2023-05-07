@@ -98,29 +98,21 @@ class Experiment(object):
                 print(f'Learning Rate at epoch {epoch}: {self.scheduler.get_last_lr()[0]:0.9f}')
 
             ts = time.time()
-            losses = []
-            accuracy = []
-            if self.segmentation:
-                mean_iou_scores = []
 
-            losses, accuracy, mean_iou_scores = self.train(epoch)
+            train_loss_at_epoch, train_acc_at_epoch, train_iou_at_epoch = self.train()
 
             self.scheduler.step()
                         
             with torch.no_grad():
-                train_loss_at_epoch = np.mean(losses)
-                train_acc_at_epoch = np.mean(accuracy)
 
                 train_loss_per_epoch.append(train_loss_at_epoch)
                 train_acc_per_epoch.append(train_acc_at_epoch)
-
                 if self.segmentation:
-                    train_iou_at_epoch = np.mean(mean_iou_scores)
                     train_iou_per_epoch.append(train_iou_at_epoch)
 
                 print("Finishing epoch {}, time elapsed {}".format(epoch, time.time() - ts))
 
-                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val(epoch)
+                valid_loss_at_epoch, valid_iou_at_epoch, valid_acc_at_epoch = self.val()
 
                 valid_loss_per_epoch.append(valid_loss_at_epoch)
                 valid_acc_per_epoch.append(valid_acc_at_epoch)
@@ -158,7 +150,7 @@ class Experiment(object):
 
         return self.model, best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
     
-    def train(self, current_epoch):
+    def train(self):
 
         self.model.train()
 
@@ -180,8 +172,11 @@ class Experiment(object):
                 b, ncrop, h, w = labels.size()
                 labels = labels.view(-1, h, w)
             
-            outputs = self.model(inputs) # Compute outputs. we will not need to transfer the output, it will be automatically in the same device as the model's!
+            outputs = self.model(inputs)
             loss = self.criterion(outputs, labels)
+
+            loss.backward()
+            self.optimizer.step()
 
             with torch.no_grad():
                 losses.append(loss.item())
@@ -191,16 +186,17 @@ class Experiment(object):
                 accuracy.append(acc)
                 iou_score = util.iou(pred, labels)
                 mean_iou_scores.append(iou_score)
-            
-            loss.backward()
-            self.optimizer.step()
+
+            train_loss_at_epoch = np.mean(losses)
+            train_acc_at_epoch = np.mean(accuracy)
+            train_iou_at_epoch = np.mean(mean_iou_scores)
 
             if iter % 10 == 0:
-                print("epoch{}, iter{}, loss: {}".format(current_epoch, iter, loss.item()))
+                print("Iteration[{}] | Loss: {}".format(iter, loss.item()))
 
-        return losses, accuracy, mean_iou_scores
+        return train_loss_at_epoch, train_acc_at_epoch, train_iou_at_epoch
 
-    def val(self, current_epoch):
+    def val(self):
 
         self.model.eval() # Put in eval mode (disables batchnorm/dropout) !
         
