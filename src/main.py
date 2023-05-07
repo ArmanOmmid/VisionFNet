@@ -128,6 +128,8 @@ def main(args):
     }
     dataset_sizes = {mode: len(loader.dataset) for mode, loader in data_loaders.items()}
 
+    print("Dataset Size: \n", dataset_sizes)
+
     if weighted_loss:
         class_weights = get_class_weights(train_loader, len(class_names)).to(device)
 
