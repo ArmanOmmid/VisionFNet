@@ -97,14 +97,15 @@ class Experiment(object):
             print("Epoch {} / {}".format(epoch, num_epochs-1))
             print('-' * 20)
 
-            if self.scheduler:
+            if self.scheduler is not None:
                 print("Learning Rate: {}".format(self.scheduler.get_last_lr()[0]))
 
             ts = time.time()
 
             train_loss_at_epoch, train_acc_at_epoch, train_iou_at_epoch = self.train()
 
-            self.scheduler.step()
+            if self.scheduler is not None:
+                self.scheduler.step()
 
             valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
 
