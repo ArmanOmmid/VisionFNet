@@ -196,7 +196,7 @@ def main(args):
                         if phase == 'train':
                             loss.backward()
                             optimizer.step()
-                    
+
                     # statistics
                     running_loss += loss.item() * inputs.size(0)
                     running_corrects += torch.sum(preds == labels.data)
@@ -266,23 +266,24 @@ def main(args):
     print(f"Test Accuracy {test_acc}")
     print(f"Test IoU {test_iou}")
     
-    # ------ GET SAMPLE IMAGE FOR REPORT -------
-    test_sample_dataset = VOCSegmentation(data_path.rstrip('/') + '/' + "VOCSegmentation", year='2007', download=False, image_set='test', transform=sample_transform)
-    test_sample_loader = DataLoader(dataset=test_sample_dataset, batch_size=1, shuffle=False)
-    model.eval()
-    # untransformed original image
-    orig_inp, _ = next(iter(test_sample_loader))
-    
-    # transformed image for input to network
-    inp, label = next(iter(test_loader))
-    inp = inp.to(device)
-    label = label.to(device)
-    output = model(inp)
-    _, pred = torch.max(output, dim=1)
+    if task_type == 'segmentation':
+        # ------ GET SAMPLE IMAGE FOR REPORT -------
+        test_sample_dataset = VOCSegmentation(data_path.rstrip('/') + '/' + "VOCSegmentation", year='2007', download=False, image_set='test', transform=sample_transform)
+        test_sample_loader = DataLoader(dataset=test_sample_dataset, batch_size=1, shuffle=False)
+        model.eval()
+        # untransformed original image
+        orig_inp, _ = next(iter(test_sample_loader))
+        
+        # transformed image for input to network
+        inp, label = next(iter(test_loader))
+        inp = inp.to(device)
+        label = label.to(device)
+        output = model(inp)
+        _, pred = torch.max(output, dim=1)
 
-    util.save_sample(np.array(orig_inp[0].cpu(), dtype=np.uint8), label[0].cpu(), pred[0].cpu())
-    model.train()
-    # -------------------------------------------
+        util.save_sample(np.array(orig_inp[0].cpu(), dtype=np.uint8), label[0].cpu(), pred[0].cpu())
+        model.train()
+        # -------------------------------------------
 
 if __name__ == "__main__":
 
