@@ -210,13 +210,13 @@ def main(args):
 
             print()
 
-            time_elapsed = time.time() - since
-            print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
-            print(f'Best val Acc: {best_acc:4f}')
+        time_elapsed = time.time() - since
+        print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
+        print(f'Best val Acc: {best_acc:4f}')
 
-            # load best model weights
-            model.load_state_dict(best_model_wts)
-            return model
+        # load best model weights
+        model.load_state_dict(best_model_wts)
+        return model
     
     model = train_model(model, criterion, optimizer, scheduler, data_loaders, device, num_epochs=25)
 
