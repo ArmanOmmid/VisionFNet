@@ -48,6 +48,7 @@ def prepare_loaders(data_folder_path, dataset_name, transform_info, batch_size=8
         transform = ViT_Transform(image_size)
     elif task_type == 'segmentation':
         augment = False
+        transform = None
         # Set Transform Manually Below for VOCSegmentation
 
     # Classification 

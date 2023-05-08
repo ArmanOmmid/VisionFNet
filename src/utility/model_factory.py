@@ -72,6 +72,8 @@ def build_model(architecture, classes, pretrained=False, augment=False):
             nn.Linear(in_features=768, out_features=class_count)
         )
 
+        model_base_transform = weights.transforms
+
     else:
         model = arch.basic_fcn.FCN(n_class=class_count)
 
