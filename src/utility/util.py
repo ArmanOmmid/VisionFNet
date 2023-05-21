@@ -46,6 +46,7 @@ def pixel_acc(pred, target):
     return n_correct/n_samples
 
 def plot_train_valid(train_data, valid_data, plots_path, name='Accuracy'):
+    epochs = len(train_data)
     fig, ax = plt.subplots()
     ax.plot(train_data, label=f"Training {name}")
     ax.plot(valid_data, label=f"Validation {name}")
@@ -57,6 +58,7 @@ def plot_train_valid(train_data, valid_data, plots_path, name='Accuracy'):
     ax.set_title(f"Train/Validation {name} per Epoch")
     ax.set_ylabel(name)
     ax.set_xlabel('Epoch')
+    ax.set_xticks(range(1, epochs+1))
     plt.savefig(plots_path + '/' + name + '.png')
 
 def palette_map(cls):
