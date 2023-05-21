@@ -125,6 +125,7 @@ def main(args):
             self.__dict__.update(config)
     config = Config(**config)
     print(config.data)
+    print(config.data.thing)
     assert 0
 
     # Save Path
