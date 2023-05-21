@@ -77,6 +77,7 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
             nn.LayerNorm(normalized_shape=768),
             nn.Linear(in_features=768, out_features=class_count)
         )
+        model_base_transform = None if weights is None else weights.transforms
 
     elif architecture == 'vit' or architecture == 'fvit':
         patching = {
@@ -96,8 +97,6 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
         
     else:
         raise NotImplementedError("Model Architecture Not Found")
-
-    model_base_transform = None if weights is None else weights.transforms
 
     attr(model)
 
