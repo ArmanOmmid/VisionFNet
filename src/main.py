@@ -163,64 +163,64 @@ def main(args):
     else:
         scheduler = None
 
-    # ============================================== #     
+    # # ============================================== #     
 
-    for e in range(epochs):
+    # for e in range(epochs):
 
-        model.train(True)
+    #     model.train(True)
 
-        running_loss = 0.
-        last_loss = 0.
-        train_correct = 0
-        val_correct = 0
+    #     running_loss = 0.
+    #     last_loss = 0.
+    #     train_correct = 0
+    #     val_correct = 0
 
-        # Here, we use enumerate(training_loader) instead of
-        # iter(training_loader) so that we can track the batch
-        # index and do some intra-epoch reporting
-        for i, data in enumerate(train_loader):
-            # Every data instance is an input + label pair
-            inputs, labels = data
+    #     # Here, we use enumerate(training_loader) instead of
+    #     # iter(training_loader) so that we can track the batch
+    #     # index and do some intra-epoch reporting
+    #     for i, data in enumerate(train_loader):
+    #         # Every data instance is an input + label pair
+    #         inputs, labels = data
 
-            inputs =  inputs.to(device)
-            labels =  labels.to(device)
+    #         inputs =  inputs.to(device)
+    #         labels =  labels.to(device)
 
-            # Zero your gradients for every batch!
-            optimizer.zero_grad()
+    #         # Zero your gradients for every batch!
+    #         optimizer.zero_grad()
 
-            # Make predictions for this batch
-            outputs = model(inputs)
+    #         # Make predictions for this batch
+    #         outputs = model(inputs)
 
-            # Compute the loss and its gradients
-            loss = criterion(outputs, labels)
-            loss.backward()
+    #         # Compute the loss and its gradients
+    #         loss = criterion(outputs, labels)
+    #         loss.backward()
 
-            # Adjust learning weights
-            optimizer.step()
+    #         # Adjust learning weights
+    #         optimizer.step()
 
-            # Gather data and report
-            running_loss += loss.item()
-            if i % 1000 == 999:
-                last_loss = running_loss / 1000 # loss per batch
-                print('  batch {} loss: {}'.format(i + 1, last_loss))
-                tb_x = e * len(train_loader) + i + 1
-                print('Loss/train | {} / {}'.format(last_loss, tb_x))
-                running_loss = 0.
+    #         # Gather data and report
+    #         running_loss += loss.item()
+    #         if i % 1000 == 999:
+    #             last_loss = running_loss / 1000 # loss per batch
+    #             print('  batch {} loss: {}'.format(i + 1, last_loss))
+    #             tb_x = e * len(train_loader) + i + 1
+    #             print('Loss/train | {} / {}'.format(last_loss, tb_x))
+    #             running_loss = 0.
 
-        model.train(False)
+    #     model.train(False)
 
-        running_vloss = 0.0
-        for i, vdata in enumerate(val_loader):
-            vinputs, vlabels = vdata
-            vinputs =  vinputs.to(device)
-            vlabels =  vlabels.to(device)
-            voutputs = model(vinputs)
-            vloss = criterion(voutputs, vlabels)
-            running_vloss += vloss
+    #     running_vloss = 0.0
+    #     for i, vdata in enumerate(val_loader):
+    #         vinputs, vlabels = vdata
+    #         vinputs =  vinputs.to(device)
+    #         vlabels =  vlabels.to(device)
+    #         voutputs = model(vinputs)
+    #         vloss = criterion(voutputs, vlabels)
+    #         running_vloss += vloss
 
-        avg_vloss = running_vloss / (i + 1)
-        print('LOSS train {} valid {}'.format(last_loss, avg_vloss))
+    #     avg_vloss = running_vloss / (i + 1)
+    #     print('LOSS train {} valid {}'.format(last_loss, avg_vloss))
 
-    raise Exception("STOP")
+    # raise Exception("STOP")
 
     # ============================================== #     
 
