@@ -97,7 +97,8 @@ def main(args):
 
     if data_path:
         if not os.path.exists(data_path):
-            raise NotADirectoryError("Dataset Path Does Not Exist: '{}'".format(data_path)) 
+            if not download:
+                raise NotADirectoryError("Dataset Path Does Not Exist: '{}'".format(data_path)) 
     else:
         data_path = os.path.join(__init__.repository_root, "datasets")
 
