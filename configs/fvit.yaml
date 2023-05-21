@@ -1,6 +1,5 @@
-
 # Architecture
-model: vit
+model: fvit
 image_size: 32
 patch_size: 8
 num_layers: 4
