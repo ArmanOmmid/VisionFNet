@@ -58,7 +58,7 @@ def main(args):
     if config:
         config = os.path.join(__init__.repository_root, 'configs', 'default.yaml')
     else:
-        config = os.path.join(__init__.repository_root, 'configs', 'default.yaml')
+        config = os.path.join(__init__.repository_root, 'configs', f'{config}.yaml')
     with open(config, 'r') as stream:
         config = yaml.safe_load(stream)
     config = Config(config)
