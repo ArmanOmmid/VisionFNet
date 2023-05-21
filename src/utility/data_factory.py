@@ -106,7 +106,7 @@ def prepare_loaders(config, data_folder_path, download=False):
     # Segmentation 
     elif config.dataset == 'VOCSegmentation':
         year = '2007'
-        train_dataset = VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='train', transform=VOC_Transform(augment))
+        train_dataset = VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='train', transform=VOC_Transform(config.augment))
         val_dataset = VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='val', transform=VOC_Transform())
         test_dataset = VOCSegmentation(data_folder_path + "VOCSegmentation", year=year, download=download, image_set='test', transform=VOC_Transform())
         class_names = train_dataset.classes
