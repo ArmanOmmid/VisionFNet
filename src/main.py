@@ -24,6 +24,7 @@ from matplotlib import pyplot as plt
 import src.utility.util as util
 import src.utility.voc as voc
 import src.arch as arch
+from src.utility.config import Config
 
 from src.engine.experiment import Experiment
 from src.utility.model_factory import build_model
@@ -120,14 +121,7 @@ def main(args):
     with open(config, 'r') as stream:
         config = yaml.safe_load(stream)
 
-    class Config:
-        def __init__(self, **config):
-            self.__dict__.update(config)
-            for key, value in self.__dict__.items():
-                if isinstance(value, dict):
-                    self.__dict__[key] = Config(**value)
-
-    config = Config(**config)
+    config = Config(config)
     print(config.data)
     print(config.data.thing)
     assert 0
