@@ -190,12 +190,14 @@ def main(args):
     valid_loss_per_epoch, \
     valid_iou_per_epoch, \
     valid_acc_per_epoch = results
+
+    plots_path = os.path.join(__init__.repository_root, "plots")
     
     print(f"Best IoU score: {best_iou_score}")
-    util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, name='Loss')
-    util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, name='Accuracy')
+    util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, plots_path, name='Loss')
+    util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, plots_path, name='Accuracy')
     if task_type == 'segmentation':
-        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, name='Intersection over Union')
+        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, name='IoU')
     
     print('-' * 20)
     test_loss, test_acc, test_iou = experiment.test()

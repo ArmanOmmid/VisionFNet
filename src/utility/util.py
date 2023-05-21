@@ -45,7 +45,7 @@ def pixel_acc(pred, target):
     n_samples = torch.numel(target)
     return n_correct/n_samples
 
-def plot_train_valid(train_data, valid_data, name='Accuracy'):
+def plot_train_valid(train_data, valid_data, plots_path, name='Accuracy'):
     fig, ax = plt.subplots()
     ax.plot(train_data, label=f"Training {name}")
     ax.plot(valid_data, label=f"Validation {name}")
@@ -57,7 +57,7 @@ def plot_train_valid(train_data, valid_data, name='Accuracy'):
     ax.set_title(f"Train/Validation {name} per Epoch")
     ax.set_ylabel(name)
     ax.set_xlabel('Epoch')
-    plt.savefig(name + '.png')
+    plt.savefig(plots_path + '/' + name + '.png')
 
 def palette_map(cls):
     return palette[cls]
