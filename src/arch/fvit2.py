@@ -39,7 +39,7 @@ class EncoderBlock(nn.Module):
         x = self.ln_1(input)
         
         a, _ = self.self_attention(x, x, x, need_weights=False)
-
+        print(f.shape, a.shape)
         f = torch.fft.fft2(x, norm='ortho')
 
         f, _ = self.fourier_attention(x, f, f, need_weights=False)
