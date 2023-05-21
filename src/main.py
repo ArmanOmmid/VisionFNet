@@ -183,7 +183,7 @@ def main(args):
     results = experiment.run(epochs, early_stop_tolerance)
 
     for i, item in enumerate(results):
-        print(i, [type(elem) for elem in item] if hasattr(item, 'len') else type(item))
+        print(i, [type(elem) for elem in item] if isinstance(item, list) else type(item))
     
     results = [item.cpu() if hasattr(item, 'cpu') else item for item in results]
     model, \
