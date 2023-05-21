@@ -93,7 +93,7 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
         image_size = image_size
         patch_size = patching[image_size]
         num_layers = 1
-        num_heads = 8
+        num_heads = 1
         hidden_dim = 32
         expansion = 1
         if custom_implementation or fourier:
