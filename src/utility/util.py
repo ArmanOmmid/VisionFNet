@@ -2,7 +2,7 @@
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
-import functorch
+#import functorch
 
 palette = [0, 0, 0, 128, 0, 0, 0, 128, 0, 128, 128, 0, 0, 0, 128, 128, 0, 128, 0, 128, 128,
            128, 128, 128, 64, 0, 0, 192, 0, 0, 64, 128, 0, 192, 128, 0, 64, 0, 128, 192, 0, 128,
@@ -62,7 +62,7 @@ def plot_train_valid(train_data, valid_data, name='Accuracy'):
 def palette_map(cls):
     return palette[cls]
     
-vectorized_palette_map = functorch.vmap(palette_map)
+vectorized_palette_map = torch.vmap(palette_map)
     
 # orig should be 224 x 224 x 3 i.e. an image with RGB channels
 # true should be the corresponding 2D matrix of true labels in [0,20]

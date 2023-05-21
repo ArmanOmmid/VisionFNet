@@ -1,11 +1,5 @@
-
-datasets/*
-!datasets/.gitignore
-
-checkpoints/*
-!checkpoints/.gitignore
-
-weights/*
-!weights/.gitignore
-
-__pycache__
+Accuracy.png
+Intersection over Union.png
+Loss.png
+img_and_colormappedpredictions.png
+*__pycache__

@@ -37,7 +37,7 @@ parser.add_argument('architecture', type=str,
 parser.add_argument('-e', '--epochs', type=int, default=10,
                     help='Epochs')
 parser.add_argument('-b', '--batch_size', type=int, default=8,
-                    help='Epochs')
+                    help='Batch Size')
 parser.add_argument('-l', '--learning_rate', type=int, default=0.01,
                     help='Learning Rate')
 parser.add_argument('-w', '--weighted_loss', action='store_true',
@@ -137,7 +137,7 @@ def main(args):
     if interactive_data_showcase:
         show_data(train_loader, class_names)
 
-    """ Criteron """
+    """ Criterion """
     if weighted_loss:
         criterion = nn.CrossEntropyLoss(weight=class_weights)
     else:
