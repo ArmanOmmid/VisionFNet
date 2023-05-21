@@ -93,9 +93,9 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
         image_size = image_size
         patch_size = patching[image_size]
         num_layers = 1
-        num_heads = 1
-        hidden_dim = 32
-        expansion = 1
+        num_heads = 8
+        hidden_dim = 64
+        expansion = 4
         if custom_implementation or fourier:
             model = arch.vit.VisionTransformer(image_size=image_size, patch_size=patch_size, num_layers=num_layers, num_heads=num_heads, \
                                            hidden_dim=hidden_dim, mlp_dim=(hidden_dim * expansion), num_classes=class_count, fourier=fourier) #, norm_layer=nn.BatchNorm2d)
