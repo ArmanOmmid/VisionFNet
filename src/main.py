@@ -202,7 +202,8 @@ def main(args):
     test_loss, test_acc, test_iou = experiment.test()
     print(f"Test Loss {test_loss}")
     print(f"Test Accuracy {test_acc}")
-    print(f"Test IoU {test_iou}")
+    if task_type == 'segmentation':
+        print(f"Test IoU {test_iou}")
     
     if task_type == 'segmentation':
         # ------ GET SAMPLE IMAGE FOR REPORT -------
