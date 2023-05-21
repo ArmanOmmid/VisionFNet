@@ -181,7 +181,6 @@ def main(args):
     print("Training")
 
     results = experiment.run(epochs, early_stop_tolerance)
-    # results = [item.cpu() if hasattr(item, 'cpu') else item for item in results]
 
     model, \
     best_iou_score, \
