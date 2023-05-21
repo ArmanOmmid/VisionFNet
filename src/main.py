@@ -163,7 +163,7 @@ def main(args):
     else:
         scheduler = None
 
-    best_vloss = 1_000_000.       
+    # ============================================== #     
 
     for e in range(epochs):
 
@@ -178,6 +178,9 @@ def main(args):
         for i, data in enumerate(train_loader):
             # Every data instance is an input + label pair
             inputs, labels = data
+
+            inputs =  inputs.to(device)
+            labels =  labels.to(device)
 
             # Zero your gradients for every batch!
             optimizer.zero_grad()
@@ -213,8 +216,9 @@ def main(args):
         avg_vloss = running_vloss / (i + 1)
         print('LOSS train {} valid {}'.format(last_loss, avg_vloss))
 
-
     raise Exception("STOP")
+
+    # ============================================== #     
 
     """ Experiment """
     print("Initializing Experiments")
