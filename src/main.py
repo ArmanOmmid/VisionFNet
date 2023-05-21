@@ -15,6 +15,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
+import torchinfo
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -147,6 +148,8 @@ def main(args):
     """ Model """
     model, model_base_transform = build_model(architecture, len(class_names), pretrained, augment)
     model = model.to(device) # transfer the model to the device
+
+    torchinfo.summary(model=model)
 
     """ Optimizer """
     learnable_parameters = [param for param in model.parameters() if param.requires_grad]

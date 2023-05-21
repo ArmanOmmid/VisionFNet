@@ -5,6 +5,22 @@ TASKS = {
     'classification' : ['CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST', 'StanfordCars', 'Food101', 'Caltech256'],
     'segmentation' : ['VOCSegmentation']
 }
+SIZE = {
+    'CIFAR10' : (32,32),
+    'CIFAR100' : (32,32),
+    'MNIST' : (28,28),
+    'FashionMNIST' : (28,28),
+    'StanfordCars' : (360, 240),
+    'Food101' : (512, 512),
+    'Caltech256' : (1024, 1024),
+    'VOCSegmentation' : (224, 224)
+}
+
+def get_pixel_size(dataset):
+    if isinstance(dataset, str):
+        return SIZE.get(dataset, None)
+    else:
+        SIZE.get(get_dataset_name(dataset), None)
 
 def get_base_dataset(dataset):
     while hasattr(dataset, 'dataset'):
