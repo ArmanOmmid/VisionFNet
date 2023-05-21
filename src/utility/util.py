@@ -48,13 +48,16 @@ def pixel_acc(pred, target):
 def plot_train_valid(train_data, valid_data, plots_path, name='Accuracy'):
     epochs = len(train_data)
     fig, ax = plt.subplots()
+    
     ax.plot(train_data, label=f"Training {name}")
     ax.plot(valid_data, label=f"Validation {name}")
+
     box = ax.get_position()
     ax.set_position([box.x0, box.y0 + box.height * 0.1,
                  box.width, box.height * 0.9])
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05),
           fancybox=True, shadow=True, ncol=2)
+    
     ax.set_title(f"Train/Validation {name} per Epoch")
     ax.set_ylabel(name)
     ax.set_xlabel('Epoch')
