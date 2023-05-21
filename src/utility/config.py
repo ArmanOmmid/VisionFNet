@@ -3,7 +3,9 @@ import copy
 class Config:
     
     class NotFound:
-        pass
+        @classmethod
+        def __repr__(cls):
+            return str("<NotFound>")
 
     def __init__(self, config):
         self.build(config)
