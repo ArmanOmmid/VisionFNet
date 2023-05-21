@@ -211,7 +211,7 @@ class Experiment(object):
             acc_at_epoch = np.mean(accuracy)
             iou_at_epoch = np.mean(mean_iou_scores)
 
-        return loss_at_epoch, acc_at_epoch, iou_at_epoch
+        return loss_at_epoch.cpu(), acc_at_epoch.cpu(), iou_at_epoch.cpu()
 
     def val(self):
 
@@ -255,7 +255,7 @@ class Experiment(object):
             acc_at_epoch = np.mean(accuracy)
             iou_at_epoch = np.mean(mean_iou_scores)
 
-        return loss_at_epoch, acc_at_epoch, iou_at_epoch
+        return loss_at_epoch.cpu(), acc_at_epoch.cpu(), iou_at_epoch.cpu()
     
     def test(self, model=None, data_loader=None):
 
@@ -304,5 +304,5 @@ class Experiment(object):
             acc_at_epoch = np.mean(accuracy)
             iou_at_epoch = np.mean(mean_iou_scores)
 
-        return loss_at_epoch, acc_at_epoch, iou_at_epoch
+        return loss_at_epoch.cpu(), acc_at_epoch.cpu(), iou_at_epoch.cpu()
     
