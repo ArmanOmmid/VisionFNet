@@ -38,13 +38,13 @@ class EncoderBlock(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         x = self.ln_1(input)
         
-        x, _ = self.self_attention(x, x, x, need_weights=False)
+        a, _ = self.self_attention(x, x, x, need_weights=False)
 
         f = torch.fft.rfft2(x, norm='ortho')
         f, _ = self.fourier_attention(x, f, f, need_weights=False)
         f = torch.fft.irfft2(x, norm='ortho')
 
-        x = torch.cat((x, f), -1)
+        x = torch.cat((a, f), -1)
             
         x = self.dropout(x)
         x = x + input
