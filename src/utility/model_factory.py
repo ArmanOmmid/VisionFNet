@@ -71,8 +71,13 @@ def build_model(architecture, classes, pretrained=False, augment=False):
             nn.LayerNorm(normalized_shape=768),
             nn.Linear(in_features=768, out_features=class_count)
         )
-
         model_base_transform = weights.transforms
+
+    elif architecture == 'vit_explicit':
+        model = arch.vit.VisionTransformer(image_size=224, patch_size=32, num_layers=1, num_heads=1, hidden_dim=32, mlp_dim=32, num_classes=class_count) #, norm_layer=nn.BatchNorm2d)
+        
+    elif architecture == 'vision_fnet':
+        model = arch.vit.VisionTransformer(image_size=224, patch_size=16, num_layers=12, num_heads=8, hidden_dim=768, mlp_dim=3072, num_classes=class_count, fourier=True)
 
     else:
         model = arch.basic_fcn.FCN(n_class=class_count)
