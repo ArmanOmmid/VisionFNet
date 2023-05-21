@@ -86,13 +86,13 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
 
         kernels = {
             224 : 16,
-            32 : 8,
-            28 : 7 
+            32 : 4,
+            28 : 4 
         }
 
         image_size = image_size
         patch_size = kernels[image_size]
-        num_layers = 2
+        num_layers = 3
         num_heads = 8
         hidden_dim = 64
         expansion = 4
