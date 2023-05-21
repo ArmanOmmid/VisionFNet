@@ -96,7 +96,7 @@ class Experiment(object):
         for epoch in range(num_epochs):
             print('')
             print('-' * 20)
-            print("Epoch {} / {}".format(epoch, num_epochs-1))
+            print("Epoch {} / {}".format(epoch+1, num_epochs))
             print('-' * 20)
 
             if self.scheduler is not None:
@@ -111,7 +111,7 @@ class Experiment(object):
 
             valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
 
-            print("Epoch {} | Time Elapsed: {} |".format(epoch, (time.time() - ts)))
+            print("Epoch {} | Time Elapsed: {} |".format(epoch+1, (time.time() - ts)))
             print("                      Train | Accuracy: {} | Loss: {}".format(f"{train_acc_at_epoch:.4f}", f"{train_loss_at_epoch:.4f}"))
             print("                 Validation | Accuracy: {} | Loss: {}".format(f"{valid_acc_at_epoch:.4f}", f"{valid_loss_at_epoch:.4f}"))
             

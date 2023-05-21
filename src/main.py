@@ -118,6 +118,7 @@ def main(args):
             raise FileNotFoundError("Load Path Does Not Exist {}".format(load_path))
         
     if plot_path:
+        print(os.path.abspath(plot_path))
         if str(__init__.repository_root) in os.path.abspath(plot_path):
             plot_path = os.path.join(__init__.repository_root, 'plots')
     else:
