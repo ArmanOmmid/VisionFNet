@@ -39,7 +39,7 @@ parser.add_argument('-e', '--epochs', type=int, default=10,
                     help='Epochs')
 parser.add_argument('-b', '--batch_size', type=int, default=8,
                     help='Batch Size')
-parser.add_argument('-l', '--learning_rate', type=int, default=0.001,
+parser.add_argument('-l', '--learning_rate', type=int, default=0.0001,
                     help='Learning Rate')
 parser.add_argument('-w', '--weighted_loss', action='store_true',
                     help='Weighted Loss')
@@ -182,6 +182,7 @@ def main(args):
 
     results = experiment.run(epochs, early_stop_tolerance)
     
+    result = [item.cpu()  if hasattr(item, 'cpu') else item for item in result]
     model, \
     best_iou_score, \
     train_loss_per_epoch, \
