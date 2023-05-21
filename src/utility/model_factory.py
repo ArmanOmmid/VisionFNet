@@ -30,33 +30,29 @@ def get_weight_initializer():
             raise E
     return init_weights
 
-def build_model(architecture, classes, image_size, pretrained=False, augment=False):
+def build_model(config, architecture, classes, image_size):
 
     class_count = classes if isinstance(classes, int) else len(classes)
 
-    attr = util.Attributes(
-        augment = augment
-    )
-
     model_base_transform = None
 
-    if architecture == 'unet':
+    if config.model == 'unet':
         model = arch.unet.UNet(n_class=class_count)
 
-    elif architecture == 'transfer':
+    elif config.model == 'transfer':
         model = arch.transfer_fcn.Resnet_FCN(n_class=class_count)
 
-    elif architecture == 'custom1':
+    elif config.model == 'custom1':
         model = arch.customfcn1.Custom_FCN1(n_class=class_count)
 
-    elif architecture == 'custom2':
+    elif config.model == 'custom2':
         model = arch.customfcn2.Custom_FCN2(n_class=class_count)
 
-    elif architecture == 'fcn':
+    elif config.model == 'fcn':
         model = arch.basic_fcn.FCN(n_class=class_count)
     
-    elif architecture == 'resnet':
-        weights = None if not pretrained else torchvision.models.ResNet50_Weights.DEFAULT
+    elif config.model == 'resnet':
+        weights = None if not config.pretrained else torchvision.models.ResNet50_Weights.DEFAULT
         model = torchvision.models.resnet50(weights=weights) # /Users/armanommid/.cache/torch/hub/checkpoints/resnet50-11ad3fa6.pth
         for param in model.parameters():
             param.requires_grad = False
@@ -67,10 +63,10 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
 
         model_base_transform = weights.transforms
 
-    elif architecture == 'import_vit':
-        weights = None if not pretrained else torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
+    elif config.model == 'import_vit':
+        weights = None if not config.pretrained else torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
         model = torchvision.models.vit_b_16(weights=weights)
-        if pretrained:
+        if config.pretrained:
             for param in model.parameters():
                 param.requires_grad = False
         model.heads = nn.Sequential(
@@ -79,34 +75,26 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
         )
         model_base_transform = None if weights is None else weights.transforms
 
-    elif architecture == 'vit':
+    elif config.model == 'vit':
         
         custom_implementation = True
-        fourier = architecture == 'fvit'
+        fourier = config.model == 'fvit'
 
-        kernels = {
-            224 : 16,
-            32 : 8,
-            28 : 7 
-        }
-
-        image_size = image_size
-        patch_size = kernels[image_size]
-        num_layers = 3
-        num_heads = 8
-        hidden_dim = 64
-        expansion = 4
+        image_size = config.image_size
+        patch_size = config.patch_size
+        num_layers = config.num_layers
+        num_heads = config.num_heads
+        hidden_dim = config.hidden_dim
+        expansion = config.expansion
         if custom_implementation or fourier:
             model = arch.vit.VisionTransformer(image_size=image_size, patch_size=patch_size, num_layers=num_layers, num_heads=num_heads, \
-                                           hidden_dim=hidden_dim, mlp_dim=(hidden_dim * expansion), num_classes=class_count, fourier=fourier) #, norm_layer=nn.BatchNorm2d)
+                                           hidden_dim=hidden_dim, mlp_dim=int(hidden_dim * expansion), num_classes=class_count, fourier=fourier) #, norm_layer=nn.BatchNorm2d)
         else:
             model = torchvision.models.vision_transformer.VisionTransformer(image_size=image_size, patch_size=patch_size, num_layers=num_layers, num_heads=num_heads, \
                                            hidden_dim=hidden_dim, mlp_dim=(hidden_dim * expansion), num_classes=class_count)
         
     else:
         raise NotImplementedError("Model Architecture Not Found")
-
-    attr(model)
 
     init_weights = get_weight_initializer()
     model.apply(init_weights)

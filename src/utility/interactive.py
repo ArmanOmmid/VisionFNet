@@ -22,3 +22,7 @@ def show_data(loader, class_names=None):
         if len(cmd) == 0:
             break
     loader.num_workers = num_workers # Change this back
+
+# interactive_data_showcase = False
+    # if interactive_data_showcase:
+    #     show_data(train_loader, class_names)

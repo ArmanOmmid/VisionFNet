@@ -25,10 +25,12 @@ import src.arch as arch
 from tqdm.auto import tqdm
 from typing import Dict, List, Tuple
 from src.utility.data_info import get_task_type
+from src.utility.config import Config
 
 class Experiment(object):
 
     def __init__(self,
+            config: Config,
             model: torch.nn.Module, 
             train_loader: torch.utils.data.DataLoader, 
             val_loader: torch.utils.data.DataLoader,
@@ -40,6 +42,8 @@ class Experiment(object):
             save_path = False,
             load_path = False
         ) -> None:
+
+        self.config = config
 
         self.model = model
 
@@ -172,7 +176,7 @@ class Experiment(object):
             inputs =  inputs.to(self.device)
             labels =  labels.to(self.device)
             
-            if self.model.augment:
+            if self.config.augment:
                 b, ncrop, c, h, w = inputs.size()
                 inputs = inputs.view(-1, c, h, w)
                 b, ncrop, h, w = labels.size()

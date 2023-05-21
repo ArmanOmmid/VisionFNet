@@ -31,7 +31,7 @@ class Config:
     #             original[key] = value
     #         else:
     #             if isinstance(value, list):
-
+    
     def __getattr__(self, name):
         return self.__dict__.get(name, self.NotFound)
 

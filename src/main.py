@@ -35,24 +35,8 @@ from src.utility.interactive import show_data
 from src.utility.voc import VOCSegmentation
 
 parser = argparse.ArgumentParser(description='Argument Parser')
-parser.add_argument('architecture', type=str,
-                    help='Model Architecture')
-parser.add_argument('-e', '--epochs', type=int, default=10,
-                    help='Epochs')
-parser.add_argument('-b', '--batch_size', type=int, default=8,
-                    help='Batch Size')
-parser.add_argument('-l', '--learning_rate', type=float, default=0.0001,
-                    help='Learning Rate')
-parser.add_argument('-w', '--weighted_loss', action='store_true',
-                    help='Weighted Loss')
-parser.add_argument('-a', '--augment', action='store_true',
-                    help='Augmentation of Data')
-parser.add_argument('-s', '--scheduler',  action='store_true',
-                    help='Learning Rate Scheduler')
-parser.add_argument('-n', '--num_workers',  type=int, default=0,
-                    help='Number of GPU Workers (Processes)')
 
-parser.add_argument('-c', '--config', default=False,
+parser.add_argument('config', type=str,
                     help="Config name under 'configs/")
 parser.add_argument('-D', '--data_path', default=False,
                     help="Path to locate (or download) data from")
@@ -63,28 +47,21 @@ parser.add_argument('-S', '--save_path', default=False,
 parser.add_argument('-L', '--load_path', default=False,
                     help="Path to load model weights from")
 parser.add_argument('-P', '--plot_path', default=False,
-                    help="Path to dump experiment plots")
-
-
+                    help="Path to save experiment plots")
 parser.add_argument('--download', action='store_true',
                     help="Download dataset if it doesn't exist")
-parser.add_argument('--pretrained', action='store_true',
-                    help="Pretrained Weights")
 
 def main(args):
 
-    """ Hyperparameters """
-    architecture = args.architecture
-    epochs = args.epochs
-    batch_size = args.batch_size
-    learning_rate = args.learning_rate
-    weighted_loss = args.weighted_loss
-    augment = args.augment # False
-    scheduler = args.scheduler
-    num_workers = args.num_workers
-    dataset_name = args.dataset_name
-    pretrained = args.pretrained
+    # Config Path
     config = args.config
+    if config:
+        config = os.path.join(__init__.repository_root, 'configs', 'default.yaml')
+    else:
+        config = os.path.join(__init__.repository_root, 'configs', 'default.yaml')
+    with open(config, 'r') as stream:
+        config = yaml.safe_load(stream)
+    config = Config(config)
 
     """ Paths """
     data_path = args.data_path
@@ -93,38 +70,18 @@ def main(args):
     load_path = args.load_path
     plot_path = args.plot_path
 
-    """ Validations """
-
     # Dataset
-    if not dataset_name:
-        raise NotImplementedError("Please Specify a Dataset Name with '-N'")
-    else:
-        task_type = get_task_type(dataset_name)
-        if task_type is None:
-            raise Exception("Invalid Dataset Name ( Or Unregistered in 'src/utility/data_factory :: get_task_type() )")
-
-    """ Path Preperations """
+    task_type = get_task_type(config.dataset)
+    if task_type is None:
+        raise Exception("Invalid Dataset Name ( Or Unregistered in 'src/utility/data_factory :: get_task_type() )")
 
     # Data Path
     if data_path:
         if not os.path.exists(data_path):
             if not download:
-                raise NotADirectoryError("Dataset Path Does Not Exist: '{}'".format(data_path)) 
+                raise NotADirectoryError("Dataset Path Does Not Exist: '{}'".format(data_path))
     else:
         data_path = os.path.join(__init__.repository_root, "datasets")
-
-    # Config Path
-    if config:
-        config = os.path.join(__init__.repository_root, 'configs', 'default.yaml')
-    else:
-        config = os.path.join(__init__.repository_root, 'configs', 'default.yaml')
-    with open(config, 'r') as stream:
-        config = yaml.safe_load(stream)
-
-    config = Config(config)
-    print(config.data)
-    print(config.data.thing)
-    assert 0
 
     # Save Path
     if save_path:
@@ -152,14 +109,8 @@ def main(args):
     early_stop_tolerance = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
-    transform_info = {
-        'model' : architecture
-    }
-
     """ Data """
-    train_loader, val_loader, test_loader, class_names, image_size = prepare_loaders(data_path, dataset_name, transform_info=transform_info, 
-                                                                         batch_size=batch_size, num_workers=num_workers, download=download)
+    train_loader, val_loader, test_loader, class_names = prepare_loaders(config, data_path, download=download)
     data_loaders = {
         'train': train_loader,
         'val' : val_loader,
@@ -169,38 +120,35 @@ def main(args):
 
     print("Dataset Size: \n", dataset_sizes)
 
-    if weighted_loss:
+    if config.weighted_loss:
         class_weights = get_class_weights(train_loader, len(class_names)).to(device)
 
-    interactive_data_showcase = False
-    if interactive_data_showcase:
-        show_data(train_loader, class_names)
-
     """ Criterion """
-    if weighted_loss:
+    if config.weighted_loss:
         criterion = nn.CrossEntropyLoss(weight=class_weights)
     else:
         criterion = nn.CrossEntropyLoss()
 
     """ Model """
-    model, model_base_transform = build_model(architecture, len(class_names), image_size, pretrained, augment)
+    model, model_base_transform = build_model(config, len(class_names))
     model = model.to(device) # transfer the model to the device
 
     torchinfo.summary(model=model, input_size=next(iter(train_loader))[0].shape)
 
     """ Optimizer """
     learnable_parameters = [param for param in model.parameters() if param.requires_grad]
-    optimizer = torch.optim.Adam(learnable_parameters, lr=learning_rate, weight_decay=0.001)
+    optimizer = torch.optim.Adam(learnable_parameters, lr=config.learning_rate, weight_decay=0.001)
 
     """ Learning Rate Scheduler """
     if scheduler:
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, epochs)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, config.epochs)
     else:
         scheduler = None 
 
     """ Experiment """
     print("Initializing Experiments")
     experiment = Experiment(
+        config,
         model,
         train_loader,
         val_loader,
@@ -215,7 +163,7 @@ def main(args):
     
     print("Training")
 
-    results = experiment.run(epochs, early_stop_tolerance)
+    results = experiment.run(config.epochs, early_stop_tolerance)
 
     model, \
     best_iou_score, \
