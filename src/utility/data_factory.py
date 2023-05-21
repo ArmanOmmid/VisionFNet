@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torchvision
 from torch.utils.data import DataLoader, Subset
+from torchvision import transforms as transforms
 import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
 from sklearn.model_selection import train_test_split
@@ -21,8 +22,9 @@ import numpy as np
 import src.utility.util as util
 import src.utility.voc as voc
 from src.utility.model_factory import DEFAULT_SIZE_224
+from src.utility.model_info import MODEL_TRANSFORM
 from src.utility.data_info import get_targets, get_base_dataset, get_pixel_size, get_dataset_name, get_task_type, get_indices
-from src.utility.transforms import ViT_Transform, VOC_Transform
+from src.utility.transforms import Basic_Compose, VOC_Transform, PIL_RGB
 from src.utility.voc import VOCSegmentation
 
 def train_val_split(config, dataset, split_proportion=1/6, indices=None):
@@ -45,10 +47,17 @@ def prepare_loaders(config, data_folder_path, download=False):
 
     task_type = get_task_type(config.dataset)
     if task_type == 'classification':
-        config.image_size = 224 if config.model in DEFAULT_SIZE_224 else config.image_size # NOTE: OVERRIDE
-        transform = ViT_Transform(config.image_size)
+
+        transform = MODEL_TRANSFORM.get(config.model, False)
+        if MODEL_TRANSFORM.get(config.model, False):
+            transform = transforms.Compose([
+                PIL_RGB,
+                MODEL_TRANSFORM[config.model]
+            ])
+        else:
+            transform = Basic_Compose(config.image_size)
+
     elif task_type == 'segmentation':
-        augment = False
         transform = None
         # Set Transform Manually Below for VOCSegmentation
 

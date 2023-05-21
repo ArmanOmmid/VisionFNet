@@ -106,19 +106,13 @@ def main(args):
 
 
     """ Other Values """
-    early_stop_tolerance = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     """ Data """
-    train_loader, val_loader, test_loader, class_names = prepare_loaders(config, data_path, download=download)
-    data_loaders = {
-        'train': train_loader,
-        'val' : val_loader,
-        'test' : test_loader
-    }
-    dataset_sizes = {mode: len(loader.dataset) for mode, loader in data_loaders.items()}
+    data_loaders, data_sizes, class_names = prepare_loaders(config, data_path, download=download)
+    train_loader, val_loader, test_loader = data_loaders
 
-    print("Dataset Size: \n", dataset_sizes)
+    print("Dataset Size: \n", data_sizes)
 
     if config.weighted_loss:
         class_weights = get_class_weights(train_loader, len(class_names)).to(device)
@@ -130,7 +124,7 @@ def main(args):
         criterion = nn.CrossEntropyLoss()
 
     """ Model """
-    model, model_base_transform = build_model(config, len(class_names))
+    model = build_model(config, len(class_names))
     model = model.to(device) # transfer the model to the device
 
     torchinfo.summary(model=model, input_size=next(iter(train_loader))[0].shape)
@@ -163,7 +157,7 @@ def main(args):
     
     print("Training")
 
-    results = experiment.run(config.epochs, early_stop_tolerance)
+    results = experiment.run(config.epochs, config.early_stop_tolerance)
 
     model, \
     best_iou_score, \

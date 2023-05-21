@@ -11,19 +11,18 @@ import torchvision.transforms as standard_transforms
 import torchvision.transforms.functional as TF
 import numpy as np
 
-def EnsureRGB(x): # torch.transforms.Lambda can't be pickled : transforms.Lambda(lambda x: (x.repeat(3, 1, 1) if x.size(0)==1 else x))
+def Tensor_RGB(x): # torch.transforms.Lambda can't be pickled : transforms.Lambda(lambda x: (x.repeat(3, 1, 1) if x.size(0)==1 else x))
     return x.repeat(3, 1, 1) if x.size(0)==1 else x
-
-def ConvertRGB(x): # torch.transforms.Lambda can't be pickled : transforms.Lambda(lambda x: x.convert('RGB')), # Turns to RGB
+def PIL_RGB(x): # torch.transforms.Lambda can't be pickled : transforms.Lambda(lambda x: x.convert('RGB')), # Turns to RGB
     return x.convert('RGB')
 
-def ViT_Transform(image_size):
-    ViT_Transform = transforms.Compose([
+def Basic_Compose(image_size):
+    basic_tranform = transforms.Compose([
         transforms.Resize((image_size, image_size)),
         transforms.ToTensor(),
-        EnsureRGB, # Turns to RGB
+        Tensor_RGB,
     ])
-    return ViT_Transform
+    return basic_tranform
 
 def VOC_Transform(augment=False):
 
