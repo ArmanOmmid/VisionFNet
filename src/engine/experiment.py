@@ -109,7 +109,9 @@ class Experiment(object):
 
             valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
 
-            print("Epoch {} | Time Elapsed: {} | Accuracy: {} | Loss: {}".format(epoch, (time.time() - ts), f"{valid_acc_at_epoch:.4f}", f"{valid_loss_at_epoch:.4f}"))
+            print("Epoch {} | Time Elapsed: {} |".format(epoch, (time.time() - ts)))
+            print("                      Train | Accuracy: {} | Loss: {}".format(f"{train_acc_at_epoch:.4f}", f"{train_loss_at_epoch:.4f}"))
+            print("                 Validation | Accuracy: {} | Loss: {}".format(f"{valid_acc_at_epoch:.4f}", f"{valid_loss_at_epoch:.4f}"))
             
             # Append results 
             train_loss_per_epoch.append(train_loss_at_epoch)
