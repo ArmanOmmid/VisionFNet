@@ -1,2 +1,6 @@
 data:
-  
+  thing:
+   - 5
+  other: 'ok'
+lol:
+  'test'
