@@ -1,7 +1,7 @@
 
 # Architecture
 model: vit
-input_size: 224
+input_size: 32
 patch_size: 8
 num_layers: 4
 num_heads: 8
