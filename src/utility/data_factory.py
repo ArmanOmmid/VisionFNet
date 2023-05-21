@@ -21,7 +21,6 @@ import numpy as np
 
 import src.utility.util as util
 import src.utility.voc as voc
-from src.utility.model_factory import DEFAULT_SIZE_224
 from src.utility.model_info import MODEL_TRANSFORM
 from src.utility.data_info import get_targets, get_base_dataset, get_pixel_size, get_dataset_name, get_task_type, get_indices
 from src.utility.transforms import Basic_Compose, VOC_Transform, PIL_RGB
