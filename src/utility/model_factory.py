@@ -57,7 +57,7 @@ def build_model(config, classes):
             nn.Linear(in_features, class_count)
         )
 
-    elif config.model == 'import_vit':
+    elif config.model == 'vit_standard':
         weights = None if not config.pretrained else torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
         model = torchvision.models.vit_b_16(weights=weights)
         if config.pretrained:
@@ -67,14 +67,20 @@ def build_model(config, classes):
             nn.LayerNorm(normalized_shape=768),
             nn.Linear(in_features=768, out_features=class_count)
         )
+        
+    elif config.model == 'vit_import':
+        ml_dim = int(config.hidden_dim * config.expansion)
+        model = torchvision.models.vision_transformer.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
+                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count)
 
     elif config.model == 'vit':
+        ml_dim = int(config.hidden_dim * config.expansion)
         model = arch.vit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=int(config.hidden_dim * config.expansion), num_classes=class_count, fourier=False) #, norm_layer=nn.BatchNorm2d)
-        
+                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count, fourier=False) #, norm_layer=nn.BatchNorm2d)
     elif config.model == 'fvit':
-        model = torchvision.models.vision_transformer.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=int(config.hidden_dim * config.expansion), num_classes=class_count)
+        ml_dim = int(config.hidden_dim * config.expansion)
+        model = arch.fvit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
+                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count, fourier=False) #, norm_layer=nn.BatchNorm2d)
         
     else:
         raise NotImplementedError("Model Architecture Not Found")
