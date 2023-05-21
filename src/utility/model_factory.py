@@ -76,11 +76,16 @@ def build_model(architecture, classes, pretrained=False, augment=False):
         )
         model_base_transform = weights.transforms
 
-    elif architecture == 'vit':
-        model = arch.vit.VisionTransformer(image_size=224, patch_size=16, num_layers=8, num_heads=8, hidden_dim=32, mlp_dim=32, num_classes=class_count) #, norm_layer=nn.BatchNorm2d)
-        
-    elif architecture == 'fvit':
-        model = arch.vit.VisionTransformer(image_size=224, patch_size=16, num_layers=12, num_heads=8, hidden_dim=768, mlp_dim=3072, num_classes=class_count, fourier=True)
+    elif architecture == 'vit' or architecture == 'fvit':
+
+        image_size = 224
+        patch_size = 8
+        num_layers = 8
+        num_heads = 8
+        hidden_dim = 32
+        mlp_dim = hidden_dim * 4
+        model = arch.vit.VisionTransformer(image_size=image_size, patch_size=patch_size, num_layers=num_layers, num_heads=num_heads, \
+                                           hidden_dim=hidden_dim, mlp_dim=mlp_dim, num_classes=class_count, fourier=(architecture =='fvit')) #, norm_layer=nn.BatchNorm2d)
 
     else:
         raise NotImplementedError("Model Architecture Not Found")
