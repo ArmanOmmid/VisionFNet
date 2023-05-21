@@ -70,8 +70,9 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
     elif architecture == 'import_vit':
         weights = None if not pretrained else torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
         model = torchvision.models.vit_b_16(weights=weights)
-        for param in model.parameters():
-            param.requires_grad = False
+        if pretrained:
+            for param in model.parameters():
+                param.requires_grad = False
         model.heads = nn.Sequential(
             nn.LayerNorm(normalized_shape=768),
             nn.Linear(in_features=768, out_features=class_count)
