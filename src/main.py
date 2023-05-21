@@ -162,7 +162,7 @@ def main(args):
     model, model_base_transform = build_model(architecture, len(class_names), image_size, pretrained, augment)
     model = model.to(device) # transfer the model to the device
 
-    torchinfo.summary(model=model, input_size=next(iter(val_loader))[0].size)
+    torchinfo.summary(model=model, input_size=next(iter(train_loader))[0].shape)
 
     """ Optimizer """
     learnable_parameters = [param for param in model.parameters() if param.requires_grad]
