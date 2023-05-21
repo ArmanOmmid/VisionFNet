@@ -165,7 +165,7 @@ def main(args):
 
     best_vloss = 1_000_000.       
 
-    for e in epochs:
+    for e in range(epochs):
 
         model.train(True)
 
