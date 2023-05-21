@@ -26,7 +26,7 @@ from src.utility.data_info import get_targets, get_base_dataset, get_pixel_size,
 from src.utility.transforms import Basic_Compose, VOC_Transform, PIL_RGB
 from src.utility.voc import VOCSegmentation
 
-def train_val_split(config, dataset, split_proportion=1/6, indices=None):
+def train_val_split(dataset, split_proportion=1/6, indices=None):
     all_targets = get_targets(dataset)
     if indices is None:
         targets = all_targets
