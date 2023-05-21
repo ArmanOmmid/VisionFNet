@@ -123,7 +123,7 @@ def main(args):
     class Config:
         def __init__(self, **config):
             self.__dict__.update(config)
-    config = Config(**config)
+    config = Config(config)
     print(config.data)
     assert 0
 
