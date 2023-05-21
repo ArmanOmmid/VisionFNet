@@ -91,7 +91,7 @@ class Experiment(object):
             train_iou_per_epoch = []
             valid_iou_per_epoch = []
         else:
-            train_iou_per_epoch = valid_iou_per_epoch = None
+            best_iou_score = train_iou_per_epoch = valid_iou_per_epoch = None
         
         for epoch in range(num_epochs):
             print('')
