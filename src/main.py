@@ -8,6 +8,7 @@ import random
 from collections import Counter
 import argparse
 import copy
+import yaml
 
 import torch
 import torch.nn as nn
@@ -50,6 +51,8 @@ parser.add_argument('-s', '--scheduler',  action='store_true',
 parser.add_argument('-n', '--num_workers',  type=int, default=0,
                     help='Number of GPU Workers (Processes)')
 
+parser.add_argument('-c', '--config', default=False,
+                    help="Config name under 'configs/")
 parser.add_argument('-D', '--data_path', default=False,
                     help="Path to locate (or download) data from")
 parser.add_argument('-N', '--dataset_name', default=False,
@@ -78,27 +81,30 @@ def main(args):
     augment = args.augment # False
     scheduler = args.scheduler
     num_workers = args.num_workers
-
-    """ Data """
-    data_path = args.data_path
     dataset_name = args.dataset_name
-    download = args.download
-    plot_path = args.plot_path
+    pretrained = args.pretrained
+    config = args.config
 
-    """ Weights """
+    """ Paths """
+    data_path = args.data_path
+    download = args.download
     save_path = args.save_path
     load_path = args.load_path
-    pretrained = args.pretrained
+    plot_path = args.plot_path
 
-    """ Data and Path Preperations """
+    """ Validations """
 
+    # Dataset
     if not dataset_name:
-        dataset_name = "VOCSegmentation"
+        raise NotImplementedError("Please Specify a Dataset Name with '-N'")
+    else:
+        task_type = get_task_type(dataset_name)
+        if task_type is None:
+            raise Exception("Invalid Dataset Name ( Or Unregistered in 'src/utility/data_factory :: get_task_type() )")
 
-    task_type = get_task_type(dataset_name)
-    if task_type is None:
-        raise Exception("Invalid Dataset Name ( Or Unregistered in 'src/utility/data_factory :: get_task_type() )")
+    """ Path Preperations """
 
+    # Data Path
     if data_path:
         if not os.path.exists(data_path):
             if not download:
@@ -106,6 +112,18 @@ def main(args):
     else:
         data_path = os.path.join(__init__.repository_root, "datasets")
 
+    # Config Path
+    if config:
+        config = os.path.join(__init__.repository_root, 'configs', 'default.yaml')
+    else:
+        config = os.path.join(__init__.repository_root, 'configs', 'default.yaml')
+    with open(config, 'r') as stream:
+        config = yaml.safe_load(stream)
+
+    print(config)
+    assert 0
+
+    # Save Path
     if save_path:
         save_path_dir = os.path.basename(save_path)
         if not os.path.exists(save_path_dir):
@@ -113,10 +131,11 @@ def main(args):
     else:
         save_path = os.path.join(__init__.repository_root, "weights", "model.pth")
 
+    # Load Path
     if load_path:
         if not os.path.exists(load_path):
             raise FileNotFoundError("Load Path Does Not Exist {}".format(load_path))
-        
+    # Plots Path
     if plot_path:
         if str(__init__.repository_root) in os.path.abspath(plot_path):
             plot_path = os.path.join(__init__.repository_root, 'plots') # Always redirect plots to the designated plot folder if its in the repo
@@ -125,9 +144,11 @@ def main(args):
     else:
         plot_path = os.path.join(__init__.repository_root, 'plots')
 
+
     """ Other Values """
     early_stop_tolerance = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
     transform_info = {
         'model' : architecture

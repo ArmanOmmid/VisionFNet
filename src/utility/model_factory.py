@@ -79,15 +79,15 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
         )
         model_base_transform = None if weights is None else weights.transforms
 
-    elif architecture in ['vit', 'fvit']:
+    elif architecture == 'vit':
         
         custom_implementation = True
         fourier = architecture == 'fvit'
 
         kernels = {
             224 : 16,
-            32 : 4,
-            28 : 4 
+            32 : 8,
+            28 : 7 
         }
 
         image_size = image_size
