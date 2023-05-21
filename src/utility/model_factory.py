@@ -84,14 +84,14 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
         custom_implementation = True
         fourier = architecture == 'fvit'
 
-        patching = {
+        kernels = {
             224 : 16,
             32 : 8,
             28 : 7 
         }
 
         image_size = image_size
-        patch_size = patching[image_size]
+        patch_size = kernels[image_size]
         num_layers = 3
         num_heads = 8
         hidden_dim = 64
