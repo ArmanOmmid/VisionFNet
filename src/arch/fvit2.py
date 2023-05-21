@@ -52,7 +52,10 @@ class EncoderBlock(nn.Module):
 
         y = self.ln_2(x)
         y = self.mlp(y)
-        return x + y
+
+        return y
+
+        # return x + y
 
 class Encoder(nn.Module):
     def __init__(
