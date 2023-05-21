@@ -1,9 +1,9 @@
 import copy
 
-class NotFound:
-    pass
-
 class Config:
+    
+    class NotFound:
+        pass
 
     def __init__(self, config):
         self.build(config)
@@ -31,6 +31,9 @@ class Config:
     #             original[key] = value
     #         else:
     #             if isinstance(value, list):
+
+    def __getattr__(self, name):
+        return self.__dict__.get(name, self.NotFound)
 
     def __repr__(self):
         return str(self.primitive())
