@@ -125,7 +125,8 @@ def main(args):
             self.__dict__.update(config)
             for key, value in self.__dict__.items():
                 if isinstance(value, dict):
-                    value = Config(**value)
+                    self.__dict__[key] = Config(**value)
+
     config = Config(**config)
     print(config.data)
     print(config.data.thing)
