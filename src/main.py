@@ -120,6 +120,10 @@ def main(args):
     with open(config, 'r') as stream:
         config = yaml.safe_load(stream)
 
+    class Config:
+        def __init__(self, **config):
+            self.__dict__.update(config)
+    config = Config(config)
     print(config.data)
     assert 0
 
