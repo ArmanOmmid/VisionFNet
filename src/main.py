@@ -118,9 +118,10 @@ def main(args):
             raise FileNotFoundError("Load Path Does Not Exist {}".format(load_path))
         
     if plot_path:
-        print(os.path.abspath(plot_path))
         if str(__init__.repository_root) in os.path.abspath(plot_path):
-            plot_path = os.path.join(__init__.repository_root, 'plots')
+            plot_path = os.path.join(__init__.repository_root, 'plots') # Always redirect plots to the designated plot folder if its in the repo
+        else:
+            os.makedirs(plot_path, exist_ok=True)
     else:
         plot_path = os.path.join(__init__.repository_root, 'plots')
 
