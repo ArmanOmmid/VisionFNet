@@ -181,11 +181,8 @@ def main(args):
     print("Training")
 
     results = experiment.run(epochs, early_stop_tolerance)
+    # results = [item.cpu() if hasattr(item, 'cpu') else item for item in results]
 
-    for i, item in enumerate(results):
-        print(i, [type(elem) for elem in item] if isinstance(item, list) else type(item))
-    
-    results = [item.cpu() if hasattr(item, 'cpu') else item for item in results]
     model, \
     best_iou_score, \
     train_loss_per_epoch, \
@@ -198,7 +195,8 @@ def main(args):
     print(f"Best IoU score: {best_iou_score}")
     util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, name='Loss')
     util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, name='Accuracy')
-    util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, name='Intersection over Union')
+    if task_type == 'segmentation':
+        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, name='Intersection over Union')
     
     print('-' * 20)
     test_loss, test_acc, test_iou = experiment.test()
