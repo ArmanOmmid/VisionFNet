@@ -209,6 +209,8 @@ def main(args):
         running_vloss = 0.0
         for i, vdata in enumerate(val_loader):
             vinputs, vlabels = vdata
+            vinputs =  vinputs.to(device)
+            vlabels =  vlabels.to(device)
             voutputs = model(vinputs)
             vloss = criterion(voutputs, vlabels)
             running_vloss += vloss
