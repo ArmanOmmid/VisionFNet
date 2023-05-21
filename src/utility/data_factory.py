@@ -110,7 +110,7 @@ def prepare_loaders(data_folder_path, dataset_name, transform_info, batch_size=8
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
-    return train_loader, val_loader, test_loader, class_names
+    return train_loader, val_loader, test_loader, class_names, image_size
 
 def get_class_weights(dataset, n_class):
     task_type = get_task_type(dataset)

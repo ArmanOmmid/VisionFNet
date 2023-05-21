@@ -121,7 +121,7 @@ def main(args):
     transform_info = None # TODO : Options for this? Currently automatic
 
     """ Data """
-    train_loader, val_loader, test_loader, class_names = prepare_loaders(data_path, dataset_name, transform_info=transform_info, 
+    train_loader, val_loader, test_loader, class_names, image_size = prepare_loaders(data_path, dataset_name, transform_info=transform_info, 
                                                                          batch_size=batch_size, num_workers=num_workers, download=download)
     data_loaders = {
         'train': train_loader,
@@ -146,7 +146,7 @@ def main(args):
         criterion = nn.CrossEntropyLoss()
 
     """ Model """
-    model, model_base_transform = build_model(architecture, len(class_names), pretrained, augment)
+    model, model_base_transform = build_model(architecture, len(class_names), image_size, pretrained, augment)
     model = model.to(device) # transfer the model to the device
 
     torchinfo.summary(model=model)

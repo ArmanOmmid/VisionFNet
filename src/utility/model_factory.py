@@ -28,7 +28,7 @@ def get_weight_initializer():
             raise E
     return init_weights
 
-def build_model(architecture, classes, pretrained=False, augment=False):
+def build_model(architecture, classes, image_size, pretrained=False, augment=False):
 
     class_count = classes if isinstance(classes, int) else len(classes)
 
@@ -77,9 +77,14 @@ def build_model(architecture, classes, pretrained=False, augment=False):
         model_base_transform = weights.transforms
 
     elif architecture == 'vit' or architecture == 'fvit':
+        patching = {
+            224 : 16,
+            32 : 8,
+            28 : 7 
+        }
 
-        image_size = 224
-        patch_size = 16
+        image_size = image_size
+        patch_size = patching[patching]
         num_layers = 1
         num_heads = 8
         hidden_dim = 32
