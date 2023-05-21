@@ -80,7 +80,8 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
         model_base_transform = None if weights is None else weights.transforms
 
     elif architecture in ['vit', 'fvit']:
-
+        
+        custom_implementation = True
         fourier = architecture == 'fvit'
 
         patching = {
@@ -91,16 +92,16 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
 
         image_size = image_size
         patch_size = patching[image_size]
-        num_layers = 2
+        num_layers = 4
         num_heads = 8
         hidden_dim = 32
         expansion = 4
-        if not fourier:
-            model = torchvision.models.vision_transformer.VisionTransformer(image_size=image_size, patch_size=patch_size, num_layers=num_layers, num_heads=num_heads, \
-                                           hidden_dim=hidden_dim, mlp_dim=(hidden_dim * expansion), num_classes=class_count)
-        else:
+        if custom_implementation or fourier:
             model = arch.vit.VisionTransformer(image_size=image_size, patch_size=patch_size, num_layers=num_layers, num_heads=num_heads, \
                                            hidden_dim=hidden_dim, mlp_dim=(hidden_dim * expansion), num_classes=class_count, fourier=fourier) #, norm_layer=nn.BatchNorm2d)
+        else:
+            model = torchvision.models.vision_transformer.VisionTransformer(image_size=image_size, patch_size=patch_size, num_layers=num_layers, num_heads=num_heads, \
+                                           hidden_dim=hidden_dim, mlp_dim=(hidden_dim * expansion), num_classes=class_count)
         
     else:
         raise NotImplementedError("Model Architecture Not Found")
