@@ -39,17 +39,16 @@ class EncoderBlock(nn.Module):
         x = self.ln_1(input)
         
         a, _ = self.self_attention(x, x, x, need_weights=False)
+        a = self.dropout(a)
+        a = a + input
 
         f = torch.real(torch.fft.fft2(x, norm='ortho'))
-        print(f.shape, a.shape)
-
         f, _ = self.fourier_attention(x, f, f, need_weights=False)
         f = torch.real(torch.fft.ifft2(x, norm='ortho'))
+        f = self.dropout(f)
+        f = f + input
 
         x = torch.cat((a, f), -1)
-            
-        x = self.dropout(x)
-        x = x + input
 
         y = self.ln_2(x)
         y = self.mlp(y)
