@@ -111,7 +111,6 @@ def main(args):
     """ Data """
     data_loaders, data_sizes, class_names = prepare_loaders(config, data_path, download=download)
     train_loader, val_loader, test_loader = list(data_loaders.values())
-    print(train_loader)
 
     print("Dataset Size: \n", data_sizes)
 
