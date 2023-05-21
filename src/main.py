@@ -134,7 +134,7 @@ def main(args):
     optimizer = torch.optim.Adam(learnable_parameters, lr=config.learning_rate, weight_decay=0.001)
 
     """ Learning Rate Scheduler """
-    if scheduler:
+    if config.scheduler:
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, config.epochs)
     else:
         scheduler = None 
