@@ -2,7 +2,7 @@
 model: fvit2
 image_size: 32
 patch_size: 8
-num_layers: 4
+num_layers: 2
 num_heads: 8
 hidden_dim: 64
 expansion: 4
