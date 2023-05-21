@@ -49,6 +49,9 @@ def build_model(architecture, classes, pretrained=False, augment=False):
 
     elif architecture == 'custom2':
         model = arch.customfcn2.Custom_FCN2(n_class=class_count)
+
+    elif architecture == 'fcn':
+        model = arch.basic_fcn.FCN(n_class=class_count)
     
     elif architecture == 'resnet':
         weights = None if not pretrained else torchvision.models.ResNet50_Weights.DEFAULT
@@ -62,7 +65,7 @@ def build_model(architecture, classes, pretrained=False, augment=False):
 
         model_base_transform = weights.transforms
 
-    elif architecture == 'vit':
+    elif architecture == 'import_vit':
         weights = None if not pretrained else torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
         model = torchvision.models.vit_b_16(weights=weights)
         for param in model.parameters():
@@ -73,14 +76,14 @@ def build_model(architecture, classes, pretrained=False, augment=False):
         )
         model_base_transform = weights.transforms
 
-    elif architecture == 'vit_explicit':
+    elif architecture == 'vit':
         model = arch.vit.VisionTransformer(image_size=224, patch_size=32, num_layers=1, num_heads=1, hidden_dim=32, mlp_dim=32, num_classes=class_count) #, norm_layer=nn.BatchNorm2d)
         
-    elif architecture == 'vision_fnet':
+    elif architecture == 'fvit':
         model = arch.vit.VisionTransformer(image_size=224, patch_size=16, num_layers=12, num_heads=8, hidden_dim=768, mlp_dim=3072, num_classes=class_count, fourier=True)
 
     else:
-        model = arch.basic_fcn.FCN(n_class=class_count)
+        raise NotImplementedError("Model Architecture Not Found")
 
     attr(model)
 
