@@ -157,7 +157,7 @@ class Experiment(object):
 
         dataset_size = len(self.train_loader.dataset)
 
-        self.model.train() # Turn train() back on in case it was turned off
+        self.model.train(True) # Turn train() back on in case it was turned off
 
         if self.classification:
             running_loss = 0.0
@@ -186,6 +186,8 @@ class Experiment(object):
 
                 loss.backward()
                 self.optimizer.step()
+
+            self.model.train(False)
             
             if self.classification:
                 running_loss += loss.item() * inputs.size(0)
