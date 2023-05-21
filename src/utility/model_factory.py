@@ -86,8 +86,8 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
 
         patching = {
             224 : 16,
-            32 : 8,
-            28 : 7 
+            32 : 4,
+            28 : 4 
         }
 
         image_size = image_size
