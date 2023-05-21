@@ -58,6 +58,8 @@ parser.add_argument('-S', '--save_path', default=False,
                     help="Path to save model weights to")
 parser.add_argument('-L', '--load_path', default=False,
                     help="Path to load model weights from")
+parser.add_argument('-P', '--plot_path', default=False,
+                    help="Path to dump experiment plots")
 
 
 parser.add_argument('--download', action='store_true',
@@ -81,6 +83,7 @@ def main(args):
     data_path = args.data_path
     dataset_name = args.dataset_name
     download = args.download
+    plot_path = args.plot_path
 
     """ Weights """
     save_path = args.save_path
@@ -113,6 +116,12 @@ def main(args):
     if load_path:
         if not os.path.exists(load_path):
             raise FileNotFoundError("Load Path Does Not Exist {}".format(load_path))
+        
+    if plot_path:
+        if str(__init__.repository_root) in os.path.abspath(plot_path):
+            plot_path = os.path.join(__init__.repository_root, 'plots')
+    else:
+        plot_path = os.path.join(__init__.repository_root, 'plots')
 
     """ Other Values """
     early_stop_tolerance = 8
@@ -190,14 +199,12 @@ def main(args):
     valid_loss_per_epoch, \
     valid_iou_per_epoch, \
     valid_acc_per_epoch = results
-
-    plots_path = os.path.join(__init__.repository_root, "plots")
     
     print(f"Best IoU score: {best_iou_score}")
-    util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, plots_path, name='Loss')
-    util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, plots_path, name='Accuracy')
+    util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, plot_path, name='Loss')
+    util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, plot_path, name='Accuracy')
     if task_type == 'segmentation':
-        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, name='IoU')
+        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, plot_path, name='IoU')
     
     print('-' * 20)
     test_loss, test_acc, test_iou = experiment.test()
