@@ -72,9 +72,7 @@ def build_model(config, classes):
         model = torchvision.models.vision_transformer.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
                                            hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count)
     elif config.model == 'vit':
-        print(type(config.hidden_dim), type(config.expansion))
         ml_dim = int(config.hidden_dim * config.expansion)
-        print(ml_dim)
         model = arch.vit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
                                            hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count, fourier=False) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'fvit':

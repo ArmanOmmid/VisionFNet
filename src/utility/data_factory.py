@@ -154,4 +154,4 @@ def get_class_weights(dataset, n_class):
         class_weights = torch.from_numpy(class_weights)
         print(f"Class weights: {class_weights}")
         
-    return class_weights
+    return class_weights.float()

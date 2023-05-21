@@ -114,11 +114,9 @@ def main(args):
 
     print("Dataset Size: \n", data_sizes)
 
-    if config.weighted_loss:
-        class_weights = get_class_weights(train_loader, len(class_names)).to(device)
-
     """ Criterion """
     if config.weighted_loss:
+        class_weights = get_class_weights(train_loader, len(class_names)).to(device)
         criterion = nn.CrossEntropyLoss(weight=class_weights)
     else:
         criterion = nn.CrossEntropyLoss()
