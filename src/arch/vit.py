@@ -1,6 +1,4 @@
 
- 
-
 import math
 from collections import OrderedDict
 from functools import partial
@@ -8,7 +6,7 @@ from typing import Any, Callable, Dict, List, NamedTuple, Optional
 
 import torch
 import torch.nn as nn
-from torchvision.ops import MLP
+from torchvision.ops import MLP, Conv2dNormActivation
 
 class ConvStemConfig(NamedTuple):
     out_channels: int
@@ -48,7 +46,7 @@ class EncoderBlock(nn.Module):
         if not self.fourier:
             x, _ = self.self_attention(x, x, x, need_weights=False)
         else:
-            x = torch.real(torch.fft.fft(x))
+            x = torch.real(torch.fft.fft2(x))
             
         x = self.dropout(x)
         x = x + input
