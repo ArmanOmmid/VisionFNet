@@ -12,7 +12,7 @@ class Config:
         self.__dict__.update(config)
         for key, value in self.__dict__.items():
             if isinstance(value, dict):
-                self.__dict__[key] = Config(**value)
+                self.__dict__[key] = Config(value)
 
     def primitive(self, dict=None):
         dict = copy.deepcopy(self.__dict__) if dict is None else dict
