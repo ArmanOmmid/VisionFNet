@@ -118,7 +118,9 @@ def main(args):
     early_stop_tolerance = 8
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    transform_info = None # TODO : Options for this? Currently automatic
+    transform_info = {
+        'model' : architecture
+    }
 
     """ Data """
     train_loader, val_loader, test_loader, class_names, image_size = prepare_loaders(data_path, dataset_name, transform_info=transform_info, 

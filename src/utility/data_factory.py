@@ -20,6 +20,7 @@ import numpy as np
 
 import src.utility.util as util
 import src.utility.voc as voc
+from src.utility.model_factory import DEFAULT_SIZE_224
 from src.utility.data_info import get_targets, get_base_dataset, get_pixel_size, get_dataset_name, get_task_type, get_indices
 from src.utility.transforms import ViT_Transform, VOC_Transform
 from src.utility.voc import VOCSegmentation
@@ -44,7 +45,7 @@ def prepare_loaders(data_folder_path, dataset_name, transform_info, batch_size=8
 
     task_type = get_task_type(dataset_name)
     if task_type == 'classification':
-        image_size = min(max(get_pixel_size(dataset_name)), 224)
+        image_size = 224 if transform_info['model'] in DEFAULT_SIZE_224 else min(max(get_pixel_size(dataset_name)), 224)
         transform = ViT_Transform(image_size)
     elif task_type == 'segmentation':
         augment = False

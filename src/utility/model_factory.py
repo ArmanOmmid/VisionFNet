@@ -11,6 +11,8 @@ import torchvision
 import src.utility.util as util
 import src.arch as arch
 
+DEFAULT_SIZE_224 = ['import_vit']
+
 def get_weight_initializer():
     def init_weights(module):
         # children_size = len([None for _ in module.children()]) # Its a non-container module if this is 0; but we don't need this
