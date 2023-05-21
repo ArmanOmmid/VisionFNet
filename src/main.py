@@ -182,7 +182,7 @@ def main(args):
 
     results = experiment.run(epochs, early_stop_tolerance)
     
-    result = [item.cpu()  if hasattr(item, 'cpu') else item for item in result]
+    results = [item.cpu()  if hasattr(item, 'cpu') else item for item in results]
     model, \
     best_iou_score, \
     train_loss_per_epoch, \
