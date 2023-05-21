@@ -123,6 +123,9 @@ def main(args):
     class Config:
         def __init__(self, **config):
             self.__dict__.update(config)
+            for key, value in self.__dict__.items():
+                if isinstance(value, dict):
+                    value = Config(**value)
     config = Config(**config)
     print(config.data)
     print(config.data.thing)
