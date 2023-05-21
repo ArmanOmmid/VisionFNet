@@ -39,7 +39,7 @@ parser.add_argument('-e', '--epochs', type=int, default=10,
                     help='Epochs')
 parser.add_argument('-b', '--batch_size', type=int, default=8,
                     help='Batch Size')
-parser.add_argument('-l', '--learning_rate', type=int, default=0.01,
+parser.add_argument('-l', '--learning_rate', type=int, default=0.001,
                     help='Learning Rate')
 parser.add_argument('-w', '--weighted_loss', action='store_true',
                     help='Weighted Loss')
@@ -171,6 +171,8 @@ def main(args):
 
         running_loss = 0.
         last_loss = 0.
+        train_correct = 0
+        val_correct = 0
 
         # Here, we use enumerate(training_loader) instead of
         # iter(training_loader) so that we can track the batch
