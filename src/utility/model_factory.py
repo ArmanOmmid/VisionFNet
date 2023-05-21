@@ -85,7 +85,7 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
 
         image_size = image_size
         patch_size = patching[image_size]
-        num_layers = 4
+        num_layers = 1
         num_heads = 8
         hidden_dim = 32
         expansion = 4
