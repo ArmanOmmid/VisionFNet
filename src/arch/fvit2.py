@@ -64,7 +64,6 @@ class Encoder(nn.Module):
         dropout: float,
         attention_dropout: float,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
-        fourier: bool = False,
     ):
         super().__init__()
         # Note that batch_size is on the first dim because
@@ -80,7 +79,6 @@ class Encoder(nn.Module):
                 dropout,
                 attention_dropout,
                 norm_layer,
-                fourier,
             )
         self.layers = nn.Sequential(layers)
         self.ln = norm_layer(hidden_dim)
@@ -105,7 +103,6 @@ class VisionTransformer(nn.Module):
         num_classes: int = 1000,
         representation_size: Optional[int] = None,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
-        fourier: bool = False,
     ):
         super().__init__()
         torch._assert(image_size % patch_size == 0, "Input shape indivisible by patch size!")
@@ -118,7 +115,6 @@ class VisionTransformer(nn.Module):
         self.num_classes = num_classes
         self.representation_size = representation_size
         self.norm_layer = norm_layer
-        self.fourier = fourier
 
         self.conv_proj = nn.Conv2d(
             in_channels=3, out_channels=hidden_dim, kernel_size=patch_size, stride=patch_size
@@ -139,7 +135,6 @@ class VisionTransformer(nn.Module):
             dropout,
             attention_dropout,
             norm_layer,
-            fourier,
         )
         self.seq_length = seq_length
 
