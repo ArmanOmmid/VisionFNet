@@ -105,7 +105,7 @@ def build_model(architecture, classes, image_size, pretrained=False, augment=Fal
     else:
         raise NotImplementedError("Model Architecture Not Found")
 
-    # attr(model)
+    attr(model)
 
     init_weights = get_weight_initializer()
     # model.apply(init_weights)
