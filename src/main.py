@@ -120,7 +120,7 @@ def main(args):
     with open(config, 'r') as stream:
         config = yaml.safe_load(stream)
 
-    print(config)
+    print(config.data)
     assert 0
 
     # Save Path
