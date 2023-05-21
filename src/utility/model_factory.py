@@ -80,13 +80,13 @@ def build_model(architecture, classes, pretrained=False, augment=False):
 
         image_size = 224
         patch_size = 8
-        num_layers = 8
+        num_layers = 1
         num_heads = 8
         hidden_dim = 32
         mlp_dim = hidden_dim * 4
         model = arch.vit.VisionTransformer(image_size=image_size, patch_size=patch_size, num_layers=num_layers, num_heads=num_heads, \
                                            hidden_dim=hidden_dim, mlp_dim=mlp_dim, num_classes=class_count, fourier=(architecture =='fvit')) #, norm_layer=nn.BatchNorm2d)
-
+        print(model)
     else:
         raise NotImplementedError("Model Architecture Not Found")
 
