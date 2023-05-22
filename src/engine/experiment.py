@@ -194,7 +194,7 @@ class Experiment(object):
 
                 loss.backward()
                 if self.config.clip:
-                    torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config.clip)
+                    torch.nn.utils.clip_grad_value_(self.model.parameters(), self.config.clip)
                     print("hi")
                 self.optimizer.step()
 
