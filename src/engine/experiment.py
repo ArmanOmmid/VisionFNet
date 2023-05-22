@@ -108,12 +108,12 @@ class Experiment(object):
 
             ts = time.time()
 
-            train_loss_at_epoch, train_acc_at_epoch, train_iou_at_epoch = self.train()
+            train_loss_at_epoch, train_acc_at_epoch, train_iou_at_epoch = self.train(epoch)
 
             if self.scheduler is not None:
                 self.scheduler.step()
 
-            valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val()
+            valid_loss_at_epoch, valid_acc_at_epoch, valid_iou_at_epoch = self.val(epoch)
 
             print("Epoch {} | Time Elapsed: {} |".format(epoch+1, (time.time() - ts)))
             print("                      Train | Accuracy: {} | Loss: {}".format(f"{train_acc_at_epoch:.4f}", f"{train_loss_at_epoch:.4f}"))
@@ -157,7 +157,7 @@ class Experiment(object):
 
         return self.model, best_iou_score, train_loss_per_epoch, train_iou_per_epoch, train_acc_per_epoch, valid_loss_per_epoch, valid_iou_per_epoch, valid_acc_per_epoch
     
-    def train(self):
+    def train(self, epoch):
 
         dataset_size = len(self.train_loader.dataset)
 
@@ -185,7 +185,8 @@ class Experiment(object):
             self.optimizer.zero_grad()
             with torch.enable_grad(): # torch.set_grad_enabled(True)
 
-                if self.config.debug: torch.autograd.set_detect_anomaly(True)
+                if self.config.debug and epoch > self.config.debug: 
+                    torch.autograd.set_detect_anomaly(True)
                 outputs = self.model(inputs)
 
                 if torch.any(torch.isnan(outputs)):
@@ -226,7 +227,8 @@ class Experiment(object):
                 #         raise Exception("NaN")
 
             self.model.train(False)
-            torch.autograd.set_detect_anomaly(False, check_nan=True)
+            if self.config.debug and epoch > self.config.debug: 
+                torch.autograd.set_detect_anomaly(True)
             
             if self.classification:
                 running_loss += loss.item() * inputs.size(0)
@@ -252,7 +254,7 @@ class Experiment(object):
 
         return loss_at_epoch, acc_at_epoch, iou_at_epoch
 
-    def val(self):
+    def val(self, epoch):
 
         dataset_size = len(self.val_loader.dataset)
 
