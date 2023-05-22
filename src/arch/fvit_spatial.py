@@ -64,12 +64,12 @@ class EncoderBlock(nn.Module):
         f = torch.permute(f, (0, 2, 1)) # N, C+2, L -> N, L, C+2
 
         f = torch.unflatten(f, -1, (-1, 2)) # N, C+2, L -> N, L, C+2 // 2, 2
-        print(f.shape)
-        f = f.contiguous()
-        print(f.shape)
+        f = f.contiguous() # need for view_as_complex
         f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2 // 2
 
+        print(f.shape)
         f = torch.fft.irfft2(x, norm='ortho')
+        print(f.shape)
         f = self.dropout(f)
         f = f + input
 
