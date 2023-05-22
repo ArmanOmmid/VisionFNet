@@ -212,7 +212,7 @@ class Experiment(object):
                     torch.nn.utils.clip_grad_value_(self.model.parameters(), self.config.clip)
                 self.optimizer.step()
 
-                if debug: torch.autograd.set_detect_anomaly(True, check_nan=True)
+                if debug: torch.autograd.set_detect_anomaly(False, check_nan=True)
 
                 # for name, param in self.model.named_parameters():
                 #     if torch.any(torch.isnan(param)):
