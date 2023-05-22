@@ -58,7 +58,7 @@ def main(args):
     config_folder = os.path.join(__init__.repository_root, 'configs')
     config = os.path.join(config_folder, f'{config}.yaml')
     if not os.path.exists(config):
-        raise FileNotFoundError(f"Config Path '{config}.yaml' does not exist. Choose from: \n{os.listdir(config_folder)}")
+        raise FileNotFoundError(f"Config Path '{config}' does not exist. Choose from: \n{os.listdir(config_folder)}")
     with open(config, 'r') as stream:
         config = yaml.safe_load(stream)
     config = Config(config)
