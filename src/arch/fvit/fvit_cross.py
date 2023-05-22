@@ -90,7 +90,7 @@ class Encoder(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         input = input + self.pos_embedding
-        return self.ln(self.layers(self.dropout(input)))
+        return self.ln(self.layers(self.dropout(input)), eps=1e-03)
 
 
 class VisionTransformer(nn.Module):
