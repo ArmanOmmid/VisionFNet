@@ -48,11 +48,11 @@ class EncoderBlock(nn.Module):
         a = a + input
 
         f = torch.fft.rfft2(x, norm='ortho') # N, L, C -> N, L, C//2 + 1
-        f = torch.view_as_real() #  N, L, C//2 + 1 -> N, L, C + 2
+        f = torch.view_as_real(f) #  N, L, C//2 + 1 -> N, L, C + 2
         f = torch.permute(f, (0, 2, 1)) # Permute N, L, C+2 -> N, C+2, L for channelwise 1x1 conv
         f = self.nin_conv(f) # N, C+2, L -> N, C, L
         f = torch.permute(f, (0, 2, 1)) # N, L, C -> N, C, L
-        
+
         f, _ = self.fourier_attention(f, f, f, need_weights=False)
         f = torch.fft.irfft2(x, norm='ortho')
         f = self.dropout(f)
