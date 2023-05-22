@@ -43,7 +43,7 @@ class EncoderBlock(nn.Module):
         a = a + input
 
         f = torch.real(torch.fft.fft2(x, norm='ortho'))
-        f, _ = self.fourier_attention(x, f, f, need_weights=False)
+        f, _ = self.fourier_attention(x, f, f, need_weights=False) # Q K V 
         f = torch.real(torch.fft.ifft2(x, norm='ortho'))
         f = self.dropout(f)
         f = f + input

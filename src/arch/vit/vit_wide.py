@@ -54,7 +54,7 @@ class EncoderBlock(nn.Module):
         x = torch.cat((x1, x2), dim=-1)
 
         x = self.condense(x)
-            
+        
         x = self.dropout(x)
         x = x + input
 
