@@ -75,6 +75,10 @@ def build_model(config, classes):
         ml_dim = int(config.hidden_dim * config.expansion)
         model = arch.vit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
                                            hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count, fourier=False) # norm_layer=nn.BatchNorm2d)
+    elif config.model == 'vit_wide':
+        ml_dim = int(config.hidden_dim * config.expansion)
+        model = arch.vit_wide.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
+                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count, fourier=False) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'fvit':
         ml_dim = int(config.hidden_dim * config.expansion)
         model = arch.fvit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
