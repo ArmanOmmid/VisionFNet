@@ -29,10 +29,11 @@ class EncoderBlock(nn.Module):
         self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
         self.dropout = nn.Dropout(dropout)
-
+        
+        reshape = hidden_dim + (hidden_dim+2) // 2
         # MLP block
-        self.ln_2 = norm_layer(hidden_dim*2)
-        self.mlp = MLP(hidden_dim*2, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+        self.ln_2 = norm_layer(reshape)
+        self.mlp = MLP(reshape, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
@@ -42,9 +43,9 @@ class EncoderBlock(nn.Module):
         a = self.dropout(a)
         a = a + input
 
-        f = torch.fft.fft2(x, norm='ortho')
+        f = torch.fft.rfft2(x, norm='ortho')
         f, _ = self.fourier_attention(f, f, f, need_weights=False)
-        f = torch.fft.ifft2(x, norm='ortho')
+        f = torch.fft.irfft2(x, norm='ortho')
         f = self.dropout(f)
         f = f + input
 
