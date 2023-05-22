@@ -162,7 +162,7 @@ class Experiment(object):
         dataset_size = len(self.train_loader.dataset)
 
         self.model.train(True) # Turn train() back on in case it was turned off
-
+        param_copy = None
         if self.classification:
             running_loss = 0.0
             running_corrects = 0.0
@@ -183,16 +183,19 @@ class Experiment(object):
                 labels = labels.view(-1, h, w)
             
             self.optimizer.zero_grad()
-            # torch.autograd.set_detect_anomaly(True, check_nan=True)
             with torch.enable_grad(): # torch.set_grad_enabled(True)
                 outputs = self.model(inputs)
 
                 nan = torch.any(torch.isnan(outputs))
                 if nan:
+                    for name, param in param_copy:
+                        print(name, param)
                     for name, param in self.model.named_parameters():
                         print(name, param)
                     print("NaN Output | Batch[{}]".format(iter))
                     raise Exception("NaN Output")
+                else:
+                    param_copy = copy.deepcopy(self.model.named_parameters())
 
                 _, preds = torch.max(outputs, dim=1)
 
