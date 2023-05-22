@@ -183,6 +183,7 @@ class Experiment(object):
                 labels = labels.view(-1, h, w)
             
             self.optimizer.zero_grad()
+            torch.autograd.set_detect_anomaly(True, check_nan=True)
             with torch.enable_grad(): # torch.set_grad_enabled(True)
                 outputs = self.model(inputs)
 
@@ -206,6 +207,7 @@ class Experiment(object):
                 self.optimizer.step()
 
             self.model.train(False)
+            torch.autograd.set_detect_anomaly(False, check_nan=True)
             
             if self.classification:
                 running_loss += loss.item() * inputs.size(0)
