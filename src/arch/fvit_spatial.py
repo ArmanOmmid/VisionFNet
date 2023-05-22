@@ -48,6 +48,7 @@ class EncoderBlock(nn.Module):
         a = self.dropout(a)
         a = a + input
 
+        # rfft makes last channel go from C to C+2 // 2
         f = torch.fft.rfft2(x, norm='ortho') # N, L, C -> N, L, C+2 // 2 
         f = torch.view_as_real(f) #  N, L, C+2 // 2  -> N, L, C+2 // 2 , 2
         f = torch.flatten(f, start_dim=-2) # N, L, C+2 // 2 , 2 -> N, L, C + 2
@@ -63,7 +64,8 @@ class EncoderBlock(nn.Module):
         f = torch.permute(f, (0, 2, 1)) # N, C+2, L -> N, L, C+2
 
         f = torch.unflatten(f, -1, (-1, 2)) # N, C+2, L -> N, L, C+2 // 2, 2
-        f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2
+        print(f.shape)
+        f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2 // 2
 
         f = torch.fft.irfft2(x, norm='ortho')
         f = self.dropout(f)
