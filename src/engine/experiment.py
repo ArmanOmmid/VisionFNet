@@ -195,7 +195,7 @@ class Experiment(object):
                     print("NaN Output | Batch[{}]".format(iter))
                     raise Exception("NaN Output")
                 else:
-                    param_copy = copy.deepcopy(self.model.named_parameters())
+                    param_copy = copy.deepcopy(list(self.model.named_parameters()))
 
                 _, preds = torch.max(outputs, dim=1)
 
