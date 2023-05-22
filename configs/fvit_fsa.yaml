@@ -18,8 +18,8 @@ scheduler: False
 num_workers: 1
 weighted_loss: False
 early_stop_tolerance: 8
-clip: 5
+clip: 1
 
 # Misc
-debug: True
+debug: 4
 augment: False
