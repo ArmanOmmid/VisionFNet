@@ -186,6 +186,9 @@ class Experiment(object):
             with torch.enable_grad(): # torch.set_grad_enabled(True)
                 outputs = self.model(inputs)
 
+                if torch.any(torch.isnan(outputs)):
+                    raise Exception(f"Output is NaN | Batch[{iter}]\nPrevious optimizer step evaluated at least one Parameter to NaN.")
+                
                 # nan = torch.any(torch.isnan(outputs))
                 # if not nan:
                 #     param_copy = copy.deepcopy(list(self.model.named_parameters()))
@@ -194,12 +197,12 @@ class Experiment(object):
 
                 loss = self.criterion(outputs, labels)
 
-                nan = torch.any(torch.isnan(loss))
-                if nan:
-                    print("NaN Loss | Batch[{}]".format(iter))
-                    for name, param in self.model.named_parameters():
-                        print(name, param)
-                    raise Exception("NaN Output")
+                # nan = torch.any(torch.isnan(loss))
+                # if nan:
+                #     print("NaN Loss | Batch[{}]".format(iter))
+                #     for name, param in self.model.named_parameters():
+                #         print(name, param)
+                #     raise Exception("NaN Output")
 
                 loss.backward()
                 if self.config.clip:
