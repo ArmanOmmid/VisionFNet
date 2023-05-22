@@ -185,7 +185,14 @@ class Experiment(object):
             self.optimizer.zero_grad()
             with torch.enable_grad(): # torch.set_grad_enabled(True)
                 outputs = self.model(inputs)
+
+                nan = torch.any(torch.isnan(outputs))
+                if nan:
+                    print("NaN Output | Batch[{}]".format(iter))
+                    outputs = torch.nan_to_num(outputs, 0.0)
+
                 _, preds = torch.max(outputs, dim=1)
+
                 loss = self.criterion(outputs, labels)
 
                 nan = torch.any(torch.isnan(loss))
