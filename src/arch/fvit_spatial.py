@@ -34,7 +34,7 @@ class EncoderBlock(nn.Module):
 
         self.nin_conv = nn.Conv1d(fourier_dims+1, fourier_dims, 1, dtype=torch.cfloat)
 
-        self.fourier_attention = nn.MultiheadAttention(fourier_dims, fourier_dims//2, dropout=attention_dropout, batch_first=True)
+        self.fourier_attention = nn.MultiheadAttention(fourier_dims, fourier_dims//2, dropout=attention_dropout, batch_first=True, dtype=torch.cfloat)
 
         # MLP block
         self.ln_2 = norm_layer(mlp_input_dims)
