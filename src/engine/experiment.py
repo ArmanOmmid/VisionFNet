@@ -188,14 +188,7 @@ class Experiment(object):
 
                 nan = torch.any(torch.isnan(outputs))
                 if nan:
-                    print("Before Step")
-                    for name, param in param_copy:
-                        print(name, param)
-                    print("\nAFTER\n")
-                    for name, param in self.model.named_parameters():
-                        print(name, param)
-                    print("NaN Output | Batch[{}]".format(iter))
-                    raise Exception("NaN Output")
+                    raise Exception("NaN Sneak")
                 else:
                     param_copy = copy.deepcopy(list(self.model.named_parameters()))
 
@@ -217,9 +210,15 @@ class Experiment(object):
 
                 for name, param in self.model.named_parameters():
                     if torch.any(torch.isnan(param)):
-                        print("\After Step\n")
+                        print("NaN | Batch[{}]".format(iter))
+                        print("\nBefore\n")
+                        for name, param in param_copy:
+                            print(name, param)
+                        print("\nAfter\n")
                         for name, param in self.model.named_parameters():
                             print(name, param)
+                        print("NaN Update | Batch[{}]".format(iter))
+                        raise Exception("NaN")
 
             self.model.train(False)
             torch.autograd.set_detect_anomaly(False, check_nan=True)
