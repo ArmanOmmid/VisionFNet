@@ -188,8 +188,10 @@ class Experiment(object):
 
                 nan = torch.any(torch.isnan(outputs))
                 if nan:
+                    print("BEFORE")
                     for name, param in param_copy:
                         print(name, param)
+                    print("\nAFTER\n")
                     for name, param in self.model.named_parameters():
                         print(name, param)
                     print("NaN Output | Batch[{}]".format(iter))
