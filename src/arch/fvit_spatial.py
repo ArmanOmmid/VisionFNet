@@ -65,6 +65,8 @@ class EncoderBlock(nn.Module):
 
         f = torch.unflatten(f, -1, (-1, 2)) # N, C+2, L -> N, L, C+2 // 2, 2
         print(f.shape)
+        f = f.contiguous()
+        print(f.shape)
         f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2 // 2
 
         f = torch.fft.irfft2(x, norm='ortho')
