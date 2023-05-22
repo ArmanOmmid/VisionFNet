@@ -189,8 +189,10 @@ class Experiment(object):
 
                 nan = torch.any(torch.isnan(outputs))
                 if nan:
+                    for name, param in self.model.named_parameters():
+                        print(name, param)
                     print("NaN Output | Batch[{}]".format(iter))
-                    outputs = torch.nan_to_num(outputs, 0.0)
+                    raise Exception("NaN Output")
 
                 _, preds = torch.max(outputs, dim=1)
 
@@ -199,7 +201,7 @@ class Experiment(object):
                 nan = torch.any(torch.isnan(loss))
                 if nan:
                     print("NaN Loss | Batch[{}]".format(iter))
-                    loss = torch.nan_to_num(loss, 0.0)
+                    raise Exception("NaN Output")
 
                 loss.backward()
                 if self.config.clip:
