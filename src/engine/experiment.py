@@ -188,7 +188,7 @@ class Experiment(object):
 
                 nan = torch.any(torch.isnan(outputs))
                 if nan:
-                    print("BEFORE")
+                    print("Before Step")
                     for name, param in param_copy:
                         print(name, param)
                     print("\nAFTER\n")
@@ -206,12 +206,20 @@ class Experiment(object):
                 nan = torch.any(torch.isnan(loss))
                 if nan:
                     print("NaN Loss | Batch[{}]".format(iter))
+                    for name, param in self.model.named_parameters():
+                        print(name, param)
                     raise Exception("NaN Output")
 
                 loss.backward()
                 if self.config.clip:
                     torch.nn.utils.clip_grad_value_(self.model.parameters(), self.config.clip)
                 self.optimizer.step()
+
+                for name, param in self.model.named_parameters():
+                    if torch.any(torch.isnan(param)):
+                        print("\After Step\n")
+                        for name, param in self.model.named_parameters():
+                            print(name, param)
 
             self.model.train(False)
             torch.autograd.set_detect_anomaly(False, check_nan=True)
