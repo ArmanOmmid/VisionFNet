@@ -71,7 +71,7 @@ class EncoderBlock(nn.Module):
         f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2 // 2
 
 
-        f = torch.fft.irfft2(x, s=L, norm='ortho')
+        f = torch.fft.irfft2(x, s=(L, C), norm='ortho')
         f = self.dropout(f)
         f = f + input
 
