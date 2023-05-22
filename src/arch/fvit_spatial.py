@@ -26,7 +26,6 @@ class EncoderBlock(nn.Module):
 
         self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
-
         self.dropout = nn.Dropout(dropout)
 
         self.nin_conv_in = nn.Conv1d(hidden_dim+2, hidden_dim, 1)
@@ -69,7 +68,6 @@ class EncoderBlock(nn.Module):
         f = torch.unflatten(f, -1, (-1, 2)) # N, C+2, L -> N, L, C+2 // 2, 2
         f = f.contiguous() # need for view_as_complex
         f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2 // 2
-
 
         f = torch.fft.irfft2(x, s=(L, C), norm='ortho')
         f = self.dropout(f)
