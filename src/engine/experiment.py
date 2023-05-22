@@ -188,6 +188,10 @@ class Experiment(object):
                 _, preds = torch.max(outputs, dim=1)
                 loss = self.criterion(outputs, labels)
 
+                nan = torch.any(torch.isnan(loss))
+                if nan:
+                    print("NaN Loss: ", loss)
+
                 loss.backward()
                 if self.config.clip:
                     torch.nn.utils.clip_grad_value_(self.model.parameters(), self.config.clip)
