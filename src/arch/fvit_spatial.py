@@ -42,6 +42,9 @@ class EncoderBlock(nn.Module):
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
+
+
+
         x = self.ln_1(input)
         
         a, _ = self.self_attention(x, x, x, need_weights=False)
@@ -59,7 +62,7 @@ class EncoderBlock(nn.Module):
 
         f, _ = self.fourier_attention(f, f, f, need_weights=False)
 
-        print(f)
+        print(f.shape)
         f = torch.permute(f, (0, 2, 1)) # N, L, C -> N, C, L
         f = self.nin_conv_out(f) # N, C, L -> N, C+2, L
         f = torch.permute(f, (0, 2, 1)) # N, C+2, L -> N, L, C+2
@@ -69,7 +72,7 @@ class EncoderBlock(nn.Module):
         f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2 // 2
 
         print(f.shape)
-        f = torch.fft.irfft2(x, norm='ortho')
+        f = torch.fft.irfft2(x, s=, norm='ortho')
         print(f.shape)
         f = self.dropout(f)
         f = f + input
