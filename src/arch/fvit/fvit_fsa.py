@@ -16,7 +16,7 @@ class EncoderBlock(nn.Module):
         mlp_dim: int,
         dropout: float,
         attention_dropout: float,
-        norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-2),
+        norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
     ):
         super().__init__()
         self.num_heads = num_heads
