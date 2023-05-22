@@ -29,7 +29,8 @@ class EncoderBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-        self.nin_conv = nn.Conv1d(hidden_dim+2, hidden_dim, 1)
+        self.nin_conv_in = nn.Conv1d(hidden_dim+2, hidden_dim, 1)
+        self.nin_conv_out = nn.Conv1d(hidden_dim, hidden_dim+2, 1)
 
         self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
@@ -47,14 +48,23 @@ class EncoderBlock(nn.Module):
         a = self.dropout(a)
         a = a + input
 
-        f = torch.fft.rfft2(x, norm='ortho') # N, L, C -> N, L, C//2 + 1
-        f = torch.view_as_real(f) #  N, L, C//2 + 1 -> N, L, C//2 + 1, 2
-        f = torch.flatten(f, start_dim=-1) # N, L, C//2 + 1, 2 -> N, L, C + 2
-        f = torch.permute(f, (0, 2, 1)) # Permute N, L, C+2 -> N, C+2, L for channelwise 1x1 conv
-        f = self.nin_conv(f) # N, C+2, L -> N, C, L
-        f = torch.permute(f, (0, 2, 1)) # N, L, C -> N, C, L
+        f = torch.fft.rfft2(x, norm='ortho') # N, L, C -> N, L, C+2 // 2 
+        f = torch.view_as_real(f) #  N, L, C+2 // 2  -> N, L, C+2 // 2 , 2
+        f = torch.flatten(f, start_dim=-2) # N, L, C+2 // 2 , 2 -> N, L, C + 2
+
+        f = torch.permute(f, (0, 2, 1)) # N, L, C+2 -> N, C+2, L   ... needed for channelwise 1x1 conv
+        f = self.nin_conv_in(f) # N, C+2, L -> N, C, L
+        f = torch.permute(f, (0, 2, 1)) # N, C, L -> N, L, C
 
         f, _ = self.fourier_attention(f, f, f, need_weights=False)
+
+        f = torch.permute(f, (0, 2, 1)) # N, L, C -> N, C, L
+        f = self.nin_conv_out(f) # N, C, L -> N, C+2, L
+        f = torch.permute(f, (0, 2, 1)) # N, C+2, L -> N, L, C+2
+
+        f = torch.unflatten(f, -1, (-1, 2)) # N, C+2, L -> N, L, C+2 // 2, 2
+        f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2
+
         f = torch.fft.irfft2(x, norm='ortho')
         f = self.dropout(f)
         f = f + input
