@@ -191,11 +191,12 @@ class Experiment(object):
                 nan = torch.any(torch.isnan(loss))
                 if nan:
                     print("NaN Loss | Batch[{}]".format(iter))
-                else:
-                    loss.backward()
-                    if self.config.clip:
-                        torch.nn.utils.clip_grad_value_(self.model.parameters(), self.config.clip)
-                    self.optimizer.step()
+                    loss = torch.nan_to_num(loss, 0.0)
+
+                loss.backward()
+                if self.config.clip:
+                    torch.nn.utils.clip_grad_value_(self.model.parameters(), self.config.clip)
+                self.optimizer.step()
 
             self.model.train(False)
             
