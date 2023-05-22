@@ -31,7 +31,11 @@ class EncoderBlock(nn.Module):
         # Attention block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+        self.self_attention_1 = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+
+        self.self_attention_2 = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+
+        self.condense = MLP(hidden_dim*2, [hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -43,7 +47,13 @@ class EncoderBlock(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         x = self.ln_1(input)
         
-        x, _ = self.self_attention(x, x, x, need_weights=False)
+        x1, _ = self.self_attention_1(x, x, x, need_weights=False)
+
+        x2, _ = self.self_attention_2(x, x, x, need_weights=False)
+
+        x = torch.cat((x1, x2), dim=-1)
+
+        self.condense(x)
             
         x = self.dropout(x)
         x = x + input
