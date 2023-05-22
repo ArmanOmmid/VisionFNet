@@ -186,11 +186,9 @@ class Experiment(object):
             with torch.enable_grad(): # torch.set_grad_enabled(True)
                 outputs = self.model(inputs)
 
-                nan = torch.any(torch.isnan(outputs))
-                if nan:
-                    raise Exception("NaN Sneak")
-                else:
-                    param_copy = copy.deepcopy(list(self.model.named_parameters()))
+                # nan = torch.any(torch.isnan(outputs))
+                # if not nan:
+                #     param_copy = copy.deepcopy(list(self.model.named_parameters()))
 
                 _, preds = torch.max(outputs, dim=1)
 
@@ -208,17 +206,17 @@ class Experiment(object):
                     torch.nn.utils.clip_grad_value_(self.model.parameters(), self.config.clip)
                 self.optimizer.step()
 
-                for name, param in self.model.named_parameters():
-                    if torch.any(torch.isnan(param)):
-                        print("NaN | Batch[{}]".format(iter))
-                        print("\nBefore\n")
-                        for name, param in param_copy:
-                            print(name, param)
-                        print("\nAfter\n")
-                        for name, param in self.model.named_parameters():
-                            print(name, param)
-                        print("NaN Update | Batch[{}]".format(iter))
-                        raise Exception("NaN")
+                # for name, param in self.model.named_parameters():
+                #     if torch.any(torch.isnan(param)):
+                #         print("NaN | Batch[{}]".format(iter))
+                #         print("\nBefore\n")
+                #         for name, param in param_copy:
+                #             print(name, param)
+                #         print("\nAfter\n")
+                #         for name, param in self.model.named_parameters():
+                #             print(name, param)
+                #         print("NaN Update | Batch[{}]".format(iter))
+                #         raise Exception("NaN")
 
             self.model.train(False)
             torch.autograd.set_detect_anomaly(False, check_nan=True)
