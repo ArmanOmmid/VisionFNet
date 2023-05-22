@@ -48,7 +48,7 @@ class EncoderBlock(nn.Module):
         f = self.dropout(f)
         f = f + input
 
-        x = torch.cat((a, f), -1)
+        x = torch.cat((a, f), dim=-1)
 
         y = self.ln_2(x)
         y = self.mlp(y)
