@@ -50,22 +50,23 @@ class EncoderBlock(nn.Module):
 
         # rfft makes last channel go from C to C+2 // 2
         f = torch.fft.rfft2(x, norm='ortho') # N, L, C -> N, L, C+2 // 2 
-        # f = torch.view_as_real(f) #  N, L, C+2 // 2  -> N, L, C+2 // 2 , 2
-        # f = torch.flatten(f, start_dim=-2) # N, L, C+2 // 2 , 2 -> N, L, C + 2
+        f = torch.view_as_real(f) #  N, L, C+2 // 2  -> N, L, C+2 // 2 , 2
+        f = torch.flatten(f, start_dim=-2) # N, L, C+2 // 2 , 2 -> N, L, C + 2
 
-        # f = torch.permute(f, (0, 2, 1)) # N, L, C+2 -> N, C+2, L   ... needed for channelwise 1x1 conv
-        # f = self.nin_conv_in(f) # N, C+2, L -> N, C, L
-        # f = torch.permute(f, (0, 2, 1)) # N, C, L -> N, L, C
+        f = torch.permute(f, (0, 2, 1)) # N, L, C+2 -> N, C+2, L   ... needed for channelwise 1x1 conv
+        f = self.nin_conv_in(f) # N, C+2, L -> N, C, L
+        f = torch.permute(f, (0, 2, 1)) # N, C, L -> N, L, C
 
-        # f, _ = self.fourier_attention(f, f, f, need_weights=False)
+        f, _ = self.fourier_attention(f, f, f, need_weights=False)
 
-        # f = torch.permute(f, (0, 2, 1)) # N, L, C -> N, C, L
-        # f = self.nin_conv_out(f) # N, C, L -> N, C+2, L
-        # f = torch.permute(f, (0, 2, 1)) # N, C+2, L -> N, L, C+2
+        print(f)
+        f = torch.permute(f, (0, 2, 1)) # N, L, C -> N, C, L
+        f = self.nin_conv_out(f) # N, C, L -> N, C+2, L
+        f = torch.permute(f, (0, 2, 1)) # N, C+2, L -> N, L, C+2
 
-        # f = torch.unflatten(f, -1, (-1, 2)) # N, C+2, L -> N, L, C+2 // 2, 2
-        # f = f.contiguous() # need for view_as_complex
-        # f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2 // 2
+        f = torch.unflatten(f, -1, (-1, 2)) # N, C+2, L -> N, L, C+2 // 2, 2
+        f = f.contiguous() # need for view_as_complex
+        f = torch.view_as_complex(f) #  N, L, C+2 // 2, 2  -> N, L, C+2 // 2
 
         print(f.shape)
         f = torch.fft.irfft2(x, norm='ortho')
