@@ -125,7 +125,7 @@ def main(args):
     model = build_model(config, len(class_names))
     model = model.to(device) # transfer the model to the device
 
-    torchinfo.summary(model=model, input_size=torch.tensor(next(iter(train_loader))).shape)
+    torchinfo.summary(model=model, input_size=(config.batch_size, config.image_size, config.image_size, 3))
 
     """ Optimizer """
     learnable_parameters = [param for param in model.parameters() if param.requires_grad]
