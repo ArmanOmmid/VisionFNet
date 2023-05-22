@@ -175,6 +175,8 @@ class Experiment(object):
 
             inputs =  inputs.to(self.device)
             labels =  labels.to(self.device)
+
+            print("Inputs: ", torch.any(torch.isnan(inputs)))
             
             if self.config.augment:
                 b, ncrop, c, h, w = inputs.size()
@@ -188,9 +190,12 @@ class Experiment(object):
                 _, preds = torch.max(outputs, dim=1)
                 loss = self.criterion(outputs, labels)
 
+                print("Loss: ", torch.any(torch.isnan(inputs)))
+
                 loss.backward()
                 if self.config.clip:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.config.clip)
+                    print("hi")
                 self.optimizer.step()
 
             self.model.train(False)
