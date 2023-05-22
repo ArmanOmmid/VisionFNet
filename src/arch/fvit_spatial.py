@@ -49,7 +49,7 @@ class EncoderBlock(nn.Module):
         a = a + input
 
         f = torch.fft.rfft2(x, norm='ortho')
-        f = self.nin_conv(f)
+        f = torch.permute(self.nin_conv(torch.permute(f, (0, 2, 1))), (0, 2, 1))
         f, _ = self.fourier_attention(f, f, f, need_weights=False)
         f = torch.fft.irfft2(x, norm='ortho')
         f = self.dropout(f)
