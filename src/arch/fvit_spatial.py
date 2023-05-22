@@ -50,7 +50,7 @@ class EncoderBlock(nn.Module):
 
         f = torch.fft.rfft2(x, norm='ortho')
 
-        
+        f = self.nin_conv(f)
 
         f, _ = self.fourier_attention(f, f, f, need_weights=False)
         f = torch.fft.irfft2(x, norm='ortho')
