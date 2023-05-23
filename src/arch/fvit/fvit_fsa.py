@@ -120,7 +120,6 @@ class Encoder(nn.Module):
         #     print(name, parameter)
         return self.ln(x)
 
-
 class VisionTransformer(nn.Module):
     def __init__(
         self,
