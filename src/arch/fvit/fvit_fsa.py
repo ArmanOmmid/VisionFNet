@@ -92,7 +92,7 @@ class Encoder(nn.Module):
         mlp_dim: int,
         dropout: float,
         attention_dropout: float,
-        norm_layer: Callable[..., torch.nn.Module] = partial(nn.BatchNorm1d, eps=1e-6),
+        norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
     ):
         super().__init__()
         # Note that batch_size is on the first dim because
@@ -110,7 +110,7 @@ class Encoder(nn.Module):
                 norm_layer,
             )
         self.layers = nn.Sequential(layers)
-        self.ln = norm_layer(hidden_dim)
+        self.ln = nn.BatchNorm1d(hidden_dim, eps=1e-6)
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
