@@ -110,7 +110,7 @@ class Encoder(nn.Module):
                 norm_layer,
             )
         self.layers = nn.Sequential(layers)
-        self.ln = norm_layer(hidden_dim, eps=1e-3)
+        self.ln = norm_layer(hidden_dim)
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
@@ -118,7 +118,7 @@ class Encoder(nn.Module):
         x = self.layers(self.dropout(input))
         # for name, parameter in self.ln.named_parameters():
         #     print(name, parameter)
-        return x # self.ln(x)
+        return self.ln(x)
 
 
 class VisionTransformer(nn.Module):
