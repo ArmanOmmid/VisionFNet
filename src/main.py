@@ -131,7 +131,7 @@ def main(args):
             print("Input", grad_input)
             print("Output", grad_output)
         for module in model.modules():
-            condition = (isinstance(module, nn.LayerNorm) and module.eps = 1e-5)
+            condition = (isinstance(module, nn.LayerNorm) and module.eps == 1e-5)
             if condition:
                 module.register_full_backward_hook(_save_output)
 
