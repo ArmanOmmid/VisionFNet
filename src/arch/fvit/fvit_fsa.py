@@ -116,6 +116,8 @@ class Encoder(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         input = input + self.pos_embedding
         x = self.layers(self.dropout(input))
+        for name, parameter in self.ln.named_parameters():
+            print(name, parameter)
         return self.ln(x)
 
 
