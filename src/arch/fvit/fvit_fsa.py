@@ -110,7 +110,7 @@ class Encoder(nn.Module):
                 norm_layer,
             )
         self.layers = nn.Sequential(layers)
-        self.ln = nn.BatchNorm1d(hidden_dim, eps=1e-6)
+        self.ln = nn.LayerNorm(hidden_dim, eps=1e-3)
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
