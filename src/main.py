@@ -126,7 +126,7 @@ def main(args):
     model = model.to(device) # transfer the model to the device
 
     if config.debug:
-        def _save_output(self, module, grad_input, grad_output):
+        def _save_output(module, grad_input, grad_output):
             print("Module", module)
             print("Input", grad_input)
             print("Output", grad_output)
