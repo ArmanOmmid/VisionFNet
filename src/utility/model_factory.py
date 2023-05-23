@@ -16,7 +16,7 @@ def get_weight_initializer():
         # children_size = len([None for _ in module.children()]) # Its a non-container module if this is 0; but we don't need this
         # module_name = module.__class__.__name__ # For if you want to check which module this is 
         # list(module.parameters()) # This will list out the associated parameters. For non-containers, this is usually between 0-2 (weights and bias)
-        invalid_layers = ["BatchNorm2d", "LayerNorm"]
+        invalid_layers = ["LayerNorm", "BatchNorm2d", "BatchNorm1d"]
         if module.__class__.__name__ in invalid_layers: return
         try:
             if hasattr(module, 'weight') and module.weight is not None and module.weight.requires_grad:
@@ -24,7 +24,7 @@ def get_weight_initializer():
             if hasattr(module, 'bias') and module.bias is not None and module.bias.requires_grad:
                 torch.nn.init.normal_(module.bias.data) # xavier not applicable for biases
         except Exception as E:
-            print("Invalid Layer (Please Register It): ", module.__class__.__name__)
+            print("Invalid Layer for Xavier (Please Register It): ", module.__class__.__name__)
             raise E
     return init_weights
 
