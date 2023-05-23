@@ -131,7 +131,8 @@ def main(args):
             print("Input", grad_input)
             print("Output", grad_output)
         for module in model.modules():
-            module.register_full_backward_hook(_save_output)
+            if isinstance(module, nn.LayerNorm):
+                module.register_full_backward_hook(_save_output)
 
     summary_columns =[ "input_size", "output_size", "num_params", "params_percent", "kernel_size", "mult_adds", "trainable"]
     torchinfo.summary(model=model, input_size=(config.batch_size, 3, config.image_size, config.image_size), col_names=summary_columns)
