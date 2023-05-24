@@ -21,5 +21,5 @@ early_stop_tolerance: 8
 clip: 1
 
 # Misc
-debug: 0
+debug: 3
 augment: False
