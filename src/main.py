@@ -129,6 +129,9 @@ def main(args):
         def _save_output(module, grad_input, grad_output):
             print("Module", module)
             print("Input", grad_input)
+            print("Param:")
+            for param in module.named_parameters():
+                print(param)
             print("Output", grad_output)
         for module in model.modules():
             condition = (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
