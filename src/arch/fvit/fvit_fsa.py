@@ -118,7 +118,7 @@ class Encoder(nn.Module):
         x = self.layers(self.dropout(input))
         # for name, parameter in self.ln.named_parameters():
         #     print(name, parameter)
-        return x # self.ln(x)
+        return self.ln(x)
 
 class VisionTransformer(nn.Module):
     def __init__(
