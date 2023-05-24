@@ -124,6 +124,7 @@ def main(args):
     """ Model """
     model = build_model(config, len(class_names))
     model = model.to(device) # transfer the model to the device
+    print("Model Architecture: ", config.model)
 
     if config.debug:
         def _save_output(module, grad_input, grad_output):
