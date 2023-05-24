@@ -68,30 +68,34 @@ def build_model(config, classes):
             nn.Linear(in_features=768, out_features=class_count)
         )
     elif config.model == 'vit_import':
-        ml_dim = int(config.hidden_dim * config.expansion)
+        mlp_dim = int(config.hidden_dim * config.expansion)
         model = torchvision.models.vision_transformer.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count)
+                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count)
     elif config.model == 'vit':
-        ml_dim = int(config.hidden_dim * config.expansion)
+        mlp_dim = int(config.hidden_dim * config.expansion)
         model = arch.vit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count, fourier=False) # norm_layer=nn.BatchNorm2d)
+                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count, fourier=False) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'vit_wide':
-        ml_dim = int(config.hidden_dim * config.expansion)
+        mlp_dim = int(config.hidden_dim * config.expansion)
         model = arch.vit_wide.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
+                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'fvit':
-        ml_dim = int(config.hidden_dim * config.expansion)
+        mlp_dim = int(config.hidden_dim * config.expansion)
         model = arch.fvit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
+                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'fvit_cross':
-        ml_dim = int(config.hidden_dim * config.expansion)
+        mlp_dim = int(config.hidden_dim * config.expansion)
         model = arch.fvit_cross.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
+                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'fvit_fsa':
-        ml_dim = int(config.hidden_dim * config.expansion)
+        mlp_dim = int(config.hidden_dim * config.expansion)
         model = arch.fvit_fsa.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=ml_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
-        
+                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
+    elif config.model == 'fvit_spectral':
+        mlp_dim = int(config.hidden_dim * config.expansion)
+        model = arch.fvit_spectral.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_spectral_layers=config.num_spectral_layers, \
+                                                     num_atn_layers=config.num_atn_layers, num_heads=config.num_heads, hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, \
+                                                        um_classes=class_count) # norm_layer=nn.BatchNorm2d)
     else:
         raise NotImplementedError("Model Architecture Not Found")
 
