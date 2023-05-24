@@ -126,6 +126,7 @@ def main(args):
     model = model.to(device) # transfer the model to the device
     print("Model Architecture: ", config.model)
 
+    # If Debug, set a hook for modules with an arbitrary debug attribute 
     if config.debug:
         def _save_output(module, grad_input, grad_output):
             print("Module", module)
