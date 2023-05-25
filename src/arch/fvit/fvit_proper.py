@@ -35,7 +35,8 @@ class EncoderBlock(nn.Module):
 
         # self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
         self.L = seq_length - int(class_vector)
-        self.H = self.W = int(math.sqrt(self.L)) // 2 + 1
+        self.H = int(math.sqrt(self.L))
+        self.W = int(self.H // 2) + 1
         self.complex_weight = nn.Parameter(torch.randn(self.H, self.W, hidden_dim, 2, dtype=torch.float32) * 0.02)
 
         # MLP block
@@ -45,26 +46,23 @@ class EncoderBlock(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
-        B, L, C = input.shape
-
-        print(input.shape)
+        B, _, C = input.shape
 
         x = self.ln_1(input)
 
-        H = W = int(math.sqrt(L-1))
-
         CLASS = x[:, 0] 
         x = x[:, 1:]
+
         print(x.shape)
-        x = x.view(B, H, W, C).to(torch.float32)
+        x = x.view(B, self.H, self.W, C).to(torch.float32)
         print(x.shape)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
         print(x.shape)
         weight = torch.view_as_complex(self.complex_weight)
         x = x * weight
 
-        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-        x = x.reshape(B, L, C)
+        x = torch.fft.irfft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
+        x = x.reshape(B, self.L, C)
 
         x = torch.cat((CLASS, x), 1)
 
