@@ -77,8 +77,8 @@ class EncoderBlock(nn.Module):
 
         f, _= self.fourier_attention(q, f, f)
 
-        f = f.reshape(N, G, C*2).reshape(N, H, F, C, 2)
-        f = torch.view_as_complex(f)
+        # f = f.reshape(N, G, C*2).reshape(N, H, F, C, 2)
+        # f = torch.view_as_complex(f)
 
         f = torch.fft.irfft2(f, s=(H, W), dim=(1, 2), norm='ortho')
         f = f.reshape(N, L, C)
