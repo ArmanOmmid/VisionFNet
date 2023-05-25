@@ -36,7 +36,22 @@ class EncoderBlock(nn.Module):
 
         # self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
-        self.fourier_attention = nn.MultiheadAttention(hidden_dim*2, num_heads, dropout=attention_dropout, batch_first=True)
+        self.scratch = True
+        if not self.scratch:
+            self.fourier_attention = nn.MultiheadAttention(hidden_dim*2, num_heads, dropout=attention_dropout, batch_first=True)
+        else:
+            self.in_dims = (hidden_dim // self.num_heads) * 2
+            self.QK_d = self.in_dims
+            self.V_d = self.in_dims
+
+            self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
+            self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+
+            self.K_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
+            self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+
+            self.V_w = nn.Parameter(torch.empty(self.V_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
+            self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
 
         # MLP block
@@ -61,7 +76,21 @@ class EncoderBlock(nn.Module):
         x = x.reshape(N, H, F, C*2)
         x = x.view(N, G, C*2)
 
-        x, _= self.fourier_attention(x, x, x)
+        if not self.scratch:
+            x, _= self.fourier_attention(x, x, x)
+        else:
+            Q = x.view(N, G, self.num_heads, self.QK_d)
+            K = x.view(N, G, self.num_heads, self.QK_d)
+            V = x.view(N, G, self.num_heads, self.V_d)
+
+            Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
+            K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
+            V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
+
+            A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
+            A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
+
+            x = torch.einsum("nhqk,nkhd->nqhd", A, V)
 
         x = x.reshape(N, G, C*2).reshape(N, H, F, C, 2)
 
