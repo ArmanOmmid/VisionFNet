@@ -47,9 +47,7 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        # x = torch.real(torch.fft.fft2(x))
-
-        # CLASS, x = x[:, 0].reshape(B, 1, C), x[:, 1:]
+        CLASS, x = x[:, 0].reshape(B, 1, C), x[:, 1:]
 
         x = x.view(B, self.H, self.W, C)
 
@@ -60,9 +58,9 @@ class EncoderBlock(nn.Module):
 
         x = torch.real(torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2)))
 
-        # x = x.view(B, self.L, C)
+        x = x.view(B, self.L, C)
 
-        # x = torch.cat((CLASS, x), 1)
+        x = torch.cat((CLASS, x), 1)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
