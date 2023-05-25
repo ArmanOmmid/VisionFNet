@@ -33,17 +33,18 @@ class EncoderBlock(nn.Module):
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
         self.G = self.H * self.F
-        self.QK_d = hidden_dim // self.num_heads
-        self.V_d = hidden_dim // self.num_heads
+        self.in_dims = hidden_dim // self.num_heads
+        self.QK_d = self.in_dims
+        self.V_d = self.in_dims
         # self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
-        self.Q_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.QK_d*2, dtype=torch.float32).normal_(std=0.02))
+        self.Q_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.in_dims*2, dtype=torch.float32).normal_(std=0.02))
         self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
-        self.K_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.QK_d*2, dtype=torch.float32).normal_(std=0.02))
+        self.K_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.in_dims*2, dtype=torch.float32).normal_(std=0.02))
         self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
-        self.V_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.V_d*2, dtype=torch.float32).normal_(std=0.02))
+        self.V_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.in_dims*2, dtype=torch.float32).normal_(std=0.02))
         self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
 
@@ -78,7 +79,7 @@ class EncoderBlock(nn.Module):
         # x = QK_d and V_d ; Infer Batch Dim
         Q = torch.einsum("nqhd,xhd->nxhq", Q, self.Q_w) + self.Q_b
         K = torch.einsum("nkhd,xhd->nxhk", K, self.K_w) + self.K_b
-        V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
+        V = torch.einsum("nvhd,xhd->nxhv", V, self.V_w) + self.V_b
 
         print(V.shape)
 
