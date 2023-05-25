@@ -52,7 +52,6 @@ class EncoderBlock(nn.Module):
         x = x * torch.view_as_complex(self.mixer)
 
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-        # x = torch.real(x)
         x = x.reshape(B, L, C)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
