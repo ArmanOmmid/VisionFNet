@@ -70,7 +70,7 @@ class EncoderBlock(nn.Module):
         # x = x.reshape(B, self.L, C)
 
 
-        x, _ = self.self_attention(x, x, x, need_weights=False)
+        # x, _ = self.self_attention(x, x, x, need_weights=False)
 
         # x = torch.real(torch.fft.fft2(x))
         
