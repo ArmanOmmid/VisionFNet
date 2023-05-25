@@ -36,7 +36,7 @@ class EncoderBlock(nn.Module):
         # self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
         self.L = seq_length - int(class_vector)
         self.H = self.W = int(math.sqrt(self.L))
-        self.complex_weight = nn.Parameter(torch.randn(self.H, int(self.W // 2) + 1, hidden_dim, 2, dtype=torch.float32) * 0.02)
+        self.complex_weight = nn.Parameter(torch.empty(self.H, int(self.W // 2) + 1, hidden_dim, dtype=torch.cfloat).normal_(std=0.02))
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
