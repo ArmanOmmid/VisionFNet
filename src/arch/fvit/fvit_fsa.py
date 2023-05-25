@@ -72,9 +72,9 @@ class EncoderBlock(nn.Module):
         V = x.view(N, G, self.num_heads, self.V_d)
 
         # x = QK_d and V_d
-        Q = torch.einsum("nqhd,nxhd->nqhx", Q, self.Q_w) + self.Q_b
-        K = torch.einsum("nkhd,nxhd->nkhx", K, self.K_w) + self.K_b
-        V = torch.einsum("nvhd,nxhd->nvhx", V, self.V_w) + self.V_b
+        Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
+        K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
+        V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
 
         A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
         A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
