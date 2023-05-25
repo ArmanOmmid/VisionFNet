@@ -185,7 +185,7 @@ class Experiment(object):
             self.optimizer.zero_grad()
             with torch.enable_grad(): # torch.set_grad_enabled(True)
 
-                if self.config.debug and epoch > self.config.debug: 
+                if self.config.debug and epoch >= self.config.debug: 
                     torch.autograd.set_detect_anomaly(True)
                 outputs = self.model(inputs)
 
@@ -227,7 +227,7 @@ class Experiment(object):
                 #         raise Exception("NaN")
 
             self.model.train(False)
-            if self.config.debug and epoch > self.config.debug: 
+            if self.config.debug and epoch >= self.config.debug: 
                 torch.autograd.set_detect_anomaly(True)
             
             if self.classification:
