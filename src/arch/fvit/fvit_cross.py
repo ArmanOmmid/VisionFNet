@@ -25,8 +25,6 @@ class EncoderBlock(nn.Module):
         # Attention block
         self.ln_1 = norm_layer(hidden_dim)
 
-        # self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
-
         self.dropout = nn.Dropout(dropout)
 
         self.L = seq_length
@@ -34,10 +32,11 @@ class EncoderBlock(nn.Module):
         self.F = int(self.W // 2) + 1
         self.G = self.H * self.F
 
-        # self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+        self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+
+        self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
         self.fourier_attention = nn.MultiheadAttention(hidden_dim*2, num_heads, dropout=attention_dropout, batch_first=True)
-
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
@@ -53,27 +52,29 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        x = x.view(N, H, W, C)
-        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+        f = x.view(N, H, W, C)
+        f = torch.fft.rfft2(f, dim=(1, 2), norm='ortho')
 
-        x = torch.view_as_real(x)
+        mixer = torch.view_as_complex(self.mixer)
+        f = torch.einsum("nhfd,hfds->nhfd", f, mixer)
+
+        f = torch.view_as_real(f)
  
-        x = x.reshape(N, H, F, C*2)
-        x = x.view(N, G, C*2)
+        f = f.reshape(N, H, F, C*2)
+        f = f.view(N, G, C*2)
 
-        x, _= self.fourier_attention(x, x, x)
+        x, _ = self.self_attention(x, x, x, need_weights=False)
 
-        x = x.reshape(N, G, C*2).reshape(N, H, F, C, 2)
+        f, _= self.fourier_attention(x, f, f)
 
-        x = torch.view_as_complex(x)
+        f = f.reshape(N, G, C*2).reshape(N, H, F, C, 2)
 
-        # mixer = torch.view_as_complex(self.mixer)
-        # x = torch.einsum("nhfd,hfds->nhfd", x, mixer)
+        f = torch.view_as_complex(f)
 
-        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-        x = x.reshape(N, L, C)
+        f = torch.fft.irfft2(f, s=(H, W), dim=(1, 2), norm='ortho')
+        f = f.reshape(N, L, C)
 
-        # x, _ = self.self_attention(x, x, x, need_weights=False)
+        
             
         x = self.dropout(x)
         x = x + input
