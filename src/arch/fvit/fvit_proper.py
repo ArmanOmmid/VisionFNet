@@ -51,6 +51,8 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
+        x = torch.real(torch.fft.fft2(x))
+
         # CLASS = x[:, 0].reshape(B, 1, C)
 
         # x = x[:, 1:]
