@@ -81,10 +81,10 @@ class EncoderBlock(nn.Module):
         x = self.dropout(x)
         x = x + input
 
-        # y = self.ln_2(x)
-        # y = self.mlp(y)
+        y = self.ln_2(x)
+        y = self.mlp(y)
 
-        return x
+        return y
 
         # return x + y
 
