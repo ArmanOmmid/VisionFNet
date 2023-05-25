@@ -72,7 +72,7 @@ class EncoderBlock(nn.Module):
         # q = torch.einsum("nac, abcd -> nbd", x, self.cross_query)
         q = torch.einsum("nac, abc -> nbc", x, self.cross_query)
 
-        print(q.shape)
+        print(q.shape, f.shape)
 
         f, _= self.fourier_attention(q, f, f)
 
