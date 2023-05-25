@@ -33,18 +33,18 @@ class EncoderBlock(nn.Module):
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
         self.G = self.H * self.F
-        self.in_dims = hidden_dim // self.num_heads
+        self.in_dims = (hidden_dim // self.num_heads) * 2
         self.QK_d = self.in_dims
         self.V_d = self.in_dims
         # self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
-        self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims*2, dtype=torch.float32).normal_(std=0.02))
+        self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
         self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
-        self.K_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims*2, dtype=torch.float32).normal_(std=0.02))
+        self.K_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
         self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
-        self.V_w = nn.Parameter(torch.empty(self.V_d, self.num_heads, self.in_dims*2, dtype=torch.float32).normal_(std=0.02))
+        self.V_w = nn.Parameter(torch.empty(self.V_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
         self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
 
@@ -70,9 +70,9 @@ class EncoderBlock(nn.Module):
         x = x.reshape(N, H, F, C*2)
         x = x.view(N, G, C*2)
         
-        Q = x.view(N, G, self.num_heads, self.QK_d*2)
-        K = x.view(N, G, self.num_heads, self.QK_d*2)
-        V = x.view(N, G, self.num_heads, self.V_d*2)
+        Q = x.view(N, G, self.num_heads, self.QK_d)
+        K = x.view(N, G, self.num_heads, self.QK_d)
+        V = x.view(N, G, self.num_heads, self.V_d)
 
         print(V.shape, self.V_w.shape)
 
@@ -84,7 +84,7 @@ class EncoderBlock(nn.Module):
         print(V.shape)
 
         A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
-        A = torch.softmax(A / ((self.QK_d*2) ** 0.5), dim=3)
+        A = torch.softmax(A / ((self.QK_d) ** 0.5), dim=3)
 
         print(A.shape, V.shape)
 
