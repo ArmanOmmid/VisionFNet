@@ -7,4 +7,4 @@ sys.path.append(repository_root)
 
 from .archived import basic_fcn, customfcn1, customfcn2, transfer_fcn, transfer_unet, unet
 from .vit import vit, vit_wide
-from .fvit import fvit, fvit_cross, fvit_fsa, fvit_spectral, fvit_proper
+from .fvit import fvit, fvit_gft, fvit_fno, fvit_spectral

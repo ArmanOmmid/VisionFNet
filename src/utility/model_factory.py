@@ -83,23 +83,19 @@ def build_model(config, classes):
         mlp_dim = int(config.hidden_dim * config.expansion)
         model = arch.fvit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
                                            hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
-    elif config.model == 'fvit_cross':
+    elif config.model == 'fvit_gft':
         mlp_dim = int(config.hidden_dim * config.expansion)
-        model = arch.fvit_cross.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
+        model = arch.fvit_proper.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
                                            hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
-    elif config.model == 'fvit_fsa':
+    elif config.model == 'fvit_fno':
         mlp_dim = int(config.hidden_dim * config.expansion)
-        model = arch.fvit_fsa.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
+        model = arch.fvit_fno.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
                                            hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'fvit_spectral':
         mlp_dim = int(config.hidden_dim * config.expansion)
         model = arch.fvit_spectral.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_spectral_layers=config.num_spectral_layers, \
                                                      num_atn_layers=config.num_atn_layers, num_heads=config.num_heads, hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, \
                                                         num_classes=class_count) # norm_layer=nn.BatchNorm2d)
-    elif config.model == 'fvit_proper':
-        mlp_dim = int(config.hidden_dim * config.expansion)
-        model = arch.fvit_proper.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
     else:
         raise NotImplementedError("Model Architecture Not Found")
 
