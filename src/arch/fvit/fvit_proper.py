@@ -58,7 +58,7 @@ class EncoderBlock(nn.Module):
 
         x = x.view(B, H, W, C).to(torch.float32)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
-
+        print(x.shape)
         weight = torch.view_as_complex(self.complex_weight)
         x = x * weight
 
