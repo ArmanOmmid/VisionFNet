@@ -37,14 +37,14 @@ class EncoderBlock(nn.Module):
         self.V_d = hidden_dim // self.num_heads
         # self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
-        self.Q_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.QK_d, dtype=torch.cfloat).normal_(std=0.02))
-        self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.cfloat).normal_(std=0.02))
+        self.Q_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.QK_d*2, dtype=torch.float32).normal_(std=0.02))
+        self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
-        self.K_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.QK_d, dtype=torch.cfloat).normal_(std=0.02))
+        self.K_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.QK_d*2, dtype=torch.float32).normal_(std=0.02))
         self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.cfloat).normal_(std=0.02))
 
-        self.V_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.V_d, dtype=torch.cfloat).normal_(std=0.02))
-        self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.cfloat).normal_(std=0.02))
+        self.V_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.V_d*2, dtype=torch.float32).normal_(std=0.02))
+        self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
 
         # MLP block
@@ -65,21 +65,21 @@ class EncoderBlock(nn.Module):
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
         # x = torch.cat(x.view(N, H*F, C), torch.zeros((N, 1, C)))
-        x = x.view(N, G, C)
+        x = torch.view_as_real(x).view(N, G, C*2)
         
-        Q = x.view(N, G, self.num_heads, self.QK_d)
-        K = x.view(N, G, self.num_heads, self.QK_d)
-        V = x.view(N, G, self.num_heads, self.V_d)
+        Q = x.view(N, G, self.num_heads, self.QK_d*2)
+        K = x.view(N, G, self.num_heads, self.QK_d*2)
+        V = x.view(N, G, self.num_heads, self.V_d*2)
 
-        # x = QK_d and V_d
+        # x = QK_d and V_d ; Infer Batch Dim
         Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
         K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
         V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
 
         A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
-        A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
+        A = torch.softmax(A / ((self.QK_d*2) ** 0.5), dim=3)
 
-        x = torch.einsum("nhqk,nkhd->nqhd", A, V).view(N, G, C).view(N, H, F, C)
+        x = torch.einsum("nhqk,nkhd->nqhd", A, V).view(N, G, C*2).view(N, H, F, C, 2)
 
         # mixer = torch.view_as_complex(self.mixer)
         # x = torch.einsum("nhfd,hfds->nhfd", x, mixer)
