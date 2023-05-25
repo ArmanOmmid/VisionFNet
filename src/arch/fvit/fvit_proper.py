@@ -84,7 +84,7 @@ class EncoderBlock(nn.Module):
         # y = self.ln_2(x)
         # y = self.mlp(y)
 
-        return y
+        return x
 
         # return x + y
 
