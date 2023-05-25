@@ -17,6 +17,7 @@ class EncoderBlock(nn.Module):
         dropout: float,
         attention_dropout: float,
         seq_length: int,
+        class_vector: bool = True,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
     ):
         super().__init__()
@@ -33,7 +34,7 @@ class EncoderBlock(nn.Module):
         # self.nin_conv_out = nn.Conv1d(hidden_dim, hidden_dim+2, 1)
 
         # self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
-        self.L = seq_length
+        self.L = seq_length - int(class_vector)
         self.H = self.W = math.sqrt(self.L)
         self.complex_weight = nn.Parameter(torch.randn(self.H, self.W, hidden_dim, 2, dtype=torch.float32) * 0.02)
 
@@ -105,6 +106,7 @@ class Encoder(nn.Module):
                 mlp_dim,
                 dropout,
                 attention_dropout,
+                seq_length,
                 norm_layer,
             )
         self.layers = nn.Sequential(layers)
