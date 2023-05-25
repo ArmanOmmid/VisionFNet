@@ -57,6 +57,8 @@ class EncoderBlock(nn.Module):
 
         x = torch.real(torch.fft.fft2(x))
 
+        x = torch.real(torch.fft.ifft2(x))
+
         # x = torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
         # x = torch.real(x)
         # x = x.reshape(B, self.L, C)
