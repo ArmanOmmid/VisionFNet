@@ -39,7 +39,7 @@ class EncoderBlock(nn.Module):
 
         self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
-        self.fourier_attention = nn.MultiheadAttention(hidden_dim*2, num_heads, dropout=attention_dropout, batch_first=True)
+        self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
         self.combine = MLP(hidden_dim*2, [hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
