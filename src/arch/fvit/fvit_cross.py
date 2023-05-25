@@ -32,13 +32,20 @@ class EncoderBlock(nn.Module):
         self.L = seq_length
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
+        self.G = self.H * self.F
+        self.QK_d = hidden_dim // self.num_heads
+        self.V_d = hidden_dim // self.num_heads
         # self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
-        # self.Q = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
-        # self.K = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
-        # self.V = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+        self.Q_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.QK_d, dtype=torch.cfloat).normal_(std=0.02))
+        self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.cfloat).normal_(std=0.02))
 
-        self.Q = nn.Parameter()
+        self.K_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.QK_d, dtype=torch.cfloat).normal_(std=0.02))
+        self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.cfloat).normal_(std=0.02))
+
+        self.V_w = nn.Parameter(torch.empty(self.G, self.num_heads, self.V_d, dtype=torch.cfloat).normal_(std=0.02))
+        self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.cfloat).normal_(std=0.02))
+
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
@@ -49,12 +56,30 @@ class EncoderBlock(nn.Module):
 
         N, L, C = input.shape
         H = W = int(math.sqrt(L))
-        F = int(W // 2) + 1
+        F = int(W // 2) + 1 # Fourier Width
+        G = H*F # Fourier Length
 
         x = self.ln_1(input)
 
         x = x.view(N, H, W, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+
+        # x = torch.cat(x.view(N, H*F, C), torch.zeros((N, 1, C)))
+        x = x.view(N, G, C)
+        
+        Q = x.view(N, G, self.num_heads, C // self.num_heads)
+        K = x.view(N, G, self.num_heads, C // self.num_heads)
+        V = x.view(N, G, self.num_heads, C // self.num_heads)
+
+        # x = QK_d and V_d
+        Q = torch.einsum("nqhd,nxhd->nqhx", Q, self.Q_w) + self.Q_b
+        K = torch.einsum("nkhd,nxhd->nkhx", K, self.K_w) + self.K_b
+        V = torch.einsum("nvhd,nxhd->nvhx", V, self.V_w) + self.V_b
+
+        A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
+        A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
+
+        x = torch.einsum("nhqk,nkhd->nqhd", A, V).view(N, G, C).view(N, H, F, C)
 
         # mixer = torch.view_as_complex(self.mixer)
         # x = torch.einsum("nhfd,hfds->nhfd", x, mixer)
