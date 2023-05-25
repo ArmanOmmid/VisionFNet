@@ -32,7 +32,7 @@ class EncoderBlock(nn.Module):
         self.L = seq_length
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
-        self.mixer = nn.Parameter(torch.empty(self.H, self.W, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+        self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
@@ -47,12 +47,12 @@ class EncoderBlock(nn.Module):
         x = self.ln_1(input)
 
         x = x.view(B, H, W, C)
-        x = torch.fft.fft2(x, dim=(1, 2), norm='ortho')
+        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
         x = x * torch.view_as_complex(self.mixer)
 
-        x = torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
-        x = torch.real(x)
+        x = torch.fft.rfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
+        # x = torch.real(x)
         x = x.reshape(B, L, C)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
