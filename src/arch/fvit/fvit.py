@@ -37,7 +37,7 @@ class EncoderBlock(nn.Module):
         x = self.ln_1(input)
         
         # x, _ = self.self_attention(x, x, x, need_weights=False)
-        x = torch.real(torch.fft.fft2(x))
+        # x = torch.real(torch.fft.fft2(x))
             
         x = self.dropout(x)
         x = x + input
