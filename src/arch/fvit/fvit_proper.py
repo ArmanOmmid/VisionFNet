@@ -46,7 +46,7 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        x = x.view(B, self.H, self.W, C).to(torch.float32)
+        x = x.view(B, self.H, self.W, C)
         x = torch.fft.fft2(x, dim=(1, 2), norm='ortho')
 
         x = x * torch.view_as_complex(self.mixer)
