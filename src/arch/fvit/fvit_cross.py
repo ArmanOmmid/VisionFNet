@@ -34,11 +34,13 @@ class EncoderBlock(nn.Module):
 
         self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
+        self.expand = MLP(hidden_dim, [hidden_dim*2], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+
         self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
         self.fourier_attention = nn.MultiheadAttention(hidden_dim*2, num_heads, dropout=attention_dropout, batch_first=True)
 
-        self.combine = MLP(hidden_dim*2, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+        self.combine = MLP(hidden_dim*2, [hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
@@ -65,7 +67,9 @@ class EncoderBlock(nn.Module):
 
         x, _ = self.self_attention(x, x, x, need_weights=False)
 
-        f, _= self.fourier_attention(x, f, f)
+        q = self.expand(x)
+
+        f, _= self.fourier_attention(q, f, f)
 
         f = f.reshape(N, G, C*2).reshape(N, H, F, C, 2)
         f = torch.view_as_complex(f)
