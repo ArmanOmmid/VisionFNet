@@ -157,10 +157,6 @@ class VisionTransformer(nn.Module):
 
         seq_length = (image_size // patch_size) ** 2
 
-        # Add a class token
-        self.class_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
-        seq_length += 1
-
         self.encoder = Encoder(
             seq_length,
             num_layers,
@@ -175,9 +171,9 @@ class VisionTransformer(nn.Module):
 
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
         if representation_size is None:
-            heads_layers["head"] = nn.Linear(hidden_dim, num_classes)
+            heads_layers["head"] = nn.Linear(hidden_dim*seq_length, num_classes)
         else:
-            heads_layers["pre_logits"] = nn.Linear(hidden_dim, representation_size)
+            heads_layers["pre_logits"] = nn.Linear(hidden_dim*seq_length, representation_size)
             heads_layers["act"] = nn.Tanh()
             heads_layers["head"] = nn.Linear(representation_size, num_classes)
 
@@ -232,14 +228,9 @@ class VisionTransformer(nn.Module):
         x = self._process_input(x)
         n = x.shape[0]
 
-        # Expand the class token to the full batch
-        batch_class_token = self.class_token.expand(n, -1, -1)
-        x = torch.cat([batch_class_token, x], dim=1)
-
         x = self.encoder(x)
 
-        # Classifier "token" as used by standard language architectures
-        x = x[:, 0]
+        x = x.view(n, -1)
 
         x = self.heads(x)
 

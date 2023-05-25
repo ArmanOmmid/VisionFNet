@@ -1,5 +1,5 @@
 # Architecture
-model: vit_wide
+model: vit_direct
 image_size: 32
 patch_size: 8
 num_layers: 2
