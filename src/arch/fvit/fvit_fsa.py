@@ -67,7 +67,7 @@ class EncoderBlock(nn.Module):
         x = torch.view_as_real(x)
         print(x.shape)
         x = x.reshape(N, H, F, C*2)
-        x = x.view(N, F, C*2)
+        x = x.view(N, G, C*2)
         
         Q = x.view(N, G, self.num_heads, self.QK_d*2)
         K = x.view(N, G, self.num_heads, self.QK_d*2)
