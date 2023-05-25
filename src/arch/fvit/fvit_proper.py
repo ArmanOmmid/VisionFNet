@@ -59,7 +59,7 @@ class EncoderBlock(nn.Module):
 
         # print(x.shape, torch.view_as_complex(self.complex_weight).shape)
 
-        x = x * torch.view_as_complex(self.complex_weight)
+        # x = x * torch.view_as_complex(self.complex_weight)
         x = x * self.complex_weight
 
 
