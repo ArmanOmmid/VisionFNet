@@ -43,11 +43,16 @@ class EncoderBlock(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
-        B, _, C = input.shape
+        B, L, C = input.shape
 
         x = self.ln_1(input)
 
-        x = torch.real(torch.fft.fft2(x))
+        # x = torch.real(torch.fft.fft2(x))
+
+        x = torch.fft.rfft2(x)
+
+
+        x = torch.fft.irfft2(x, s=(L, C))
 
         # CLASS = x[:, 0].reshape(B, 1, C)
 
