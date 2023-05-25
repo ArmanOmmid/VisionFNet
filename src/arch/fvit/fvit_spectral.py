@@ -84,7 +84,7 @@ class SpectralBlock(nn.Module):
         N, L, C = input.shape
         H = W = int(math.sqrt(L))
         F = int(W // 2) + 1 # Fourier Width
-        G = H*F # Fourier Length
+        G = H*F # Fourier Sequence Length
 
         x = self.ln_1(input)
 
@@ -92,7 +92,7 @@ class SpectralBlock(nn.Module):
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
         
         x = torch.matmul(x, self.weight_c)
-        
+
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
         x = x.reshape(N, L, C)
 

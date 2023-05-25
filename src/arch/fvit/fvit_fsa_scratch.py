@@ -64,7 +64,7 @@ class EncoderBlock(nn.Module):
         N, L, C = input.shape
         H = W = int(math.sqrt(L))
         F = int(W // 2) + 1 # Fourier Width
-        G = H*F # Fourier Length
+        G = H*F # Fourier Sequence Length
 
         x = self.ln_1(input)
 
