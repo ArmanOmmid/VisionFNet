@@ -37,7 +37,7 @@ class EncoderBlock(nn.Module):
         # self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
         self.scratch = False
-        if not scratch:
+        if not self.scratch:
             self.fourier_attention = nn.MultiheadAttention(hidden_dim*2, num_heads, dropout=attention_dropout, batch_first=True)
         else:
             self.in_dims = (hidden_dim // self.num_heads) * 2
