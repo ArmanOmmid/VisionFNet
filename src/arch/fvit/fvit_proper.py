@@ -59,7 +59,7 @@ class EncoderBlock(nn.Module):
 
         print(x.shape, torch.view_as_complex(self.complex_weight).shape)
 
-        x = torch.matmul(x, torch.view_as_complex(self.complex_weight))
+        x = torch.einsum("bhwd,bhwdd,->bhwd", x, torch.view_as_complex(self.complex_weight))
 
         x = torch.fft.irfft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
 
