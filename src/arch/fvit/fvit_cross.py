@@ -79,15 +79,15 @@ class EncoderBlock(nn.Module):
         f = torch.fft.irfft2(f, s=(H, W), dim=(1, 2), norm='ortho')
         f = f.reshape(N, L, C)
 
-        x = torch.cat((x, f), dim=-1)
-            
         x = self.dropout(x)
         x = x + input
+
+        x = torch.cat((x, f), dim=-1)
 
         y = self.ln_2(x)
         y = self.mlp(y)
 
-        return x + y
+        return y
 
 class Encoder(nn.Module):
     def __init__(
