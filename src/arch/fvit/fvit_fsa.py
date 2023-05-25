@@ -77,7 +77,7 @@ class EncoderBlock(nn.Module):
         x = x.view(N, G, C*2)
 
         if not self.scratch:
-            x = self.fourier_attention(x, x, x)
+            x, _= self.fourier_attention(x, x, x)
         else:
             Q = x.view(N, G, self.num_heads, self.QK_d)
             K = x.view(N, G, self.num_heads, self.QK_d)
