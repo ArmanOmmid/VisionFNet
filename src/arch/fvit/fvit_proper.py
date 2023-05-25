@@ -37,7 +37,7 @@ class EncoderBlock(nn.Module):
         self.L = seq_length - int(class_vector)
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
-        self.complex_weight = nn.Parameter(torch.empty(self.H * self.W + 1, hidden_dim, dtype=torch.float32).normal_(std=0.02))
+        self.complex_weight = nn.Parameter(torch.empty(self.H * self.W + 1, hidden_dim, hidden_dim, dtype=torch.float32).normal_(std=0.02))
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
@@ -61,7 +61,7 @@ class EncoderBlock(nn.Module):
         # print(x.shape, torch.view_as_complex(self.complex_weight).shape)
 
         # x = x * torch.view_as_complex(self.complex_weight)
-        x = x * self.complex_weight
+        x = torch.matmul(x, self.complex_weight)
 
 
         # x = torch.fft.irfft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
