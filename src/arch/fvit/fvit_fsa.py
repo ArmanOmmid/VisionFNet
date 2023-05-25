@@ -80,6 +80,8 @@ class EncoderBlock(nn.Module):
         K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
         V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
 
+        print(V.shape)
+
         A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
         A = torch.softmax(A / ((self.QK_d*2) ** 0.5), dim=3)
 
