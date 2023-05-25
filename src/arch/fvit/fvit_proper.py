@@ -72,11 +72,11 @@ class EncoderBlock(nn.Module):
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
 
-        x = torch.real(torch.fft.fft2(x))
+        # x = torch.real(torch.fft.fft2(x))
         
-        x = torch.matmul(x, self.weight_c)
+        # x = torch.matmul(x, self.weight_c)
 
-        x = torch.real(torch.fft.ifft2(x))
+        # x = torch.real(torch.fft.ifft2(x))
             
         x = self.dropout(x)
         x = x + input
