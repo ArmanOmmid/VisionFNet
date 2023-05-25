@@ -215,7 +215,6 @@ class VisionTransformer(nn.Module):
         # Reshape and permute the input tensor
         x = self._process_input(x)
         n = x.shape[0]
-        B = n[0]
 
         # Expand the class token to the full batch
         # batch_class_token = self.class_token.expand(n, -1, -1)
@@ -223,7 +222,7 @@ class VisionTransformer(nn.Module):
 
         x = self.encoder(x)
 
-        x = x.view(B, -1)
+        x = x.view(n, -1)
 
         # Classifier "token" as used by standard language architectures
         # x = x[:, 0]
