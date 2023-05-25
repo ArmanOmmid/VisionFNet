@@ -43,6 +43,7 @@ class EncoderBlock(nn.Module):
 
         B, L, C = input.shape
         H = W = int(math.sqrt(L))
+        F = int(W // 2) + 1
 
         x = self.ln_1(input)
 
