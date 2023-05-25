@@ -107,6 +107,7 @@ class Encoder(nn.Module):
                 dropout,
                 attention_dropout,
                 seq_length,
+                True,
                 norm_layer,
             )
         self.layers = nn.Sequential(layers)
