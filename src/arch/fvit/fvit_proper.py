@@ -55,12 +55,12 @@ class EncoderBlock(nn.Module):
 
         # x = x * self.complex_weight
 
+        x = torch.real(torch.fft.fft2(x))
+
         # x = torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
         # x = torch.real(x)
         # x = x.reshape(B, self.L, C)
         x = torch.cat((CLASS, x), 1)
-
-        x = torch.real(torch.fft.fft2(x))
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
