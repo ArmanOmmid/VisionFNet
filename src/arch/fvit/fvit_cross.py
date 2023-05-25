@@ -67,9 +67,9 @@ class EncoderBlock(nn.Module):
         # x = torch.cat(x.view(N, H*F, C), torch.zeros((N, 1, C)))
         x = x.view(N, G, C)
         
-        Q = x.view(N, G, self.num_heads, C // self.num_heads)
-        K = x.view(N, G, self.num_heads, C // self.num_heads)
-        V = x.view(N, G, self.num_heads, C // self.num_heads)
+        Q = x.view(N, G, self.num_heads, self.QK_d)
+        K = x.view(N, G, self.num_heads, self.QK_d)
+        V = x.view(N, G, self.num_heads, self.V_d)
 
         # x = QK_d and V_d
         Q = torch.einsum("nqhd,nxhd->nqhx", Q, self.Q_w) + self.Q_b
