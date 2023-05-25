@@ -26,19 +26,15 @@ class EncoderBlock(nn.Module):
         # Attention block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+        # self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
         self.dropout = nn.Dropout(dropout)
 
-        # self.nin_conv_in = nn.Conv1d(hidden_dim+2, hidden_dim, 1)
-        # self.nin_conv_out = nn.Conv1d(hidden_dim, hidden_dim+2, 1)
-
-        # self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
-        self.L = seq_length - int(class_vector)
-        self.H = self.W = int(math.sqrt(self.L))
-        self.F = int(self.W // 2) + 1
-        self.complex_weight = nn.Parameter(torch.empty(self.H,  self.F, hidden_dim, dtype=torch.float32).normal_(std=0.02))
-        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim).normal_(std=0.02))  # from BERT
+        # self.L = seq_length - int(class_vector)
+        # self.H = self.W = int(math.sqrt(self.L))
+        # self.F = int(self.W // 2) + 1
+        # self.complex_weight = nn.Parameter(torch.empty(self.H,  self.F, hidden_dim, dtype=torch.float32).normal_(std=0.02))
+        # self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim).normal_(std=0.02))  # from BERT
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
