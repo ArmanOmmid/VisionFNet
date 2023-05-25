@@ -81,12 +81,21 @@ class SpectralBlock(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         x = self.ln_1(input)
         
-        
-        x = torch.real(torch.fft.fft2(x))
+        N, L, C = input.shape
+        H = W = int(math.sqrt(L))
+        F = int(W // 2) + 1 # Fourier Width
+        G = H*F # Fourier Length
+
+        x = self.ln_1(input)
+
+        x = x.view(N, H, W, C)
+        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
         
         x = torch.matmul(x, self.weight_c)
+        
+        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
+        x = x.reshape(N, L, C)
 
-        x = torch.real(torch.fft.ifft2(x))
         x = self.dropout(x)
         # x = x + input
 
