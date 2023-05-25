@@ -33,7 +33,7 @@ class EncoderBlock(nn.Module):
         self.L = seq_length
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
-        self.mixer = nn.Parameter(torch.empty(self.H,  self.W, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+        self.mixer = nn.Parameter(torch.empty(self.H, self.W, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
