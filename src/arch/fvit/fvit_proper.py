@@ -44,6 +44,8 @@ class EncoderBlock(nn.Module):
 
         B, L, C = input.shape
 
+        print(input.shape)
+
         x = self.ln_1(input)
 
         H = W = torch.sqrt(L-1).int()
@@ -56,8 +58,13 @@ class EncoderBlock(nn.Module):
 
         weight = torch.view_as_complex(self.complex_weight)
         x = x * weight
-        
+
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
+        x = x.reshape(B, L, C)
+
+        x = torch.cat((CLASS, x), 1)
+
+        print(x.shape)
         
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
