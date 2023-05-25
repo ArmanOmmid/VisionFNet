@@ -6,6 +6,10 @@ class Config:
         @classmethod
         def __repr__(cls):
             return str("<NotFound>")
+        @classmethod
+        def __bool__(self):
+            return False
+
 
     def __init__(self, config):
         self.build(config)
