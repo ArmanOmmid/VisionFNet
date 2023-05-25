@@ -49,10 +49,10 @@ class EncoderBlock(nn.Module):
 
         # x = torch.real(torch.fft.fft2(x))
 
-        x = torch.fft.rfft2(x)
+        x = torch.fft.rfft2(x, norm='ortho')
 
 
-        x = torch.fft.irfft2(x, s=(L, C))
+        x = torch.fft.irfft2(x, s=(L, C), norm='ortho')
 
         # CLASS = x[:, 0].reshape(B, 1, C)
 
