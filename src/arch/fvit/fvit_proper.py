@@ -50,25 +50,21 @@ class EncoderBlock(nn.Module):
         x = self.ln_1(input)
 
         CLASS = x[:, 0].reshape(B, 1, C)
-        # print(CLASS.shape)
+
         x = x[:, 1:]
-        # print(x.shape)
 
         x = x.view(B, self.H, self.W, C).to(torch.float32)
-        # print(x.shape)
-        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
-        # print(x.shape)
-        weight = torch.view_as_complex(self.complex_weight)
-        x = x * weight
 
-        x = torch.fft.irfft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
+        # x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+        # weight = torch.view_as_complex(self.complex_weight)
+        # x = x * weight
+        # x = torch.fft.irfft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
+
         x = x.reshape(B, self.L, C)
 
         x = torch.cat((CLASS, x), 1)
 
-        # print(x.shape)
-        
-        # x, _ = self.self_attention(x, x, x, need_weights=False)
+        x, _ = self.self_attention(x, x, x, need_weights=False)
             
         x = self.dropout(x)
         x = x + input
