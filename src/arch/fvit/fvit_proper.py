@@ -51,7 +51,7 @@ class EncoderBlock(nn.Module):
 
         # CLASS, x = x[:, 0].reshape(B, 1, C), x[:, 1:]
 
-        # x = x.view(B, self.H, self.W, C)
+        x = x.view(B, self.H, self.W, C)
 
         x = torch.fft.fft2(x, dim=(1, 2))
 
