@@ -49,7 +49,8 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        CLASS = x[:, 0] 
+        CLASS = x[:, 0]
+        print(CLASS.shape)
         x = x[:, 1:]
 
         print(x.shape)
