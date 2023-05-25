@@ -65,7 +65,8 @@ class EncoderBlock(nn.Module):
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
         # x = torch.cat(x.view(N, H*F, C), torch.zeros((N, 1, C)))
-        x = torch.view_as_real(x).view(N, G, C*2)
+        x = torch.view_as_real(x)
+        x= x.view(N, G, C*2)
         
         Q = x.view(N, G, self.num_heads, self.QK_d*2)
         K = x.view(N, G, self.num_heads, self.QK_d*2)
@@ -80,6 +81,8 @@ class EncoderBlock(nn.Module):
         A = torch.softmax(A / ((self.QK_d*2) ** 0.5), dim=3)
 
         x = torch.einsum("nhqk,nkhd->nqhd", A, V).view(N, G, C*2).view(N, H, F, C, 2)
+
+        x = torch.view_as_complex(x)
 
         # mixer = torch.view_as_complex(self.mixer)
         # x = torch.einsum("nhfd,hfds->nhfd", x, mixer)
