@@ -51,7 +51,7 @@ class EncoderBlock(nn.Module):
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
         mixer = torch.view_as_complex(self.mixer)
-        x = torch.einsum("bhfd,hfds->bhfd")
+        x = torch.einsum("bhfd,hfds->bhfd", x, mixer)
 
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
         x = x.reshape(B, L, C)
