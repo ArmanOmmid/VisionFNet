@@ -33,7 +33,7 @@ class EncoderBlock(nn.Module):
         self.L = seq_length - int(class_vector)
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
-        self.complex_weight = nn.Parameter(torch.empty(self.H,  self.F, hidden_dim, dtype=torch.float32).normal_(std=0.02))
+        self.complex_weight = nn.Parameter(torch.empty(self.H,  self.W, hidden_dim, dtype=torch.float32).normal_(std=0.02))
         # self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim).normal_(std=0.02))  # from BERT
 
         # MLP block
