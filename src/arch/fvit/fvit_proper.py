@@ -48,7 +48,7 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        H = W = torch.sqrt(L-1).int()
+        H = W = int(math.sqrt(L-1))
 
         CLASS = x[:, 0] 
         x = x[:, 1:]
