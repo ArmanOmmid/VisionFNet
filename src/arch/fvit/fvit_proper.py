@@ -17,7 +17,6 @@ class EncoderBlock(nn.Module):
         dropout: float,
         attention_dropout: float,
         seq_length: int,
-        class_vector: bool = True,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
     ):
         super().__init__()
@@ -43,17 +42,18 @@ class EncoderBlock(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
         B, L, C = input.shape
+        H = W = int(math.sqrt(L))
 
         x = self.ln_1(input)
 
-        x = x.view(B, self.H, self.W, C)
+        x = x.view(B, H, W, C)
         x = torch.fft.fft2(x, dim=(1, 2), norm='ortho')
 
         x = x * torch.view_as_complex(self.mixer)
 
         x = torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
         x = torch.real(x)
-        x = x.reshape(B, self.L, C)
+        x = x.reshape(B, L, C)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
@@ -91,7 +91,6 @@ class Encoder(nn.Module):
                 dropout,
                 attention_dropout,
                 seq_length,
-                True,
                 norm_layer,
             )
         self.layers = nn.Sequential(layers)
