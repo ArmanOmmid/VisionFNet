@@ -16,6 +16,7 @@ class EncoderBlock(nn.Module):
         mlp_dim: int,
         dropout: float,
         attention_dropout: float,
+        seq_length: int,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
     ):
         super().__init__()
@@ -28,16 +29,17 @@ class EncoderBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-        self.nin_conv_in = nn.Conv1d(hidden_dim+2, hidden_dim, 1)
-        self.nin_conv_out = nn.Conv1d(hidden_dim, hidden_dim+2, 1)
+        # self.nin_conv_in = nn.Conv1d(hidden_dim+2, hidden_dim, 1)
+        # self.nin_conv_out = nn.Conv1d(hidden_dim, hidden_dim+2, 1)
 
-        self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
-
-        mlp_input_dims = hidden_dim * 2
+        # self.fourier_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+        self.L = seq_length
+        self.H = self.W = math.sqrt(self.L)
+        self.complex_weight = nn.Parameter(torch.randn(self.H, self.W, hidden_dim, 2, dtype=torch.float32) * 0.02)
 
         # MLP block
-        self.ln_2 = norm_layer(mlp_input_dims)
-        self.mlp = MLP(mlp_input_dims, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+        self.ln_2 = norm_layer(hidden_dim)
+        self.mlp = MLP(hidden_dim, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
