@@ -33,7 +33,7 @@ class EncoderBlock(nn.Module):
         self.L = seq_length - int(class_vector)
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
-        self.complex_weight = nn.Parameter(torch.empty(self.H,  self.W, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+        self.complex_weight = nn.Parameter(torch.empty(self.H,  self.W, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
         # self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim).normal_(std=0.02))  # from BERT
 
         # MLP block
@@ -53,21 +53,19 @@ class EncoderBlock(nn.Module):
 
         x = x[:, 1:]
 
-        x = x.view(B, self.H, self.W, C).to(torch.float32)
+        x = x.view(B, self.H, self.W, C)
 
         x = torch.fft.fft2(x, dim=(1, 2), norm='ortho')
 
-        # print(x.shape, torch.view_as_complex(self.complex_weight).shape)
-
-        x = x * torch.view_as_complex(self.complex_weight)
+        x = torch.matmul(x, torch.view_as_complex(self.complex_weight))
 
         x = torch.real(torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho'))
 
-        x = x.reshape(B, self.L, C)
+        x = x.view(B, self.L, C)
 
         x = torch.cat((CLASS, x), 1)
 
-        # x, _ = self.self_attention(x, x, x, need_weights=False)
+        x, _ = self.self_attention(x, x, x, need_weights=False)
             
         x = self.dropout(x)
         x = x + input
