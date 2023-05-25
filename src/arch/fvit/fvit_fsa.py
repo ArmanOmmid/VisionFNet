@@ -73,7 +73,7 @@ class EncoderBlock(nn.Module):
         K = x.view(N, G, self.num_heads, self.QK_d*2)
         V = x.view(N, G, self.num_heads, self.V_d*2)
 
-        print(V.shape)
+        print(V.shape, self.V_w.shape)
 
         # x = QK_d and V_d ; Infer Batch Dim
         Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
