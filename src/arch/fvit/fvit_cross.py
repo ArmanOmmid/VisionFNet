@@ -66,13 +66,12 @@ class EncoderBlock(nn.Module):
         # f = torch.view_as_real(f)
         # f = f.reshape(N, H, F, C*2).reshape(N, G, C*2)
         f = f.reshape(N, G, C)
+        f = torch.real(f)
 
         x, _ = self.self_attention(x, x, x, need_weights=False)
 
         # q = torch.einsum("nac, abcd -> nbd", x, self.cross_query)
         q = torch.einsum("nac, abc -> nbc", x, self.cross_query)
-
-        print(q.shape, f.shape)
 
         f, _= self.fourier_attention(q, f, f)
 
