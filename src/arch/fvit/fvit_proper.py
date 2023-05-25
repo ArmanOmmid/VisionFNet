@@ -142,8 +142,8 @@ class VisionTransformer(nn.Module):
         seq_length = (image_size // patch_size) ** 2
 
         # Add a class token
-        self.class_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
-        seq_length += 1
+        # self.class_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
+        # seq_length += 1
 
         self.encoder = Encoder(
             seq_length,
@@ -217,12 +217,14 @@ class VisionTransformer(nn.Module):
         n = x.shape[0]
 
         # Expand the class token to the full batch
-        batch_class_token = self.class_token.expand(n, -1, -1)
-        x = torch.cat([batch_class_token, x], dim=1)
+        # batch_class_token = self.class_token.expand(n, -1, -1)
+        # x = torch.cat([batch_class_token, x], dim=1)
 
         x = self.encoder(x)
 
         # Classifier "token" as used by standard language architectures
         x = x[:, 0]
+
+        x = self.heads(x)
 
         return x
