@@ -51,12 +51,11 @@ class EncoderBlock(nn.Module):
 
         CLASS, x = x[:, 0].reshape(B, 1, C), x[:, 1:]
         x = x.view(B, self.H, self.W, C).to(torch.float32)
-        # x = torch.real(torch.fft.fft2(x, dim=(1, 2), norm='ortho'))
+        x = torch.real(torch.fft.fft2(x, dim=(1, 2), norm='ortho'))
 
         # x = x * self.complex_weight
 
         # x = torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
-
         x = torch.real(x)
         x = x.reshape(B, self.L, C)
         x = torch.cat((CLASS, x), 1)
