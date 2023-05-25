@@ -47,11 +47,11 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        x = torch.fft.rfft2(x, norm='ortho')
+        # x = torch.fft.rfft2(x, norm='ortho')
 
-        x = torch.fft.irfft2(x, s=(L, C), norm='ortho')
+        # x = torch.fft.irfft2(x, s=(L, C), norm='ortho')
 
-        x = torch.real(torch.fft.fft2(x))
+        # x = torch.real(torch.fft.fft2(x))
 
         # CLASS = x[:, 0].reshape(B, 1, C)
 
