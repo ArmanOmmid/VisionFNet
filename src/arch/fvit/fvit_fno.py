@@ -41,20 +41,20 @@ class EncoderBlock(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
-        B, L, C = input.shape
+        N, L, C = input.shape
         H = W = int(math.sqrt(L))
         F = int(W // 2) + 1
 
         x = self.ln_1(input)
 
-        x = x.view(B, H, W, C)
+        x = x.view(N, H, W, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
         mixer = torch.view_as_complex(self.mixer)
-        x = torch.einsum("bhfd,hfds->bhfd", x, mixer)
+        x = torch.einsum("nhfd,hfds->nhfd", x, mixer)
 
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-        x = x.reshape(B, L, C)
+        x = x.reshape(N, L, C)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
