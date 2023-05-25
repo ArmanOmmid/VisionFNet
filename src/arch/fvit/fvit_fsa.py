@@ -63,9 +63,9 @@ class EncoderBlock(nn.Module):
 
         x = x.view(N, H, W, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
-
-        # x = torch.cat(x.view(N, H*F, C), torch.zeros((N, 1, C)))
+        print(x.shape)
         x = torch.view_as_real(x)
+        print(x.shape)
         x = x.view(N, H, F, C*2)
         x = x.view(N, F, C*2)
         
