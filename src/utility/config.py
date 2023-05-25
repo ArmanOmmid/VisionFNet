@@ -3,10 +3,13 @@ import copy
 class Config:
     
     class NotFound:
-        @classmethod
-        def __repr__(cls):
-            return str("<NotFound>")
-        @classmethod
+
+        def __init__(self, name) -> None:
+            self.name = name
+
+        def __repr__(self):
+            return str(f"<NotFound: {self.name}>")
+
         def __bool__(self):
             return False
 
@@ -39,7 +42,7 @@ class Config:
     #             if isinstance(value, list):
     
     def __getattr__(self, name):
-        return self.__dict__.get(name, self.NotFound)
+        return self.__dict__.get(name, self.NotFound(name))
 
     def __repr__(self):
         return str(self.primitive())
