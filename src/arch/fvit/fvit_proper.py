@@ -30,7 +30,7 @@ class EncoderBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-        self.L = seq_length - int(class_vector)
+        self.L = seq_length
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
         self.complex_weight = nn.Parameter(torch.empty(self.H,  self.W, hidden_dim, dtype=torch.float32).normal_(std=0.02))
@@ -47,18 +47,16 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        # CLASS, x = x[:, 0].view(B, 1, C), x[:, 1:]
-        # x = x.view(B, self.H, self.W, C).to(torch.float32)
-        # x = torch.fft.fft2(x, dim=(1, 2), norm='ortho')
+        x = x.view(B, self.H, self.W, C).to(torch.float32)
+        x = torch.fft.fft2(x, dim=(1, 2), norm='ortho')
 
         # x = x * self.complex_weight
 
-        x = torch.real(torch.fft.fft(x, dim=1))
+        # x = torch.real(torch.fft.fft(x, dim=1))
 
-        # x = torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
-        # x = torch.real(x)
-        # x = x.reshape(B, self.L, C)
-        # x = torch.cat((CLASS, x), 1)
+        x = torch.fft.ifft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
+        x = torch.real(x)
+        x = x.reshape(B, self.L, C)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
@@ -141,10 +139,6 @@ class VisionTransformer(nn.Module):
 
         seq_length = (image_size // patch_size) ** 2
 
-        # Add a class token
-        # self.class_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
-        # seq_length += 1
-
         self.encoder = Encoder(
             seq_length,
             num_layers,
@@ -216,16 +210,9 @@ class VisionTransformer(nn.Module):
         x = self._process_input(x)
         n = x.shape[0]
 
-        # Expand the class token to the full batch
-        # batch_class_token = self.class_token.expand(n, -1, -1)
-        # x = torch.cat([batch_class_token, x], dim=1)
-
         x = self.encoder(x)
 
         x = x.view(n, -1)
-
-        # Classifier "token" as used by standard language architectures
-        # x = x[:, 0]
 
         x = self.heads(x)
 
