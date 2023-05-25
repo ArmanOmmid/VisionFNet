@@ -64,9 +64,9 @@ class EncoderBlock(nn.Module):
 
         x = x.view(N, H, W, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
-        print(x.shape)
+
         x = torch.view_as_real(x)
-        print(x.shape)
+ 
         x = x.reshape(N, H, F, C*2)
         x = x.view(N, G, C*2)
         
@@ -74,23 +74,19 @@ class EncoderBlock(nn.Module):
         K = x.view(N, G, self.num_heads, self.QK_d)
         V = x.view(N, G, self.num_heads, self.V_d)
 
-        print(V.shape, self.V_w.shape)
+
 
         # x = QK_d and V_d ; Infer Batch Dim
         Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
         K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
         V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
 
-        print(V.shape)
-
         A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
         A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
 
-        print(A.shape, V.shape)
-
         x = torch.einsum("nhqk,nkhd->nqhd", A, V)
-        print(x.shape)
-        x = x.reshape(N, G, C*2).reshape(N, H, F, C*2)
+
+        x = x.reshape(N, G, C*2).reshape(N, H, F, C, 2)
 
         x = torch.view_as_complex(x)
 
