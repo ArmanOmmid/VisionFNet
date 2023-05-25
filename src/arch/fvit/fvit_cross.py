@@ -34,7 +34,8 @@ class EncoderBlock(nn.Module):
 
         self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
-        self.cross_query = nn.Parameter(torch.empty(self.L, self.G, hidden_dim, hidden_dim*2, dtype=torch.float32).normal_(std=0.02))
+        # self.cross_query = nn.Parameter(torch.empty(self.L, self.G, hidden_dim, hidden_dim*2, dtype=torch.float32).normal_(std=0.02))
+        self.cross_query = nn.Conv1d(64, 128, 5)
 
         self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
@@ -67,7 +68,9 @@ class EncoderBlock(nn.Module):
 
         x, _ = self.self_attention(x, x, x, need_weights=False)
 
-        q = torch.einsum("nac, abcd -> nbd", x, self.cross_query)
+        # q = torch.einsum("nac, abcd -> nbd", x, self.cross_query)
+
+        q = self.cross_query(x)
 
         f, _= self.fourier_attention(q, f, f)
 
