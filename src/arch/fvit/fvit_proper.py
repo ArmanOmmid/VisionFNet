@@ -65,6 +65,8 @@ class EncoderBlock(nn.Module):
 
         x = torch.cat((CLASS, x), 1)
 
+        print(x.shape)
+
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
         x = self.dropout(x)
