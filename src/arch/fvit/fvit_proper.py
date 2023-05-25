@@ -37,7 +37,7 @@ class EncoderBlock(nn.Module):
         self.L = seq_length - int(class_vector)
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
-        self.complex_weight = nn.Parameter(torch.empty(self.H, self.W, hidden_dim, dtype=torch.float32).normal_(std=0.02))
+        self.complex_weight = nn.Parameter(torch.empty(self.H * self.W, hidden_dim, dtype=torch.float32).normal_(std=0.02))
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
@@ -50,11 +50,11 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        CLASS = x[:, 0].reshape(B, 1, C)
+        # CLASS = x[:, 0].reshape(B, 1, C)
 
-        x = x[:, 1:]
+        # x = x[:, 1:]
 
-        x = x.view(B, self.H, self.W, C).to(torch.float32)
+        # x = x.view(B, self.H, self.W, C).to(torch.float32)
 
         # x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
@@ -66,9 +66,9 @@ class EncoderBlock(nn.Module):
 
         # x = torch.fft.irfft2(x, s=(self.H, self.W), dim=(1, 2), norm='ortho')
 
-        x = x.reshape(B, self.L, C)
+        # x = x.reshape(B, self.L, C)
 
-        x = torch.cat((CLASS, x), 1)
+        # x = torch.cat((CLASS, x), 1)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
