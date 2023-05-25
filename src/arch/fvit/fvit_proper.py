@@ -49,7 +49,7 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        CLASS = x[:, 0]
+        CLASS = x[:, 0].reshape(B, 1, C)
         print(CLASS.shape)
         x = x[:, 1:]
 
