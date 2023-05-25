@@ -71,6 +71,8 @@ class EncoderBlock(nn.Module):
 
         f, _= self.fourier_attention(q, f, f)
 
+        print(f.shape)
+
         f = f.reshape(N, G, C*2).reshape(N, H, F, C, 2)
         f = torch.view_as_complex(f)
 
