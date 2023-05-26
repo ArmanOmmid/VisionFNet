@@ -55,6 +55,7 @@ def prepare_loaders(config, data_folder_path, download=False):
             ])
         else:
             transform = Basic_Compose(config.image_size)
+            print(transform)
 
     elif task_type == 'segmentation':
         transform = None
