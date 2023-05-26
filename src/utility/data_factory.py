@@ -49,7 +49,9 @@ def prepare_loaders(config, data_folder_path, download=False):
 
         transform = MODEL_TRANSFORM.get(config.model, False)
         if MODEL_TRANSFORM.get(config.model, False):
-            transform = MODEL_TRANSFORM[config.model]
+            transform = transforms.Compose([
+                MODEL_TRANSFORM[config.model]
+            ])
         else:
             transform = Basic_Compose(config.image_size)
 
