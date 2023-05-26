@@ -52,7 +52,6 @@ def prepare_loaders(config, data_folder_path, download=False):
             transform = transforms.Compose([
                 MODEL_TRANSFORM[config.model]
             ])
-            print(transform)
         else:
             transform = Basic_Compose(config.image_size)
 
