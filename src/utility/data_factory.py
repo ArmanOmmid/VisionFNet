@@ -53,9 +53,9 @@ def prepare_loaders(config, data_folder_path, download=False):
                 PIL_RGB,
                 MODEL_TRANSFORM[config.model]
             ])
+            print(transform)
         else:
             transform = Basic_Compose(config.image_size)
-            print(transform)
 
     elif task_type == 'segmentation':
         transform = None
