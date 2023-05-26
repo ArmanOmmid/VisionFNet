@@ -114,8 +114,6 @@ def main(args):
 
     print("Dataset Size: \n", data_sizes)
 
-    show_data(train_loader, class_names)
-
     """ Criterion """
     if config.weighted_loss:
         class_weights = get_class_weights(train_loader, len(class_names)).to(device)
