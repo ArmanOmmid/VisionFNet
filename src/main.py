@@ -60,7 +60,7 @@ def main(args, unparsed_args):
 
         for line in iter(process.stderr.readline, b""):
             terminal_file.write(line)
-            sys.stdout.write(line)
+            sys.stderr.write(line)
 
         return_code = process.wait()
 
