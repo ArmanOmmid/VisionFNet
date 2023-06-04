@@ -193,10 +193,10 @@ def main(args):
     valid_acc_per_epoch = results
     
     print(f"Best IoU score: {best_iou_score}")
-    util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, experiment_path, name='Loss')
-    util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, experiment_path, name='Accuracy')
+    util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, experiment_path, name='loss')
+    util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, experiment_path, name='accuracy')
     if task_type == 'segmentation':
-        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, experiment_path, name='IoU')
+        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, experiment_path, name='iou')
 
     results_to_dump = {
         'best_iou_score' : best_iou_score,
@@ -208,7 +208,7 @@ def main(args):
         'val_iou' : valid_iou_per_epoch
     }
 
-    with open(os.path.join(experiment_path, 'results'), 'w') as f:
+    with open(os.path.join(experiment_path, 'results.json'), 'w') as f:
         json.dump(results_to_dump, f, indent=4)
     
     print('-' * 20)
