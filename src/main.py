@@ -51,7 +51,7 @@ def main(args, unparsed_args):
     terminal_file.write(command_string)
 
     stdout_lines = process.stdout.readlines()
-    for line in stdout_lines():
+    for line in stdout_lines:
         line = line.decode()
         terminal_file.write(line)
         print(line.strip('\n'))
