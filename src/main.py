@@ -49,9 +49,9 @@ def main(args, unparsed_args):
     main_program = os.path.join(os.path.dirname(__file__), 'experiment.py')
     command = ['python3', main_program] + arguments
 
-    process = Popen(command, stdout=PIPE, stderr=PIPE)
+    process = Popen(command, stdout=PIPE, stderr=PIPE, bufsize=1)
 
-    command_string = " ".join(command) + '\n'
+    command_string = " ".join(command) + '\n\n'
 
     with open(terminal_path, 'w') as terminal_file:
 
