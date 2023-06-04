@@ -53,8 +53,6 @@ def main(args, unparsed_args):
     sys.stdout.write(command_string)
 
     process = Popen(command, stdout=PIPE, stderr=PIPE)
-    utf = 'utf-8'
-
 
     with open(terminal_path, 'wb') as terminal_file:
 
