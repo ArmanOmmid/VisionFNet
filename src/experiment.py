@@ -74,6 +74,8 @@ def main(args):
     load_path = args.load_path
     experiment_path = args.experiment_path
 
+    assert 0
+
     # Dataset
     task_type = get_task_type(config.dataset)
     if task_type is None:
