@@ -19,12 +19,13 @@ parser = argparse.ArgumentParser(description='Argument Parser')
 
 parser.add_argument('-E', '--experiment_path', default=False,
                     help="Path to save experiment results")
+parser.add_argument('-N', '--experiment_name', default=False,
+                    help="Path to save experiment results")
 
 def main(args, unparsed_args):
 
     experiment_path = args.experiment_path
-
-    experiment_name = '_'.join(str(datetime.datetime.now()).split(' ')).split('.')[0]
+    experiment_name = args.experiment_name if args.experiment_name else '_'.join(str(datetime.datetime.now()).split(' ')).split('.')[0]
 
     if experiment_path:
         if str(__init__.repository_root) in os.path.abspath(experiment_path):
@@ -46,7 +47,7 @@ def main(args, unparsed_args):
     main_program = os.path.join(os.path.dirname(__file__), 'experiment.py')
     command = ['python3', main_program] + arguments
 
-    process = Popen(command, stdout=PIPE, stderr=PIPE, bufsize=1)
+    process = Popen(command, stdout=PIPE, stderr=PIPE)
 
     command_string = " ".join(command) + '\n'
 
