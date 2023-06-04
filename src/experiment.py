@@ -63,10 +63,10 @@ def main(args):
     # Config Path
     config = args.config
     config_folder = os.path.join(__init__.repository_root, 'configs')
-    config = os.path.join(config_folder, f'{config}.yaml')
-    if not os.path.exists(config):
-        raise FileNotFoundError(f"Config Path '{config}' does not exist. Choose from: \n{os.listdir(config_folder)}")
-    with open(config, 'r') as stream:
+    config_path = os.path.join(config_folder, f'{config}.yaml')
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Config Path '{config_path}' does not exist. Choose from: \n{os.listdir(config_folder)}")
+    with open(config_path, 'r') as stream:
         config = yaml.safe_load(stream)
     config = Config(config)
 
@@ -112,7 +112,7 @@ def main(args):
         experiment_path = os.path.join(__init__.repository_root, 'experiments', experiment_name)
 
     os.makedirs(experiment_path, exist_ok=True)
-    shutil.copyfile(config_path, experiment_path)
+    shutil.copyfile(config_path, os.path.join(experiment_path, f"{args.config}.yaml"))
 
 
     """ Other Values """
