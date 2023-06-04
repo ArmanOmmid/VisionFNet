@@ -118,7 +118,7 @@ def main(args):
     data_loaders, data_sizes, class_names = prepare_loaders(config, data_path, download=download)
     train_loader, val_loader, test_loader = list(data_loaders.values())
 
-    print("Dataset Size: \n", data_sizes)
+    print(f"{config.dataset}: \n", data_sizes)
 
     """ Criterion """
     if config.weighted_loss:
