@@ -59,9 +59,8 @@ def main(args, unparsed_args):
             sys.stdout.write(line)
 
         for line in iter(process.stderr.readline, b""):
-            line = line.decode()
             terminal_file.write(line)
-            print(line.strip('\n'))
+            sys.stdout.write(line)
 
         return_code = process.wait()
 
