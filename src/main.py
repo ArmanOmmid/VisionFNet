@@ -50,15 +50,17 @@ def main(args, unparsed_args):
 
     command_string = " ".join(command) + '\n'
 
-    with open(terminal_path, 'wb') as terminal_file:
+    with open(terminal_path, 'w') as terminal_file:
 
         terminal_file.write(command_string)
 
         for line in iter(process.stdout.readline, b""):
+            line = line.decode()
             terminal_file.write(line)
             sys.stdout.write(line)
 
         for line in iter(process.stderr.readline, b""):
+            line = line.decode()
             terminal_file.write(line)
             sys.stderr.write(line)
 
