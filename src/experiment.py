@@ -55,6 +55,8 @@ parser.add_argument('--download', action='store_true',
 
 def main(args):
 
+    print('==== Start Main ====')
+
     experiment_name = args.experiment_name if args.experiment_name else '_'.join(str(datetime.datetime.now()).split(' ')).split('.')[0]
 
     # Config Path

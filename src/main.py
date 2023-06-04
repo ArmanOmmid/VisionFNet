@@ -42,30 +42,31 @@ def main(args, unparsed_args):
 
 
     options = [
-        ('--experiment_path', args.experiment_path),
+        ('--experiment_path', os.path.dirname(experiment_path)),
         ('--experiment_name', experiment_name)
     ]
     arguments = [item for sublist in options for item in sublist] + unparsed_args
     main_program = os.path.join(os.path.dirname(__file__), 'experiment.py')
     command = ['python3', main_program] + arguments
 
-    process = Popen(command, stdout=PIPE, stderr=PIPE, bufsize=1)
-
     command_string = " ".join(command) + '\n\n'
+    sys.stdout.write(command_string)
 
-    with open(terminal_path, 'w') as terminal_file:
+    process = Popen(command, stdout=PIPE, stderr=PIPE)
+    utf = 'utf-8'
 
-        terminal_file.write(command_string)
+
+    with open(terminal_path, 'wb') as terminal_file:
+
+        terminal_file.write(command_string.encode('utf-8'))
 
         for line in iter(process.stdout.readline, b""):
-            line = line.decode()
             terminal_file.write(line)
-            sys.stdout.write(line)
+            sys.stdout.write(line.decode())
 
         for line in iter(process.stderr.readline, b""):
-            line = line.decode()
             terminal_file.write(line)
-            sys.stderr.write(line)
+            sys.stderr.write(line.decode())
 
         return_code = process.wait()
 
