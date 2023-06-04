@@ -55,7 +55,7 @@ parser.add_argument('--download', action='store_true',
 
 def main(args):
 
-    experiment_name = '_'.join(datetime.datetime.now().split(' ')).split('.')[0]
+    experiment_name = '_'.join(str(datetime.datetime.now()).split(' ')).split('.')[0]
 
     # Config Path
     config = args.config
