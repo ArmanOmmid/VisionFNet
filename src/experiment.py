@@ -42,20 +42,20 @@ parser.add_argument('config', type=str,
                     help="Config name under 'configs/")
 parser.add_argument('-D', '--data_path', default=False,
                     help="Path to locate (or download) data from")
-parser.add_argument('-N', '--dataset_name', default=False,
-                    help="Name of the dataset")
 parser.add_argument('-S', '--save_path', default=False,
                     help="Path to save model weights to")
 parser.add_argument('-L', '--load_path', default=False,
                     help="Path to load model weights from")
 parser.add_argument('-E', '--experiment_path', default=False,
                     help="Path to save experiment results")
+parser.add_argument('-N', '--experiment_name', default=False,
+                    help="Path to save experiment results")
 parser.add_argument('--download', action='store_true',
                     help="Download dataset if it doesn't exist")
 
 def main(args):
 
-    experiment_name = '_'.join(str(datetime.datetime.now()).split(' ')).split('.')[0]
+    experiment_name = args.experiment_name if args.experiment_name else '_'.join(str(datetime.datetime.now()).split(' ')).split('.')[0]
 
     # Config Path
     config = args.config
