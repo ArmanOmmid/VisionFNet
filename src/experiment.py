@@ -114,7 +114,6 @@ def main(args):
     os.makedirs(experiment_path, exist_ok=True)
     shutil.copyfile(config_path, os.path.join(experiment_path, f"{args.config}.yaml"))
 
-
     """ Other Values """
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
