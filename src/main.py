@@ -42,7 +42,7 @@ def main(args, unparsed_args):
         ('--experiment_path', experiment_path)
     ]
     arguments = [item for sublist in options for item in sublist] + unparsed_args
-    command = ['python3', 'experiment'] + arguments
+    command = ['python3', 'experiment.py'] + arguments
 
     process = Popen(command, stdout=PIPE, stderr=PIPE)
 
