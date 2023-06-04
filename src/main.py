@@ -39,7 +39,7 @@ def main(args, unparsed_args):
 
 
     options = [
-        ('--experiment_path', experiment_path)
+        ('--experiment_path', args.experiment_path)
     ]
     arguments = [item for sublist in options for item in sublist] + unparsed_args
     main_program = os.path.join(os.path.dirname(__file__), 'experiment.py')
