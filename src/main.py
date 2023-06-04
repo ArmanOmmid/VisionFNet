@@ -59,7 +59,7 @@ def main(args, unparsed_args):
     if process.stderr is not None:
         stderr_lines = process.stderr.readlines()
         if len(stderr_lines) != 0:
-            error_message = "\n\n==== Unhandled Exception Encountered Encountered ====\n\n"
+            error_message = "\n\n==== Unhandled Exception Encountered ====\n\n"
             print(error_message)
             for line in stderr_lines:
                 line = line.decode()
