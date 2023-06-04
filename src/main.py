@@ -50,7 +50,7 @@ def main(args, unparsed_args):
 
     command_string = " ".join(command) + '\n'
 
-    with open(terminal_path, 'wb') as terminal_file:
+    with open(terminal_path, 'w') as terminal_file:
 
         terminal_file.write(command_string)
 
