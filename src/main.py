@@ -9,6 +9,8 @@ from collections import Counter
 import argparse
 import copy
 import yaml
+import datetime
+import json
 
 import torch
 import torch.nn as nn
@@ -46,12 +48,14 @@ parser.add_argument('-S', '--save_path', default=False,
                     help="Path to save model weights to")
 parser.add_argument('-L', '--load_path', default=False,
                     help="Path to load model weights from")
-parser.add_argument('-P', '--plot_path', default=False,
-                    help="Path to save experiment plots")
+parser.add_argument('-E', '--experiments_path', default=False,
+                    help="Path to save experiment results")
 parser.add_argument('--download', action='store_true',
                     help="Download dataset if it doesn't exist")
 
 def main(args):
+
+    experiment_name = '_'.join(datetime.datetime.now().split(' ')).split('.')[0]
 
     # Config Path
     config = args.config
@@ -68,7 +72,7 @@ def main(args):
     download = args.download
     save_path = args.save_path
     load_path = args.load_path
-    plot_path = args.plot_path
+    experiment_path = args.experiment_path
 
     # Dataset
     task_type = get_task_type(config.dataset)
@@ -96,13 +100,13 @@ def main(args):
         if not os.path.exists(load_path):
             raise FileNotFoundError("Load Path Does Not Exist {}".format(load_path))
     # Plots Path
-    if plot_path:
-        if str(__init__.repository_root) in os.path.abspath(plot_path):
-            plot_path = os.path.join(__init__.repository_root, 'plots') # Always redirect plots to the designated plot folder if its in the repo
+    if experiment_path:
+        if str(__init__.repository_root) in os.path.abspath(experiment_path):
+            experiment_path = os.path.join(__init__.repository_root, 'experiments', experiment_name) # Always redirect plots to the designated plot folder if its in the repo
         else:
-            os.makedirs(plot_path, exist_ok=True)
+            os.makedirs(experiment_path, exist_ok=True)
     else:
-        plot_path = os.path.join(__init__.repository_root, 'plots')
+        experiment_path = os.path.join(__init__.repository_root, 'experiments', experiment_name)
 
 
     """ Other Values """
@@ -183,10 +187,23 @@ def main(args):
     valid_acc_per_epoch = results
     
     print(f"Best IoU score: {best_iou_score}")
-    util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, plot_path, name='Loss')
-    util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, plot_path, name='Accuracy')
+    util.plot_train_valid(train_loss_per_epoch, valid_loss_per_epoch, experiment_path, name='Loss')
+    util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, experiment_path, name='Accuracy')
     if task_type == 'segmentation':
-        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, plot_path, name='IoU')
+        util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, experiment_path, name='IoU')
+
+    results_to_dump = {
+        'best_iou_score' : best_iou_score,
+        'train_loss' : train_loss_per_epoch,
+        'train_accuracy' : train_acc_per_epoch,
+        'train_iou' : train_iou_per_epoch,
+        'val_loss' : valid_loss_per_epoch,
+        'val_accuracy' : valid_acc_per_epoch,
+        'val_iou' : valid_iou_per_epoch
+    }
+
+    with open(os.path.join(experiment_path, 'results'), 'w') as f:
+        json.dump(results_to_dump, f, indent=4)
     
     print('-' * 20)
     test_loss, test_acc, test_iou = experiment.test()
