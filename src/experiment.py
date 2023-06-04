@@ -104,10 +104,11 @@ def main(args):
         if str(__init__.repository_root) in os.path.abspath(experiment_path):
             experiment_path = os.path.join(__init__.repository_root, 'experiments', experiment_name) # Always redirect plots to the designated plot folder if its in the repo
         else:
-            os.makedirs(os.path.join(experiment_path, experiment_name), exist_ok=True)
             experiment_path = os.path.join(experiment_path, experiment_name)
     else:
         experiment_path = os.path.join(__init__.repository_root, 'experiments', experiment_name)
+
+    os.makedirs(experiment_path, exist_ok=True)
 
 
     """ Other Values """
