@@ -12,7 +12,7 @@ import copy
 import yaml
 import datetime
 import json
-
+import shutil
 from subprocess import Popen, PIPE, STDOUT
 
 parser = argparse.ArgumentParser(description='Argument Parser')
@@ -31,10 +31,12 @@ def main(args, unparsed_args):
         if str(__init__.repository_root) in os.path.abspath(experiment_path):
             experiment_path = os.path.join(__init__.repository_root, 'experiments', experiment_name) # Always redirect plots to the designated plot folder if its in the repo
         else:
-            os.makedirs(os.path.join(experiment_path, experiment_name), exist_ok=True)
             experiment_path = os.path.join(experiment_path, experiment_name)
     else:
         experiment_path = os.path.join(__init__.repository_root, 'experiments', experiment_name)
+
+    if os.path.exists(experiment_path): shutil.rmtree(experiment_path)
+    os.makedirs(experiment_path, exist_ok=True)
 
     terminal_path = os.path.join(experiment_path, 'terminal.txt')
 
