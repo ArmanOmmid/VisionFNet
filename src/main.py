@@ -54,11 +54,11 @@ def main(args, unparsed_args):
 
         terminal_file.write(command_string)
 
-        for line in iter(process.stdout.readline, ""):
+        for line in iter(process.stdout.readline, b""):
             terminal_file.write(line)
             sys.stdout.write(line)
 
-        for line in iter(process.stderr.readline, ""):
+        for line in iter(process.stderr.readline, b""):
             line = line.decode()
             terminal_file.write(line)
             print(line.strip('\n'))
