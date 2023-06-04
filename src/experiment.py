@@ -11,6 +11,7 @@ import copy
 import yaml
 import datetime
 import json
+import shutil
 
 import torch
 import torch.nn as nn
@@ -62,10 +63,10 @@ def main(args):
     # Config Path
     config = args.config
     config_folder = os.path.join(__init__.repository_root, 'configs')
-    config = os.path.join(config_folder, f'{config}.yaml')
+    config_path = os.path.join(config_folder, f'{config}.yaml')
     if not os.path.exists(config):
-        raise FileNotFoundError(f"Config Path '{config}' does not exist. Choose from: \n{os.listdir(config_folder)}")
-    with open(config, 'r') as stream:
+        raise FileNotFoundError(f"Config Path '{config_path}' does not exist. Choose from: \n{os.listdir(config_folder)}")
+    with open(config_path, 'r') as stream:
         config = yaml.safe_load(stream)
     config = Config(config)
 
@@ -111,6 +112,7 @@ def main(args):
         experiment_path = os.path.join(__init__.repository_root, 'experiments', experiment_name)
 
     os.makedirs(experiment_path, exist_ok=True)
+    shutil.copyfile(config_path, experiment_path)
 
 
     """ Other Values """
