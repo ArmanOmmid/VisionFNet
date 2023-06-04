@@ -42,7 +42,7 @@ def main(args, unparsed_args):
         ('--experiment_path', experiment_path)
     ]
     arguments = [item for sublist in options for item in sublist] + unparsed_args
-    main_program = os.path.join(__init__.repository_root, 'experiment.py')
+    main_program = os.path.join(os.path.dirname(__file__), 'experiment.py')
     command = ['python3', main_program] + arguments
 
     process = Popen(command, stdout=PIPE, stderr=PIPE)
