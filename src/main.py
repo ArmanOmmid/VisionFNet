@@ -49,31 +49,21 @@ def main(args, unparsed_args):
     process = Popen(command, stdout=PIPE, stderr=PIPE)
 
     command_string = " ".join(command) + '\n'
-    terminal_file = open(terminal_path, 'w')
-    terminal_file.write(command_string)
 
-    stdout_lines = process.stdout.readlines()
-    for line in stdout_lines:
-        line = line.decode()
-        terminal_file.write(line)
-        print(line.strip('\n'))
-    
-    if process.stderr is not None:
-        stderr_lines = process.stderr.readlines()
-        if len(stderr_lines) != 0:
-            error_message = "\n\n==== Unhandled Exception Encountered ====\n\n"
-            print(error_message)
-            for line in stderr_lines:
-                line = line.decode()
-                terminal_file.write(line)
-                print(line.strip('\n'))
+    with open(terminal_path, 'w') as terminal_file:
 
-    process.stdout.close()
-    if process.stderr is not None: process.stderr.close()
+        terminal_file.write(command_string)
 
-    terminal_file.close()
+        for line in iter(process.stdout.readline, ""):
+            terminal_file.write(line)
+            sys.stdout.write(line)
 
-    return_code = process.wait()
+        for line in iter(process.stderr.readline, ""):
+            line = line.decode()
+            terminal_file.write(line)
+            print(line.strip('\n'))
+
+        return_code = process.wait()
 
     return return_code
 
