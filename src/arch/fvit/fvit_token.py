@@ -43,7 +43,7 @@ class EncoderBlock(nn.Module):
 
         # Q is on a vector
         self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
-        self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+        self.Q_b = nn.Parameter(torch.empty(1, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
         self.K_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
         self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
