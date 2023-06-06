@@ -94,10 +94,7 @@ class EncoderBlock(nn.Module):
             A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
             A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
 
-            new_class_token = torch.einsum("nhqk,nkhd->nqhd", A, V)
-
-            print(x.shape, new_class_token.shape)
-
+            new_class_token = torch.einsum("nhqk,nkhd->nqhd", A, V).reshape(N, 1, C)
             x = torch.cat((new_class_token, x), axis=1)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
