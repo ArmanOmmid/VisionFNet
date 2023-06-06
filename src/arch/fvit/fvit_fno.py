@@ -213,15 +213,9 @@ class VisionTransformer(nn.Module):
 
         x = self.encoder(x)
 
-        print(x.shape)
-
         x = self.channel_control(x)
 
-        print(x.shape)
-
         x = x.view(n, -1)
-
-        print(x.shape)
 
         x = self.heads(x)
 
