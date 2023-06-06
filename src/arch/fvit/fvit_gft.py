@@ -148,11 +148,16 @@ class VisionTransformer(nn.Module):
         )
         self.seq_length = seq_length
 
+        reduced_dims = int(math.sqrt(hidden_dim))
+        self.channel_control = MLP(hidden_dim, [hidden_dim, reduced_dims], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+        linear_dims = reduced_dims * seq_length
+
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
+
         if representation_size is None:
-            heads_layers["head"] = nn.Linear(hidden_dim*seq_length, num_classes)
+            heads_layers["head"] = nn.Linear(linear_dims, num_classes)
         else:
-            heads_layers["pre_logits"] = nn.Linear(hidden_dim*seq_length, representation_size)
+            heads_layers["pre_logits"] = nn.Linear(linear_dims, representation_size)
             heads_layers["act"] = nn.Tanh()
             heads_layers["head"] = nn.Linear(representation_size, num_classes)
 
@@ -208,6 +213,8 @@ class VisionTransformer(nn.Module):
         n = x.shape[0]
 
         x = self.encoder(x)
+
+        x = self.channel_control(x)
 
         x = x.view(n, -1)
 
