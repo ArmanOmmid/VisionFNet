@@ -41,6 +41,8 @@ class EncoderBlock(nn.Module):
         self.QK_d = self.in_dims
         self.V_d = self.in_dims
 
+        # self.injecter = MLP(hidden_dim, int(math.sqrt(hidden_dim)), activation_layer=nn.GELU, inplace=None, dropout=dropout)
+
         # Q is on a vector
         self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
         self.Q_b = nn.Parameter(torch.empty(1, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
