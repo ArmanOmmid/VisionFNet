@@ -193,8 +193,14 @@ class VisionTransformer(nn.Module):
             norm_layer,
         )
         self.seq_length = seq_length
+        linear_size = hidden_dim
 
-        linear_size = hidden_dim if self.config.class_token else hidden_dim*seq_length
+        if self.config.class_token:
+            # Add a class token
+            self.class_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
+            seq_length += 1
+        else:
+            linear_size = hidden_dim * seq_length
 
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
         if representation_size is None:
