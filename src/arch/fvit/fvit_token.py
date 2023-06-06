@@ -81,15 +81,15 @@ class EncoderBlock(nn.Module):
         if self.config.class_token:
             x = torch.cat((class_token, x), axis=1)
 
-            Q = x.view(N, G, self.num_heads, self.QK_d)
+            q = x.view(N, 1, self.num_heads, 1)
             K = x.view(N, G, self.num_heads, self.QK_d)
             V = x.view(N, G, self.num_heads, self.V_d)
 
-            Q = torch.einsum("nqhd,xhd->nqhx", Q, self.q_w) + self.q_b
+            q = torch.einsum("nqhd,xhd->nqhx", q, self.q_w) + self.q_b
             K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
             V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
 
-            A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
+            A = torch.einsum("nqhd,nkhd->nhqk", q, K) # q and k are the lengths which equal g. d represents the q and k dims
             A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
 
             x = torch.einsum("nhqk,nkhd->nqhd", A, V)
