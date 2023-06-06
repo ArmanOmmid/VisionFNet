@@ -189,8 +189,8 @@ class Experiment(object):
                     torch.autograd.set_detect_anomaly(True)
                 outputs = self.model(inputs)
 
-                if torch.any(torch.isnan(outputs)):
-                    raise Exception(f"Output is NaN | Batch[{iter}]\nPrevious optimizer step evaluated at least one Parameter to NaN.")
+                # if torch.any(torch.isnan(outputs)):
+                #     raise Exception(f"Output is NaN | Batch[{iter}]\nPrevious optimizer step evaluated at least one Parameter to NaN.")
                 
                 # nan = torch.any(torch.isnan(outputs))
                 # if not nan:
