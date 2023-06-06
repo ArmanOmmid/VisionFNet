@@ -80,11 +80,12 @@ class EncoderBlock(nn.Module):
         x = x.reshape(N, L, C)
 
         if self.config.class_token:
-            x = torch.cat((class_token, x), axis=1)
+            
+            full = torch.cat((class_token, x), axis=1)
 
             Q = class_token.view(N, 1, self.num_heads, self.QK_d)
-            K = x.view(N, G, self.num_heads, self.QK_d)
-            V = x.view(N, G, self.num_heads, self.V_d)
+            K = full.view(N, G, self.num_heads, self.QK_d)
+            V = full.view(N, G, self.num_heads, self.V_d)
 
             Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
             K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
@@ -93,9 +94,9 @@ class EncoderBlock(nn.Module):
             A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
             A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
 
-            x = torch.einsum("nhqk,nkhd->nqhd", A, V)
+            new_class_token = torch.einsum("nhqk,nkhd->nqhd", A, V)
 
-            print(x.shape)
+            x = torch.cat((new_class_token, x), axis=1)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
