@@ -81,7 +81,7 @@ class EncoderBlock(nn.Module):
         if self.config.class_token:
             x = torch.cat((class_token, x), axis=1)
 
-            q = x.view(N, 1, self.num_heads, 1)
+            q = class_token.view(N, 1, self.num_heads, self.QK_d)
             K = x.view(N, G, self.num_heads, self.QK_d)
             V = x.view(N, G, self.num_heads, self.V_d)
 
