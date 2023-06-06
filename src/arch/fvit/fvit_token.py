@@ -37,10 +37,11 @@ class EncoderBlock(nn.Module):
         self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
         self.G = seq_length
-        self.in_dims = (hidden_dim // self.num_heads) * 2
+        self.in_dims = (hidden_dim // self.num_heads)# * 2 NOT complex
         self.QK_d = self.in_dims
         self.V_d = self.in_dims
 
+        # Q is on a vector
         self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
         self.Q_b = nn.Parameter(torch.empty(1, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
