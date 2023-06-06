@@ -34,7 +34,7 @@ class EncoderBlock(nn.Module):
         self.L = seq_length if not self.config.class_token else seq_length - 1
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
-        self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+        self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
 
         self.G = seq_length
         self.in_dims = (hidden_dim // self.num_heads) * 2
@@ -73,7 +73,6 @@ class EncoderBlock(nn.Module):
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
         mixer = torch.view_as_complex(self.mixer)
-        print(x.shape, mixer.shape)
         x = torch.einsum("nhfd,hfds->nhfd", x, mixer)
 
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')

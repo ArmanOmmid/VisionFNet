@@ -51,7 +51,6 @@ class EncoderBlock(nn.Module):
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
         mixer = torch.view_as_complex(self.mixer)
-        print(x.shape, mixer.shape)
         x = torch.einsum("nhfd,hfds->nhfd", x, mixer)
 
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
