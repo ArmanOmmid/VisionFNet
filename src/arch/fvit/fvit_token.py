@@ -43,13 +43,13 @@ class EncoderBlock(nn.Module):
 
         # Q is on a vector
         self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
-        self.Q_b = nn.Parameter(torch.empty(self.QK_d, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+        self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
 
         self.K_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
-        self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+        self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
 
         self.V_w = nn.Parameter(torch.empty(self.V_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
-        self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+        self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
