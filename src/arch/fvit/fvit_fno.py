@@ -153,6 +153,7 @@ class VisionTransformer(nn.Module):
         linear_dims = reduced_dims * seq_length
 
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
+
         if representation_size is None:
             heads_layers["head"] = nn.Linear(linear_dims, num_classes)
         else:
