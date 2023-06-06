@@ -197,19 +197,6 @@ def main(args):
     util.plot_train_valid(train_acc_per_epoch, valid_acc_per_epoch, experiment_path, name='accuracy')
     if task_type == 'segmentation':
         util.plot_train_valid(train_iou_per_epoch, valid_iou_per_epoch, experiment_path, name='iou')
-
-    results_to_dump = {
-        'best_iou_score' : best_iou_score,
-        'train_loss' : train_loss_per_epoch,
-        'train_accuracy' : train_acc_per_epoch,
-        'train_iou' : train_iou_per_epoch,
-        'val_loss' : valid_loss_per_epoch,
-        'val_accuracy' : valid_acc_per_epoch,
-        'val_iou' : valid_iou_per_epoch
-    }
-
-    with open(os.path.join(experiment_path, 'results.json'), 'w') as f:
-        json.dump(results_to_dump, f, indent=4)
     
     print('-' * 20)
     test_loss, test_acc, test_iou = experiment.test()
@@ -217,6 +204,25 @@ def main(args):
     print(f"Test Accuracy {test_acc}")
     if task_type == 'segmentation':
         print(f"Test IoU {test_iou}")
+
+    results_to_dump = {
+        'train_loss' : train_loss_per_epoch,
+        'train_accuracy' : train_acc_per_epoch,
+        'train_iou' : train_iou_per_epoch,
+        'val_loss' : valid_loss_per_epoch,
+        'val_accuracy' : valid_acc_per_epoch,
+        'val_iou' : valid_iou_per_epoch,
+        'test_loss' : test_loss,
+        'test_accuracy' : test_acc,
+        'test_iou' : test_iou
+    }
+    if task_type != 'segmentation':
+        results_to_dump.pop('train_iou')
+        results_to_dump.pop('val_iou')
+        results_to_dump.pop('test_iou')
+
+    with open(os.path.join(experiment_path, 'results.json'), 'w') as f:
+        json.dump(results_to_dump, f, indent=4)
     
     if task_type == 'segmentation':
         # ------ GET SAMPLE IMAGE FOR REPORT -------
