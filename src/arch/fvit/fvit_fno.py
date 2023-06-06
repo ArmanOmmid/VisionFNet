@@ -150,7 +150,7 @@ class VisionTransformer(nn.Module):
 
         reduced_dims = int(math.sqrt(hidden_dim))
         self.channel_control = MLP(hidden_dim, [hidden_dim, reduced_dims], activation_layer=nn.GELU, inplace=None, dropout=dropout)
-        linear_dims = hidden_dim * reduced_dims
+        linear_dims = reduced_dims * seq_length
 
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
         if representation_size is None:
