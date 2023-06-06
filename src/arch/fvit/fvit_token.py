@@ -87,6 +87,8 @@ class EncoderBlock(nn.Module):
             K = full.view(N, G, self.num_heads, self.QK_d)
             V = full.view(N, G, self.num_heads, self.V_d)
 
+            print(self.Q_w.shape, self.Q_b.shape)
+
             Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
             K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
             V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
