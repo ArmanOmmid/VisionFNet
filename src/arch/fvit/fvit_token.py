@@ -87,8 +87,6 @@ class EncoderBlock(nn.Module):
             K = full.view(N, G, self.num_heads, self.QK_d)
             V = full.view(N, G, self.num_heads, self.V_d)
 
-            print(self.Q_w.shape, self.Q_b.shape)
-
             Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
             K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
             V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
@@ -97,7 +95,6 @@ class EncoderBlock(nn.Module):
             A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
 
             new_class_token = torch.einsum("nhqk,nkhd->nqhd", A, V)
-            print(new_class_token.shape)
             new_class_token = new_class_token.reshape(N, 1, C)
             x = torch.cat((new_class_token, x), axis=1)
 
