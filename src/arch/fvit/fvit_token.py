@@ -43,7 +43,7 @@ class EncoderBlock(nn.Module):
 
         # Q is on a vector
         self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
-        self.Q_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+        self.Q_b = nn.Parameter(torch.empty(1, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
         self.K_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
         self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
@@ -96,7 +96,9 @@ class EncoderBlock(nn.Module):
             A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
             A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
 
-            new_class_token = torch.einsum("nhqk,nkhd->nqhd", A, V).reshape(N, 1, C)
+            new_class_token = torch.einsum("nhqk,nkhd->nqhd", A, V)
+            print(new_class_token.shape)
+            new_class_token = new_class_token.reshape(N, 1, C)
             x = torch.cat((new_class_token, x), axis=1)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
