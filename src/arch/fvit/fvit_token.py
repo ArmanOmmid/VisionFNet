@@ -96,6 +96,8 @@ class EncoderBlock(nn.Module):
 
             new_class_token = torch.einsum("nhqk,nkhd->nqhd", A, V)
 
+            print(x.shape, new_class_token.shape)
+
             x = torch.cat((new_class_token, x), axis=1)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
