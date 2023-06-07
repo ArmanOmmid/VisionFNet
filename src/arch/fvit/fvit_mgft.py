@@ -39,9 +39,9 @@ class EncoderBlock(nn.Module):
         self.scale_2 = nn.Parameter(torch.empty(*self.fourier_dims(0.5), 2, dtype=torch.float32).normal_(std=0.02))
         self.scale_3 = nn.Parameter(torch.empty(*self.fourier_dims(0.25), 2, dtype=torch.float32).normal_(std=0.02))
 
-        number_of_scales = 3
+        self.scale_parameters = [self.scale_1, self.scale_2, self.scale_3]
 
-        self.channel_control = MLP(hidden_dim * number_of_scales, [hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+        self.channel_control = MLP(hidden_dim * len(self.scale_parameters), [hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
@@ -73,11 +73,12 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        scale_1 = self.fourier_operate(x, self.scale_1, N)
-        scale_2 = self.fourier_operate(x, self.scale_2, N)
-        scale_3 = self.fourier_operate(x, self.scale_3, N)
+        scales = [
+            self.fourier_operate(x, parameter, N)
+            for parameter in self.scale_parameters
+        ]
 
-        x = torch.cat([scale_1, scale_2, scale_3], axis=-1)
+        x = torch.cat(scales, axis=-1)
 
         x = self.dropout(x)
         x = self.channel_control(x)
