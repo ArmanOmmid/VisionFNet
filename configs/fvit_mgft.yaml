@@ -1,7 +1,7 @@
 # Architecture
 model: fvit_mgft
 image_size: 32
-patch_size: 8
+patch_size: 4
 num_layers: 4
 num_heads: 8
 hidden_dim: 64
