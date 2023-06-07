@@ -145,7 +145,7 @@ def main(args):
                 if param.isnan().any():
                     print(f"Found NaN in parameters")
                     print(name, param)
-            print("Output", grad_output)
+                    print("Output", grad_output)
         def input_nan_hook(self, input, output):
             if not isinstance(output, tuple):
                 outputs = [output]
