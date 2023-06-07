@@ -44,7 +44,7 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
         
-        x, _ = self.self_attention(x, x, x, need_weights=False)
+        x, _ = self.self_attention(x, x, x, need_weights=True)
             
         x = self.dropout(x)
         x = x + input
