@@ -51,7 +51,7 @@ class EncoderBlock(nn.Module):
         C = int(self.hidden_dim * (scale * scale))
         return HW, F, C
 
-    def fourier_operate(self, x, parameters, N, HW, C):
+    def fourier_operate(self, x, parameters, N, HW, F, C):
         x = x.view(N, HW, HW, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
         parameters = torch.view_as_complex(parameters)
@@ -69,9 +69,9 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        half = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(0.5)[:2])
-        normal = self.fourier_operate(x, self.scale_normal, N, *self.fourier_dims(1)[:2])
-        double = self.fourier_operate(x, self.scale_double, N, *self.fourier_dims(2)[:2])
+        half = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(0.5))
+        normal = self.fourier_operate(x, self.scale_normal, N, *self.fourier_dims(1))
+        double = self.fourier_operate(x, self.scale_double, N, *self.fourier_dims(2))
 
         x = torch.cat([half, normal, double], axis=-1)
 
