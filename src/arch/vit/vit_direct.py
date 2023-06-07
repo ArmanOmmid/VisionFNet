@@ -218,9 +218,9 @@ class VisionTransformer(nn.Module):
 
         check(x, None, "encoder")
 
-        x = self.channel_control(x)
-
         print(x)
+
+        x = self.channel_control(x)
 
         check(x, self.channel_control, "channel control")
 
