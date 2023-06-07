@@ -31,41 +31,51 @@ class EncoderBlock(nn.Module):
 
         self.L = seq_length
         self.H = self.W = int(math.sqrt(self.L))
-        self.F = int(self.W // 2) + 1
-        self.G = self.H * self.F
+        self.hidden_dim = hidden_dim
 
-        self.fourier_attention = nn.MultiheadAttention(hidden_dim*2, num_heads, dropout=attention_dropout, batch_first=True)
+        self.scale_half = nn.Parameter(torch.empty(*self.fourier_dims(0.5), 2, dtype=torch.float32).normal_(std=0.02))
+        self.scale_normal = nn.Parameter(torch.empty(*self.fourier_dims(1), 2, dtype=torch.float32).normal_(std=0.02))
+        self.scale_double = nn.Parameter(torch.empty(*self.fourier_dims(2), 2, dtype=torch.float32).normal_(std=0.02))
+
+        number_of_scales = 3
+
+        self.channel_control = MLP(hidden_dim * number_of_scales, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
         self.mlp = MLP(hidden_dim, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+
+    def fourier_dims(self, scale):
+        HW = self.H * scale
+        D = self.hidden_dim // (scale * scale)
+        F = int(HW // 2) + 1
+        return HW, D, F
+
+    def fourier_operate(x, parameters, N, HW, C):
+        x = x.view(N, HW, HW, C)
+        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+        parameters = torch.view_as_complex(parameters)
+        x = x * parameters
+        x = torch.fft.irfft2(x, s=(HW, HW), dim=(1, 2), norm='ortho')
+        return x.reshape(N, HW * HW, C)
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
         N, L, C = input.shape
         H = W = int(math.sqrt(L))
-        F = int(W // 2) + 1 # Fourier Width
-        G = H*F # Fourier Sequence Length
+        F = int(W // 2) + 1
 
         x = self.ln_1(input)
 
-        x = x.view(N, H, W, C)
-        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+        half = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(0.5)[:2])
+        normal = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(1)[:2])
+        double = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(2)[:2])
 
-        x = torch.view_as_real(x)
- 
-        x = x.reshape(N, H, F, C*2)
-        x = x.view(N, G, C*2)
+        x = torch.cat([half, normal, double], axis=-1)
 
-        x, _= self.fourier_attention(x, x, x)
-
-        x = x.reshape(N, G, C*2).reshape(N, H, F, C, 2)
-
-        x = torch.view_as_complex(x)
-
-        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-        x = x.reshape(N, L, C)
+        x = self.dropout(x)
+        x = self.channel_control(x)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
@@ -75,7 +85,7 @@ class EncoderBlock(nn.Module):
         y = self.ln_2(x)
         y = self.mlp(y)
 
-        return x + y
+        return y + input
 
 class Encoder(nn.Module):
     def __init__(
