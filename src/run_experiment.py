@@ -161,13 +161,13 @@ def main(args):
                 nan_mask = torch.isnan(out)
                 if nan_mask.any():
                     with open(hook_file_path, 'w') as hook_file:
-                        hook_file.write(f"Module: {module.__class__.__name__}")
-                        msg = f"Found NaN in output {i} at indices:\n{nan_mask.nonzero()}\nWhere:\n{out[nan_mask.nonzero()[:, 0].unique(sorted=True)]}"
+                        hook_file.write(f"Module: {module.__class__.__name__}\n")
+                        msg = f"Found NaN in output {i} at indices:\n{nan_mask.nonzero()}\nWhere\n{out[nan_mask.nonzero()[:, 0].unique(sorted=True)]}"
                         hook_file.write(msg)
                         hook_file.write(f"\nInputs\n{input}")
                         hook_file.write(f"\nOutputs\n{output}")
                         if attention_module:
-                            hook_file.write(f"Other\n{other}")
+                            hook_file.write(f"\nOther\n{other}")
                     raise RuntimeError(f"NaN Encountered in Forward Pass")
         for module in model.modules():
             condition = True # (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
