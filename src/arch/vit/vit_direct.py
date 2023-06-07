@@ -220,6 +220,8 @@ class VisionTransformer(nn.Module):
 
         x = self.channel_control(x)
 
+        print(x)
+
         check(x, self.channel_control, "channel control")
 
         x = x.view(n, -1)
