@@ -42,7 +42,7 @@ class EncoderBlock(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
-        check(input, None, "input")
+        prior = check(input, None, "input")
 
         x = self.ln_1(input)
 
@@ -231,12 +231,18 @@ class VisionTransformer(nn.Module):
 
         return x
     
-def check(tensor, module=None, desc=None):
+def check(tensor, module=None, desc=None, prior=None):
     if tensor.isnan().any():
         print("\n")
         print("NaN Detected\n")
+        if prior is not None:
+            print("Prior")
+            print(prior)
+            print("After")
         print(desc)
         print(tensor)
         if module is not None:
             for param in module.named_parameters():
                 print(param)
+    else:
+        return tensor
