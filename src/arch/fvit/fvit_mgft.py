@@ -70,9 +70,9 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        scale_1 = self.fourier_operate(x, self.scale_1, N, *self.fourier_dims(0.5))
-        scale_2 = self.fourier_operate(x, self.scale_2, N, *self.fourier_dims(1))
-        scale_3 = self.fourier_operate(x, self.scale_3, N, *self.fourier_dims(2))
+        scale_1 = self.fourier_operate(x, self.scale_1, N, *self.fourier_dims(1))
+        scale_2 = self.fourier_operate(x, self.scale_2, N, *self.fourier_dims(2))
+        scale_3 = self.fourier_operate(x, self.scale_3, N, *self.fourier_dims(4))
 
         x = torch.cat([scale_1, scale_2, scale_3], axis=-1)
 
