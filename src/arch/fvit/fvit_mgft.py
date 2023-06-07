@@ -45,10 +45,12 @@ class EncoderBlock(nn.Module):
         self.ln_2 = norm_layer(hidden_dim)
         self.mlp = MLP(hidden_dim, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
-    def fourier_dims(self, scale):
+    def fourier_dims(self, scale, channel_mixing=False):
         HW = int(self.H // scale)
         F = int(HW // 2) + 1
         C = int(self.hidden_dim * (scale * scale))
+        if channel_mixing:
+            return HW, F, C, C
         return HW, F, C
 
     def fourier_operate(self, x, parameters, N, HW, F, C):
