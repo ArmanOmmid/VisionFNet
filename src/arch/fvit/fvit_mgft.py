@@ -249,6 +249,8 @@ class VisionTransformer(nn.Module):
 
         x = self.encoder(x)
 
+        x = self.token_control(x)
+
         x = self.channel_control(x)
 
         x = x.view(n, -1)
