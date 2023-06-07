@@ -146,8 +146,8 @@ def main(args):
                 if param.isnan().any():
                     with open(hook_file_path, 'w') as hook_file:
                         hook_file.write(f"Found NaN in parameters")
-                        hook_file.write(name, param)
-                        hook_file.write("Output", grad_output)
+                        hook_file.write(f"{name}\n{param}")
+                        hook_file.write(f"Output\n{grad_output}")
                     raise RuntimeError("NaN Encountered in Backward Pass")
         def forward_nan_hook(module, input, output):
             if not isinstance(output, tuple):
@@ -160,11 +160,11 @@ def main(args):
                 if nan_mask.any():
                     with open(hook_file_path, 'w') as hook_file:
                         hook_file.write("In", module.__class__.__name__)
-                        msg = f"Found NaN in output {i} at indices:\n", nan_mask.nonzero(), "\nWhere:\n", out[nan_mask.nonzero()[:, 0].unique(sorted=True)]
+                        msg = f"Found NaN in output {i} at indices:\n{nan_mask.nonzero()}\nWhere:\n{out[nan_mask.nonzero()[:, 0].unique(sorted=True)]}"
                         hook_file.write(msg)
-                        hook_file.write("\nInputs\n", input)
-                        hook_file.write("\nOutputs\n", output)
-                    raise RuntimeError("NaN Encountered in Forward Pass")
+                        hook_file.write(f"\nInputs\n{input}")
+                        hook_file.write(f"\nOutputs\n{output}")
+                    raise RuntimeError(f"NaN Encountered in Forward Pass")
         for module in model.modules():
             condition = True # (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
             if 'backward' in config.hooks:
