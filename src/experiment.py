@@ -156,9 +156,10 @@ def main(args):
                 nan_mask = torch.isnan(out)
                 if nan_mask.any():
                     print("In", module.__class__.__name__)
-                    msg = f"Found NaN in output {i} at indices: ", nan_mask.nonzero(), "where:", out[nan_mask.nonzero()[:, 0].unique(sorted=True)]
-                    print(msg)
-                    # raise RuntimeError(msg)
+                    msg = f"Found NaN in output {i} at indices:\n", nan_mask.nonzero(), "\nWhere:\n", out[nan_mask.nonzero()[:, 0].unique(sorted=True)]
+                print(msg)
+                print("\nInputs\n", input)
+                print("\nOutputs\n", output)
         for module in model.modules():
             condition = True # (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
             if condition:
