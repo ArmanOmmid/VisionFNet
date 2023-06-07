@@ -146,6 +146,7 @@ def main(args):
                     print(f"Found NaN in parameters")
                     print(name, param)
                     print("Output", grad_output)
+                    raise RuntimeError("NaN Encountered in Backward Pass")
         def forward_nan_hook(module, input, output):
             if not isinstance(output, tuple):
                 outputs = [output]
@@ -160,7 +161,7 @@ def main(args):
                     print(msg)
                     print("\nInputs\n", input)
                     print("\nOutputs\n", output)
-                    raise RuntimeError("NaN Encountered")
+                    raise RuntimeError("NaN Encountered in Forward Pass")
         for module in model.modules():
             condition = True # (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
             if 'backward' in config.hooks:
