@@ -46,10 +46,10 @@ class EncoderBlock(nn.Module):
         self.mlp = MLP(hidden_dim, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
     def fourier_dims(self, scale):
-        HW = int(self.H * scale)
-        D = int(self.hidden_dim // (scale * scale))
+        HW = int(self.H // scale)
+        C = int(self.hidden_dim * (scale * scale))
         F = int(HW // 2) + 1
-        return HW, D, F
+        return HW, C, F
 
     def fourier_operate(x, parameters, N, HW, C):
         x = x.view(N, HW, HW, C)
@@ -68,9 +68,9 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        half = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(0.5)[:2])
-        normal = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(1)[:2])
-        double = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(2)[:2])
+        half = self.fourier_operate(x, self.scale_half, N, *(self.fourier_dims(0.5)[:2])
+        normal = self.fourier_operate(x, self.scale_half, N, *(self.fourier_dims(1)[:2]))
+        double = self.fourier_operate(x, self.scale_half, N, *(self.fourier_dims(2)[:2]))
 
         x = torch.cat([half, normal, double], axis=-1)
 
