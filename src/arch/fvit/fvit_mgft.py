@@ -46,8 +46,8 @@ class EncoderBlock(nn.Module):
         self.mlp = MLP(hidden_dim, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
     def fourier_dims(self, scale):
-        HW = self.H * scale
-        D = self.hidden_dim // (scale * scale)
+        HW = int(self.H * scale)
+        D = sint(self.hidden_dim // (scale * scale))
         F = int(HW // 2) + 1
         print(HW, D, F)
         return HW, D, F
