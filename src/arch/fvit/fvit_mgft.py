@@ -70,8 +70,8 @@ class EncoderBlock(nn.Module):
         x = self.ln_1(input)
 
         half = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(0.5)[:2])
-        normal = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(1)[:2])
-        double = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(2)[:2])
+        normal = self.fourier_operate(x, self.scale_normal, N, *self.fourier_dims(1)[:2])
+        double = self.fourier_operate(x, self.scale_double, N, *self.fourier_dims(2)[:2])
 
         x = torch.cat([half, normal, double], axis=-1)
 
