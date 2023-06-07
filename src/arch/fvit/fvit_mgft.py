@@ -55,7 +55,6 @@ class EncoderBlock(nn.Module):
         x = x.view(N, HW, HW, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
         parameters = torch.view_as_complex(parameters)
-        print(x.shape, parameters.shape)
         x = x * parameters
         x = torch.fft.irfft2(x, s=(HW, HW), dim=(1, 2), norm='ortho')
         return x.reshape(N, HW * HW, C)
