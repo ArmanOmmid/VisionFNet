@@ -61,7 +61,7 @@ class EncoderBlock(nn.Module):
         x = x.view(N, HW, HW, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
         if self.channel_mixing:
-            x = torch.matmul(x, parameters)
+            x = torch.einsum("nhfd,hfds->nhfd", x, parameters)
         else:
             x = x * parameters
         x = torch.fft.irfft2(x, s=(HW, HW), dim=(1, 2), norm='ortho')
