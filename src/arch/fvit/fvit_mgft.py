@@ -47,8 +47,8 @@ class EncoderBlock(nn.Module):
 
     def fourier_dims(self, scale):
         HW = int(self.H // scale)
-        C = int(self.hidden_dim * (scale * scale))
         F = int(HW // 2) + 1
+        C = int(self.hidden_dim * (scale * scale))
         return HW, F, C
 
     def fourier_operate(self, x, parameters, N, HW, C):
