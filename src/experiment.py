@@ -136,10 +136,10 @@ def main(args):
     model = model.to(device) # transfer the model to the device
     print("Model Architecture: ", config.model)
 
-
     """ Debugging """
     # If Debug, set a hook for modules with an arbitrary debug attribute 
     if config.hooks and len(config.hooks) != 0:
+        print("TEST")
         hook_file_path = os.path.join(experiment_path, 'hook.txt')
         def backward_nan_hook(module, grad_input, grad_output):
             for name, param in module.named_parameters():
