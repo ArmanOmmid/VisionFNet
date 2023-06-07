@@ -68,6 +68,7 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
+        print(*(self.fourier_dims(0.5)[:2]))
         half = self.fourier_operate(x, self.scale_half, N, *(self.fourier_dims(0.5)[:2]))
         normal = self.fourier_operate(x, self.scale_half, N, *(self.fourier_dims(1)[:2]))
         double = self.fourier_operate(x, self.scale_half, N, *(self.fourier_dims(2)[:2]))
