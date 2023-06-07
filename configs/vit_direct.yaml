@@ -21,5 +21,5 @@ early_stop_tolerance: 8
 
 # Misc
 debug: 0
-hooks: 1
+hooks: ['forward']
 augment: False

@@ -140,13 +140,13 @@ def main(args):
     """ Debugging """
     # If Debug, set a hook for modules with an arbitrary debug attribute 
     if config.hooks:
-        def parameter_nan_hook(module, grad_input, grad_output):
+        def backward_nan_hook(module, grad_input, grad_output):
             for name, param in module.named_parameters():
                 if param.isnan().any():
                     print(f"Found NaN in parameters")
                     print(name, param)
                     print("Output", grad_output)
-        def input_nan_hook(module, input, output):
+        def forward_nan_hook(module, input, output):
             if not isinstance(output, tuple):
                 outputs = [output]
             else:
@@ -160,11 +160,13 @@ def main(args):
                     print(msg)
                     print("\nInputs\n", input)
                     print("\nOutputs\n", output)
+                    raise RuntimeError("NaN Encountered")
         for module in model.modules():
             condition = True # (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
-            if condition:
-                module.register_full_backward_hook(parameter_nan_hook)
-                module.register_forward_hook(input_nan_hook)
+            if 'backward' in config.hooks:
+                module.register_full_backward_hook(backward_nan_hook)
+            if 'forward' in config.hooks:
+                module.register_forward_hook(forward_nan_hook)
 
 
     summary_columns =[ "input_size", "output_size", "num_params", "params_percent", "kernel_size", "mult_adds", "trainable"]
