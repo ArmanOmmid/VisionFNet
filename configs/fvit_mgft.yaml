@@ -1,5 +1,5 @@
 # Architecture
-model: fvit_gft
+model: fvit_mgft
 image_size: 32
 patch_size: 8
 num_layers: 2
