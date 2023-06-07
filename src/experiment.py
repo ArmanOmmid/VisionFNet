@@ -140,12 +140,14 @@ def main(args):
     """ Debugging """
     # If Debug, set a hook for modules with an arbitrary debug attribute 
     if config.hooks:
+        hook_file_path = os.path.join(experiment_path, 'hook.txt')
         def backward_nan_hook(module, grad_input, grad_output):
             for name, param in module.named_parameters():
                 if param.isnan().any():
-                    print(f"Found NaN in parameters")
-                    print(name, param)
-                    print("Output", grad_output)
+                    with open(hook_file_path, 'w') as hook_file:
+                        hook_file.write(f"Found NaN in parameters")
+                        hook_file.write(name, param)
+                        hook_file.write("Output", grad_output)
                     raise RuntimeError("NaN Encountered in Backward Pass")
         def forward_nan_hook(module, input, output):
             if not isinstance(output, tuple):
@@ -156,11 +158,12 @@ def main(args):
                 if isinstance(module, nn.MultiheadAttention) and out is None: continue # attention has a 2nd output that is nan
                 nan_mask = torch.isnan(out)
                 if nan_mask.any():
-                    print("In", module.__class__.__name__)
-                    msg = f"Found NaN in output {i} at indices:\n", nan_mask.nonzero(), "\nWhere:\n", out[nan_mask.nonzero()[:, 0].unique(sorted=True)]
-                    print(msg)
-                    print("\nInputs\n", input)
-                    print("\nOutputs\n", output)
+                    with open(hook_file_path, 'w') as hook_file:
+                        hook_file.write("In", module.__class__.__name__)
+                        msg = f"Found NaN in output {i} at indices:\n", nan_mask.nonzero(), "\nWhere:\n", out[nan_mask.nonzero()[:, 0].unique(sorted=True)]
+                        hook_file.write(msg)
+                        hook_file.write("\nInputs\n", input)
+                        hook_file.write("\nOutputs\n", output)
                     raise RuntimeError("NaN Encountered in Forward Pass")
         for module in model.modules():
             condition = True # (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
