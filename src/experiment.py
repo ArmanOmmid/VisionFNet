@@ -146,16 +146,16 @@ def main(args):
                     print(f"Found NaN in parameters")
                     print(name, param)
                     print("Output", grad_output)
-        def input_nan_hook(self, input, output):
+        def input_nan_hook(module, input, output):
             if not isinstance(output, tuple):
                 outputs = [output]
             else:
                 outputs = output
             for i, out in enumerate(outputs):
-                if out is None: continue # attention has a 2nd output that is nan
+                if isinstance(module, nn.MultiheadAttention) and out is None: continue # attention has a 2nd output that is nan
                 nan_mask = torch.isnan(out)
                 if nan_mask.any():
-                    print("In", self.__class__.__name__)
+                    print("In", module.__class__.__name__)
                     msg = f"Found NaN in output {i} at indices: ", nan_mask.nonzero(), "where:", out[nan_mask.nonzero()[:, 0].unique(sorted=True)]
                     print(msg)
                     # raise RuntimeError(msg)
