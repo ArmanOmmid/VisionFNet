@@ -153,6 +153,7 @@ def main(args):
             else:
                 outputs = output
             for i, out in enumerate(outputs):
+                if out is None: continue # attention has a 2nd output that is nan
                 nan_mask = torch.isnan(out)
                 if nan_mask.any():
                     print("In", self.__class__.__name__)
