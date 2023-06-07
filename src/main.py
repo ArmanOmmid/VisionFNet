@@ -46,7 +46,7 @@ def main(args, unparsed_args):
         ('--experiment_name', experiment_name)
     ]
     arguments = [item for sublist in options for item in sublist] + unparsed_args
-    main_program = os.path.join(os.path.dirname(__file__), 'experiment.py')
+    main_program = os.path.join(os.path.dirname(__file__), 'run_experiment.py')
     command = ['python3', main_program] + arguments
 
     command_string = " ".join(command) + '\n\n'
