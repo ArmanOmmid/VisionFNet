@@ -136,6 +136,8 @@ def main(args):
     model = model.to(device) # transfer the model to the device
     print("Model Architecture: ", config.model)
 
+
+    """ Debugging """
     # If Debug, set a hook for modules with an arbitrary debug attribute 
     if config.debug:
         def parameter_nan_hook(module, grad_input, grad_output):
@@ -145,6 +147,7 @@ def main(args):
                     print(param)
             print("Output", grad_output)
         def input_nan_hook(self, input, output):
+            print(output)
             if not isinstance(output, tuple):
                 outputs = [output]
             else:
@@ -161,6 +164,7 @@ def main(args):
             if condition:
                 module.register_full_backward_hook(parameter_nan_hook)
                 module.register_forward_hook(input_nan_hook)
+
 
     summary_columns =[ "input_size", "output_size", "num_params", "params_percent", "kernel_size", "mult_adds", "trainable"]
     torchinfo.summary(model=model, input_size=(config.batch_size, 3, config.image_size, config.image_size), col_names=summary_columns)
