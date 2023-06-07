@@ -156,8 +156,8 @@ def main(args):
                 outputs = output
             if attention_module := isinstance(module, nn.MultiheadAttention):
                 input = input[0]
+                output = [output[0]]
             for i, out in enumerate(outputs):
-                if attention_module and out is None: continue # attention has a 2nd output that is nan
                 nan_mask = torch.isnan(out)
                 if nan_mask.any():
                     with open(hook_file_path, 'w') as hook_file:
