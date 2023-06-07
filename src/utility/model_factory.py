@@ -71,13 +71,13 @@ def build_model(config, classes):
         mlp_dim = int(config.hidden_dim * config.expansion)
         model = torchvision.models.vision_transformer.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
                                            hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count)
+    elif config.model == 'vit_token':
+        mlp_dim = int(config.hidden_dim * config.expansion)
+        model = arch.vit_token.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
+                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count, fourier=False) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'vit':
         mlp_dim = int(config.hidden_dim * config.expansion)
         model = arch.vit.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
-                                           hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count, fourier=False) # norm_layer=nn.BatchNorm2d)
-    elif config.model == 'vit_direct':
-        mlp_dim = int(config.hidden_dim * config.expansion)
-        model = arch.vit_direct.VisionTransformer(image_size=config.image_size, patch_size=config.patch_size, num_layers=config.num_layers, num_heads=config.num_heads, \
                                            hidden_dim=config.hidden_dim, mlp_dim=mlp_dim, num_classes=class_count) # norm_layer=nn.BatchNorm2d)
     elif config.model == 'fvit':
         mlp_dim = int(config.hidden_dim * config.expansion)

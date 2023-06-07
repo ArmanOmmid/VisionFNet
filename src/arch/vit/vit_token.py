@@ -24,14 +24,17 @@ class EncoderBlock(nn.Module):
         dropout: float,
         attention_dropout: float,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
+        fourier: bool = False, # NOTE : FOURIER
     ):
         super().__init__()
         self.num_heads = num_heads
+        self.fourier = fourier
 
         # Attention block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+        if not fourier: # NOTE : FOURIER
+            self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -41,18 +44,18 @@ class EncoderBlock(nn.Module):
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
-
         x = self.ln_1(input)
         
-        x, _ = self.self_attention(x, x, x, need_weights=True)
+        if not self.fourier: # NOTE : FOURIER
+            x, _ = self.self_attention(x, x, x, need_weights=False)
+        else:
+            x = torch.real(torch.fft.fft2(x))
             
         x = self.dropout(x)
         x = x + input
 
         y = self.ln_2(x)
-
         y = self.mlp(y)
-
         return x + y
 
 
@@ -67,6 +70,7 @@ class Encoder(nn.Module):
         dropout: float,
         attention_dropout: float,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
+        fourier: bool = False, # NOTE : FOURIER
     ):
         super().__init__()
         # Note that batch_size is on the first dim because
@@ -82,6 +86,7 @@ class Encoder(nn.Module):
                 dropout,
                 attention_dropout,
                 norm_layer,
+                fourier,
             )
         self.layers = nn.Sequential(layers)
         self.ln = norm_layer(hidden_dim)
@@ -89,9 +94,7 @@ class Encoder(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         input = input + self.pos_embedding
-        x = self.layers(self.dropout(input))
-        x = self.ln(x)
-        return x
+        return self.ln(self.layers(self.dropout(input)))
 
 
 class VisionTransformer(nn.Module):
@@ -108,6 +111,8 @@ class VisionTransformer(nn.Module):
         num_classes: int = 1000,
         representation_size: Optional[int] = None,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
+        conv_stem_configs: Optional[List[ConvStemConfig]] = None,
+        fourier: bool = False,
     ):
         super().__init__()
         torch._assert(image_size % patch_size == 0, "Input shape indivisible by patch size!")
@@ -120,12 +125,39 @@ class VisionTransformer(nn.Module):
         self.num_classes = num_classes
         self.representation_size = representation_size
         self.norm_layer = norm_layer
+        self.fourier = fourier
 
-        self.conv_proj = nn.Conv2d(
-            in_channels=3, out_channels=hidden_dim, kernel_size=patch_size, stride=patch_size
-        )
+        if conv_stem_configs is not None:
+            # As per https://arxiv.org/abs/2106.14881
+            seq_proj = nn.Sequential()
+            prev_channels = 3
+            for i, conv_stem_layer_config in enumerate(conv_stem_configs):
+                seq_proj.add_module(
+                    f"conv_bn_relu_{i}",
+                    Conv2dNormActivation(
+                        in_channels=prev_channels,
+                        out_channels=conv_stem_layer_config.out_channels,
+                        kernel_size=conv_stem_layer_config.kernel_size,
+                        stride=conv_stem_layer_config.stride,
+                        norm_layer=conv_stem_layer_config.norm_layer,
+                        activation_layer=conv_stem_layer_config.activation_layer,
+                    ),
+                )
+                prev_channels = conv_stem_layer_config.out_channels
+            seq_proj.add_module(
+                "conv_last", nn.Conv2d(in_channels=prev_channels, out_channels=hidden_dim, kernel_size=1)
+            )
+            self.conv_proj: nn.Module = seq_proj
+        else:
+            self.conv_proj = nn.Conv2d(
+                in_channels=3, out_channels=hidden_dim, kernel_size=patch_size, stride=patch_size
+            )
 
         seq_length = (image_size // patch_size) ** 2
+
+        # Add a class token
+        self.class_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
+        seq_length += 1
 
         self.encoder = Encoder(
             seq_length,
@@ -136,19 +168,15 @@ class VisionTransformer(nn.Module):
             dropout,
             attention_dropout,
             norm_layer,
+            fourier,
         )
         self.seq_length = seq_length
 
-        reduced_dims = int(math.sqrt(hidden_dim))
-        self.channel_control = MLP(hidden_dim, [hidden_dim, reduced_dims], activation_layer=nn.GELU, inplace=None, dropout=dropout)
-        linear_dims = reduced_dims * seq_length
-
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
-
         if representation_size is None:
-            heads_layers["head"] = nn.Linear(linear_dims, num_classes)
+            heads_layers["head"] = nn.Linear(hidden_dim, num_classes)
         else:
-            heads_layers["pre_logits"] = nn.Linear(linear_dims, representation_size)
+            heads_layers["pre_logits"] = nn.Linear(hidden_dim, representation_size)
             heads_layers["act"] = nn.Tanh()
             heads_layers["head"] = nn.Linear(representation_size, num_classes)
 
@@ -203,13 +231,15 @@ class VisionTransformer(nn.Module):
         x = self._process_input(x)
         n = x.shape[0]
 
+        # Expand the class token to the full batch
+        batch_class_token = self.class_token.expand(n, -1, -1)
+        x = torch.cat([batch_class_token, x], dim=1)
+
         x = self.encoder(x)
 
-        x = self.channel_control(x)
-
-        x = x.view(n, -1)
+        # Classifier "token" as used by standard language architectures
+        x = x[:, 0]
 
         x = self.heads(x)
 
         return x
-    
