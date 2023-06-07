@@ -35,7 +35,7 @@ class EncoderBlock(nn.Module):
 
         self.scale_1 = nn.Parameter(torch.empty(*self.fourier_dims(1), 2, dtype=torch.float32).normal_(std=0.02))
         self.scale_2 = nn.Parameter(torch.empty(*self.fourier_dims(0.5), 2, dtype=torch.float32).normal_(std=0.02))
-        self.scale_3 = nn.Parameter(torch.empty(*self.fourier_dims(0.25), 2, dtype=torch.float32).normal_(std=0.02))
+        self.scale_3 = nn.Parameter(torch.empty(*self.fourier_dims(2), 2, dtype=torch.float32).normal_(std=0.02))
 
         number_of_scales = 3
 
@@ -53,10 +53,11 @@ class EncoderBlock(nn.Module):
             return HW, F, C, C
         return HW, F, C
 
-    def fourier_operate(self, x, parameters, N, HW, F, C):
+    def fourier_operate(self, x, parameters, N):
+        parameters = torch.view_as_complex(parameters)
+        HW, F, C = parameters.shape
         x = x.view(N, HW, HW, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
-        parameters = torch.view_as_complex(parameters)
         x = x * parameters
         x = torch.fft.irfft2(x, s=(HW, HW), dim=(1, 2), norm='ortho')
         return x.reshape(N, self.H, self.H, self.hidden_dim)
@@ -70,9 +71,9 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        scale_1 = self.fourier_operate(x, self.scale_1, N, *self.fourier_dims(1))
-        scale_2 = self.fourier_operate(x, self.scale_2, N, *self.fourier_dims(0.5))
-        scale_3 = self.fourier_operate(x, self.scale_3, N, *self.fourier_dims(0.25))
+        scale_1 = self.fourier_operate(x, self.scale_1, N)
+        scale_2 = self.fourier_operate(x, self.scale_2, N)
+        scale_3 = self.fourier_operate(x, self.scale_3, N)
 
         x = torch.cat([scale_1, scale_2, scale_3], axis=-1)
 
