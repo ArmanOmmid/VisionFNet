@@ -78,8 +78,7 @@ class EncoderBlock(nn.Module):
 
         x = self.dropout(x)
         x = self.channel_control(x)
-
-        print(x.shape)
+        x = x.reshape(N, L, C)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
