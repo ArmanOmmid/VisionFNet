@@ -156,7 +156,8 @@ def main(args):
                 outputs = output
             if attention_module := isinstance(module, nn.MultiheadAttention):
                 input = input[0]
-                output = [output[0]]
+                other = outputs[:0]
+                outputs = [outputs[0]]
             for i, out in enumerate(outputs):
                 nan_mask = torch.isnan(out)
                 if nan_mask.any():
@@ -166,6 +167,8 @@ def main(args):
                         hook_file.write(msg)
                         hook_file.write(f"\nInputs\n{input}")
                         hook_file.write(f"\nOutputs\n{output}")
+                        if attention_module:
+                            hook_file.write(f"Other\n{other}")
                     raise RuntimeError(f"NaN Encountered in Forward Pass")
         for module in model.modules():
             condition = True # (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
