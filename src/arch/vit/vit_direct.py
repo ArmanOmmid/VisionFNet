@@ -42,26 +42,16 @@ class EncoderBlock(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
-        check(input, None, "input")
-
         x = self.ln_1(input)
-
-        prior = check(x, self.ln_1, "ln_1")
         
         x, _ = self.self_attention(x, x, x, need_weights=False)
-
-        check(x, self.self_attention, "self_attn", prior)
             
         x = self.dropout(x)
         x = x + input
 
         y = self.ln_2(x)
 
-        check(y, self.ln_2, "ln_2")
-
         y = self.mlp(y)
-
-        check(y, self.mlp, "mlp")
 
         return x + y
 
@@ -100,9 +90,7 @@ class Encoder(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         input = input + self.pos_embedding
         x = self.layers(self.dropout(input))
-        check(x, None, "layers")
         x = self.ln(x)
-        check(x, self.ln, "ln")
         return x
 
 
@@ -217,32 +205,11 @@ class VisionTransformer(nn.Module):
 
         x = self.encoder(x)
 
-        check(x, None, "encoder")
-
         x = self.channel_control(x)
-
-        check(x, self.channel_control, "channel control")
 
         x = x.view(n, -1)
 
         x = self.heads(x)
 
-        check(x, self.heads, "heads")
-
         return x
     
-def check(tensor, module=None, desc=None, prior=None):
-    if tensor.isnan().any():
-        print("\n")
-        print("NaN Detected\n")
-        if prior is not None:
-            print("Prior")
-            print(prior)
-            print("After")
-        print(desc)
-        print(tensor)
-        if module is not None:
-            for param in module.named_parameters():
-                print(param)
-    else:
-        return tensor

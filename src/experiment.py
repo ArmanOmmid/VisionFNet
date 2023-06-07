@@ -139,7 +139,7 @@ def main(args):
 
     """ Debugging """
     # If Debug, set a hook for modules with an arbitrary debug attribute 
-    if config.debug:
+    if config.hooks:
         def parameter_nan_hook(module, grad_input, grad_output):
             for name, param in module.named_parameters():
                 if param.isnan().any():
