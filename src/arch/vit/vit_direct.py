@@ -102,7 +102,8 @@ class Encoder(nn.Module):
         x = self.layers(self.dropout(input))
         check(x, None, "layers")
         x = self.ln(x)
-        return check(x, self.ln, "ln")
+        check(x, self.ln, "ln")
+        return x
 
 
 class VisionTransformer(nn.Module):
@@ -218,8 +219,6 @@ class VisionTransformer(nn.Module):
 
         check(x, None, "encoder")
 
-        print(x)
-
         x = self.channel_control(x)
 
         check(x, self.channel_control, "channel control")
@@ -233,7 +232,6 @@ class VisionTransformer(nn.Module):
         return x
     
 def check(tensor, module=None, desc=None):
-    if tensor is None: return
     if tensor.isnan().any():
         print("\n")
         print("NaN Detected\n")
