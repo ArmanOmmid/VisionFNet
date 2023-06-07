@@ -34,9 +34,10 @@ class EncoderBlock(nn.Module):
         self.hidden_dim = hidden_dim
 
         self.scales = [1, 0.5, 0.25]
+        self.channel_mixing = True
 
         self.scale_parameters = torch.nn.ParameterList([
-            nn.Parameter(torch.empty(*self.fourier_dims(scale), 2, dtype=torch.float32).normal_(std=0.02))
+            nn.Parameter(torch.empty(*self.fourier_dims(scale, self.channel_mixing), 2, dtype=torch.float32).normal_(std=0.02))
             for scale in self.scales
         ])
 
@@ -56,10 +57,13 @@ class EncoderBlock(nn.Module):
 
     def fourier_operate(self, x, parameters, N):
         parameters = torch.view_as_complex(parameters)
-        HW, F, C = parameters.shape
+        HW, F, C = parameters.shape[:3]
         x = x.view(N, HW, HW, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
-        x = x * parameters
+        if self.channel_mixing:
+            x = x @ parameters
+        else:
+            x = x * parameters
         x = torch.fft.irfft2(x, s=(HW, HW), dim=(1, 2), norm='ortho')
         return x.reshape(N, self.H, self.H, self.hidden_dim)
 
