@@ -49,7 +49,7 @@ class EncoderBlock(nn.Module):
         HW = int(self.H // scale)
         C = int(self.hidden_dim * (scale * scale))
         F = int(HW // 2) + 1
-        return HW, C, F
+        return HW, F, C
 
     def fourier_operate(self, x, parameters, N, HW, C):
         x = x.view(N, HW, HW, C)
