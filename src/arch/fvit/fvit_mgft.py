@@ -33,9 +33,9 @@ class EncoderBlock(nn.Module):
         self.H = self.W = int(math.sqrt(self.L))
         self.hidden_dim = hidden_dim
 
-        self.scale_half = nn.Parameter(torch.empty(*self.fourier_dims(0.5), 2, dtype=torch.float32).normal_(std=0.02))
-        self.scale_normal = nn.Parameter(torch.empty(*self.fourier_dims(1), 2, dtype=torch.float32).normal_(std=0.02))
-        self.scale_double = nn.Parameter(torch.empty(*self.fourier_dims(2), 2, dtype=torch.float32).normal_(std=0.02))
+        self.scale_1 = nn.Parameter(torch.empty(*self.fourier_dims(1), 2, dtype=torch.float32).normal_(std=0.02))
+        self.scale_2 = nn.Parameter(torch.empty(*self.fourier_dims(2), 2, dtype=torch.float32).normal_(std=0.02))
+        self.scale_3 = nn.Parameter(torch.empty(*self.fourier_dims(4), 2, dtype=torch.float32).normal_(std=0.02))
 
         number_of_scales = 3
 
@@ -70,11 +70,11 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        half = self.fourier_operate(x, self.scale_half, N, *self.fourier_dims(0.5))
-        normal = self.fourier_operate(x, self.scale_normal, N, *self.fourier_dims(1))
-        double = self.fourier_operate(x, self.scale_double, N, *self.fourier_dims(2))
+        scale_1 = self.fourier_operate(x, self.scale_1, N, *self.fourier_dims(0.5))
+        scale_2 = self.fourier_operate(x, self.scale_2, N, *self.fourier_dims(1))
+        scale_3 = self.fourier_operate(x, self.scale_3, N, *self.fourier_dims(2))
 
-        x = torch.cat([half, normal, double], axis=-1)
+        x = torch.cat([scale_1, scale_2, scale_3], axis=-1)
 
         x = self.dropout(x)
         x = self.channel_control(x)
