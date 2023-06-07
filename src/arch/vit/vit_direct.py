@@ -24,17 +24,14 @@ class EncoderBlock(nn.Module):
         dropout: float,
         attention_dropout: float,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
-        fourier: bool = False, # NOTE : FOURIER
     ):
         super().__init__()
         self.num_heads = num_heads
-        self.fourier = fourier
 
         # Attention block
         self.ln_1 = norm_layer(hidden_dim)
 
-        if not fourier: # NOTE : FOURIER
-            self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+        self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -44,18 +41,28 @@ class EncoderBlock(nn.Module):
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
+
+        check(input, None, "input")
+
         x = self.ln_1(input)
+
+        check(x, self.ln_1, "ln_1")
         
-        if not self.fourier: # NOTE : FOURIER
-            x, _ = self.self_attention(x, x, x, need_weights=False)
-        else:
-            x = torch.real(torch.fft.fft2(x))
+        x, _ = self.self_attention(x, x, x, need_weights=False)
+
+        check(x, self.self_attention, "self_attn")
             
         x = self.dropout(x)
         x = x + input
 
         y = self.ln_2(x)
+
+        check(y, self.ln_2, "ln_2")
+
         y = self.mlp(y)
+
+        check(y, self.mlp, "mlp")
+
         return x + y
 
 
@@ -70,7 +77,6 @@ class Encoder(nn.Module):
         dropout: float,
         attention_dropout: float,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
-        fourier: bool = False, # NOTE : FOURIER
     ):
         super().__init__()
         # Note that batch_size is on the first dim because
@@ -86,7 +92,6 @@ class Encoder(nn.Module):
                 dropout,
                 attention_dropout,
                 norm_layer,
-                fourier,
             )
         self.layers = nn.Sequential(layers)
         self.ln = norm_layer(hidden_dim)
@@ -94,7 +99,10 @@ class Encoder(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         input = input + self.pos_embedding
-        return self.ln(self.layers(self.dropout(input)))
+        x = self.layers(self.dropout(input))
+        check(x, None, "layers")
+        x = self.ln(x)
+        return check(x, self.ln, "ln")
 
 
 class VisionTransformer(nn.Module):
@@ -208,10 +216,26 @@ class VisionTransformer(nn.Module):
 
         x = self.encoder(x)
 
+        check(x, None, "encoder")
+
         x = self.channel_control(x)
+
+        check(x, self.channel_control, "channel control")
 
         x = x.view(n, -1)
 
         x = self.heads(x)
 
+        check(x, self.heads, "heads")
+
         return x
+    
+def check(tensor, module=None, desc=None):
+    if tensor.isnan().any():
+        print("\n")
+        print("NaN Detected\n")
+        print(desc)
+        print(tensor)
+        if module is not None:
+            for param in module.named_parameters():
+                print(param)
