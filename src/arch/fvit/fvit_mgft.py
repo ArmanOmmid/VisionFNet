@@ -57,7 +57,7 @@ class EncoderBlock(nn.Module):
         parameters = torch.view_as_complex(parameters)
         x = x * parameters
         x = torch.fft.irfft2(x, s=(HW, HW), dim=(1, 2), norm='ortho')
-        return x.reshape(N, HW * HW, C)
+        return x.reshape(N, self.H, self.H, self.hidden_dim)
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
