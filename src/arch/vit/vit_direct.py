@@ -42,15 +42,15 @@ class EncoderBlock(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
-        prior = check(input, None, "input")
+        check(input, None, "input")
 
         x = self.ln_1(input)
 
-        check(x, self.ln_1, "ln_1")
+        prior = check(x, self.ln_1, "ln_1")
         
         x, _ = self.self_attention(x, x, x, need_weights=False)
 
-        check(x, self.self_attention, "self_attn")
+        check(x, self.self_attention, "self_attn", prior)
             
         x = self.dropout(x)
         x = x + input
