@@ -47,7 +47,7 @@ class EncoderBlock(nn.Module):
         x = self.ln_1(input)
         
         if not self.fourier: # NOTE : FOURIER
-            x, _ = self.self_attention(x, x, x, need_weights=False)
+            x, _ = self.self_attention(x, x, x, need_weights=True)
         else:
             x = torch.real(torch.fft.fft2(x))
             
