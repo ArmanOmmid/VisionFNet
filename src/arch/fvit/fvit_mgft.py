@@ -35,10 +35,6 @@ class EncoderBlock(nn.Module):
 
         self.scales = [1, 0.5, 0.25]
 
-        # self.scale_1 = nn.Parameter(torch.empty(*self.fourier_dims(1), 2, dtype=torch.float32).normal_(std=0.02))
-        # self.scale_2 = nn.Parameter(torch.empty(*self.fourier_dims(0.5), 2, dtype=torch.float32).normal_(std=0.02))
-        # self.scale_3 = nn.Parameter(torch.empty(*self.fourier_dims(0.25), 2, dtype=torch.float32).normal_(std=0.02))
-
         self.scale_parameters = torch.nn.ParameterList([
             nn.Parameter(torch.empty(*self.fourier_dims(scale), 2, dtype=torch.float32).normal_(std=0.02))
             for scale in self.scales
