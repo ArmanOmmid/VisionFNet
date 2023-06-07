@@ -231,6 +231,7 @@ class VisionTransformer(nn.Module):
         return x
     
 def check(tensor, module=None, desc=None):
+    if tensor is None: return
     if tensor.isnan().any():
         print("\n")
         print("NaN Detected\n")
