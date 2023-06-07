@@ -74,8 +74,12 @@ class EncoderBlock(nn.Module):
 
         x = torch.cat([half, normal, double], axis=-1)
 
+        print(x.shape)
+
         x = self.dropout(x)
         x = self.channel_control(x)
+
+        print(x.shape)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
             
