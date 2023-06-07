@@ -138,17 +138,29 @@ def main(args):
 
     # If Debug, set a hook for modules with an arbitrary debug attribute 
     if config.debug:
-        def _save_output(module, grad_input, grad_output):
-            print("Module", module)
-            print("Input", grad_input)
-            print("Param:")
+        def parameter_nan_hook(module, grad_input, grad_output):
             for param in module.named_parameters():
-                print(param)
+                if param.isnan().any():
+                    print(f"Found NaN in parameters")
+                    print(param)
             print("Output", grad_output)
+        def input_nan_hook(self, input, output):
+            if not isinstance(output, tuple):
+                outputs = [output]
+            else:
+                outputs = output
+            for i, out in enumerate(outputs):
+                nan_mask = torch.isnan(out)
+                if nan_mask.any():
+                    print("In", self.__class__.__name__)
+                    msg = f"Found NaN in output {i} at indices: ", nan_mask.nonzero(), "where:", out[nan_mask.nonzero()[:, 0].unique(sorted=True)]
+                    print(msg)
+                    # raise RuntimeError(msg)
         for module in model.modules():
-            condition = (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
+            condition = True # (isinstance(module, nn.LayerNorm) and hasattr(module, 'debug'))
             if condition:
-                module.register_full_backward_hook(_save_output)
+                module.register_full_backward_hook(parameter_nan_hook)
+                module.register_forward_hook(input_nan_hook)
 
     summary_columns =[ "input_size", "output_size", "num_params", "params_percent", "kernel_size", "mult_adds", "trainable"]
     torchinfo.summary(model=model, input_size=(config.batch_size, 3, config.image_size, config.image_size), col_names=summary_columns)
