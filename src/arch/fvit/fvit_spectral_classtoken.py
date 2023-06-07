@@ -43,7 +43,7 @@ class AttentionBlock(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         x = self.ln_1(input)
         
-        x, _ = self.self_attention(x, x, x, need_weights=True)
+        x, _ = self.self_attention(x, x, x, need_weights=False)
             
         x = self.dropout(x)
         x = x + input
@@ -79,22 +79,15 @@ class SpectralBlock(nn.Module):
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
-        x = self.ln_1(input)
+        N, L, H = input.shape
         
-        N, L, C = input.shape
-        H = W = int(math.sqrt(L))
-        F = int(W // 2) + 1 # Fourier Width
-        G = H*F # Fourier Sequence Length
-
         x = self.ln_1(input)
 
-        x = x.view(N, H, W, C)
-        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+        x = torch.fft.rfft(x, n = L, dim=1, norm='ortho')
         
         x = torch.matmul(x, torch.view_as_complex(self.weight_c))
 
-        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-        x = x.reshape(N, L, C)
+        x = torch.fft.irfft(x, n = L, dim=1, norm='ortho')
 
         x = self.dropout(x)
         # x = x + input
@@ -208,6 +201,10 @@ class VisionTransformer(nn.Module):
 
         seq_length = (image_size // patch_size) ** 2
 
+        # Add a class token
+        self.class_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
+        seq_length += 1
+
         self.encoder = Encoder(
             seq_length,
             num_atn_layers,
@@ -281,8 +278,8 @@ class VisionTransformer(nn.Module):
         n = x.shape[0]
 
         # Expand the class token to the full batch
-#         batch_class_token = self.class_token.expand(n, -1, -1)
-#         x = torch.cat([batch_class_token, x], dim=1)
+        batch_class_token = self.class_token.expand(n, -1, -1)
+        x = torch.cat([batch_class_token, x], dim=1)
 
         x = self.encoder(x)
 

@@ -1,0 +1,25 @@
+# Architecture
+model: fvit_spectral_classtoken
+image_size: 32
+patch_size: 8
+num_spectral_layers: 4
+num_atn_layers: 8
+num_heads: 8
+hidden_dim: 64
+expansion: 4
+
+# Dataset
+dataset: CIFAR10
+
+# HyperParameters
+epochs: 8
+batch_size: 8
+learning_rate: 0.0001
+scheduler: False
+num_workers: 1
+weighted_loss: False
+early_stop_tolerance: 8
+
+# Misc
+# debug: 3
+augment: False

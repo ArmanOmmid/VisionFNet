@@ -55,6 +55,7 @@ class AttentionBlock(nn.Module):
 class SpectralBlock(nn.Module):
     def __init__(
         self,
+        sequence_lengths: List[int],
         num_heads: int,
         hidden_dim: int,
         mlp_dim: int,
@@ -62,6 +63,7 @@ class SpectralBlock(nn.Module):
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
     ):
         super().__init__()
+        self.sequence_lengths = sequence_lengths
         self.num_heads = num_heads
 
         # FFT block
@@ -81,21 +83,22 @@ class SpectralBlock(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         x = self.ln_1(input)
         
-        N, L, C = input.shape
-        H = W = int(math.sqrt(L))
-        F = int(W // 2) + 1 # Fourier Width
-        G = H*F # Fourier Sequence Length
-
-        x = self.ln_1(input)
-
-        x = x.view(N, H, W, C)
-        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+        multiscale_view = torch.split(x, self.sequence_lengths, dim=1)
         
-        x = torch.matmul(x, torch.view_as_complex(self.weight_c))
+        for x in multiscale_view:
+            N, L, C = x.shape
+            H = W = int(math.sqrt(L))
 
-        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-        x = x.reshape(N, L, C)
+            x = x.view(N, H, W, C)
+            x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
+            x = torch.matmul(x, torch.view_as_complex(self.weight_c))
+
+            x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
+            x = x.reshape(N, L, C)
+
+        x = torch.cat(multiscale_view, dim=1)   
+        
         x = self.dropout(x)
         # x = x + input
 
@@ -107,9 +110,8 @@ class SpectralBlock(nn.Module):
 class Encoder(nn.Module):
     def __init__(
         self,
-        seq_length: int,
-        num_atn_layers: int,
-        num_spectral_layers: int,
+        sequence_lengths: List[int],
+        num_layers: int,
         num_heads: int,
         hidden_dim: int,
         mlp_dim: int,
@@ -120,18 +122,19 @@ class Encoder(nn.Module):
         super().__init__()
         # Note that batch_size is on the first dim because
         # we have batch_first=True in nn.MultiAttention() by default
+        seq_length = sum(sequence_lengths)
         self.pos_embedding = nn.Parameter(torch.empty(1, seq_length, hidden_dim).normal_(std=0.02))  # from BERT
         self.dropout = nn.Dropout(dropout)
         layers: OrderedDict[str, nn.Module] = OrderedDict()
-        for i in range(num_spectral_layers):
+        for i in range(num_layers):
             layers[f"spct_layer_{i}"] = SpectralBlock(
+                sequence_lengths,
                 num_heads,
                 hidden_dim,
                 mlp_dim,
                 dropout,
                 norm_layer,
             )
-        for i in range(num_atn_layers):
             layers[f"atn_layer_{i}"] = AttentionBlock(
                 num_heads,
                 hidden_dim,
@@ -153,9 +156,9 @@ class VisionTransformer(nn.Module):
     def __init__(
         self,
         image_size: int,
-        patch_size: int,
-        num_atn_layers: int,
-        num_spectral_layers: int,
+        base_patch_size: int,
+        scale_factors: List[float],
+        num_layers: int,
         num_heads: int,
         hidden_dim: int,
         mlp_dim: int,
@@ -167,11 +170,11 @@ class VisionTransformer(nn.Module):
         conv_stem_configs: Optional[List[ConvStemConfig]] = None,
     ):
         super().__init__()
-        torch._assert(image_size % patch_size == 0, "Input shape indivisible by patch size!")
+        torch._assert(image_size % base_patch_size == 0, "Input shape indivisible by patch size!")
         self.image_size = image_size
-        self.patch_size = patch_size
-        self.num_atn_layers = num_atn_layers
-        self.num_spectral_layers = num_spectral_layers
+        self.base_patch_size = base_patch_size
+        self.scale_factors = scale_factors
+        self.num_layers = num_layers
         self.hidden_dim = hidden_dim
         self.mlp_dim = mlp_dim
         self.attention_dropout = attention_dropout
@@ -180,6 +183,11 @@ class VisionTransformer(nn.Module):
         self.representation_size = representation_size
         self.norm_layer = norm_layer
 
+        patch_sizes = [int(base_patch_size * alpha) for alpha in scale_factors]
+        self.patch_sizes = patch_sizes
+        
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        
         if conv_stem_configs is not None:
             # As per https://arxiv.org/abs/2106.14881
             seq_proj = nn.Sequential()
@@ -202,16 +210,16 @@ class VisionTransformer(nn.Module):
             )
             self.conv_proj: nn.Module = seq_proj
         else:
-            self.conv_proj = nn.Conv2d(
-                in_channels=3, out_channels=hidden_dim, kernel_size=patch_size, stride=patch_size
-            )
+            self.patching_filters = [nn.Conv2d(
+                in_channels=3, out_channels=hidden_dim, kernel_size=p, stride=p
+            ).to(device) for p in patch_sizes]
 
-        seq_length = (image_size // patch_size) ** 2
+        sequence_lengths = [((image_size // p) ** 2) for p in patch_sizes]
+        self.sequence_lengths = sequence_lengths
 
         self.encoder = Encoder(
-            seq_length,
-            num_atn_layers,
-            num_spectral_layers,
+            sequence_lengths,
+            num_layers,
             num_heads,
             hidden_dim,
             mlp_dim,
@@ -219,7 +227,6 @@ class VisionTransformer(nn.Module):
             attention_dropout,
             norm_layer,
         )
-        self.seq_length = seq_length
 
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
         if representation_size is None:
@@ -231,19 +238,20 @@ class VisionTransformer(nn.Module):
 
         self.heads = nn.Sequential(heads_layers)
 
-        if isinstance(self.conv_proj, nn.Conv2d):
-            # Init the patchify stem
-            fan_in = self.conv_proj.in_channels * self.conv_proj.kernel_size[0] * self.conv_proj.kernel_size[1]
-            nn.init.trunc_normal_(self.conv_proj.weight, std=math.sqrt(1 / fan_in))
-            if self.conv_proj.bias is not None:
-                nn.init.zeros_(self.conv_proj.bias)
-        elif self.conv_proj.conv_last is not None and isinstance(self.conv_proj.conv_last, nn.Conv2d):
-            # Init the last 1x1 conv of the conv stem
-            nn.init.normal_(
-                self.conv_proj.conv_last.weight, mean=0.0, std=math.sqrt(2.0 / self.conv_proj.conv_last.out_channels)
-            )
-            if self.conv_proj.conv_last.bias is not None:
-                nn.init.zeros_(self.conv_proj.conv_last.bias)
+        for i, _ in enumerate(self.patching_filters):
+            if isinstance(self.patching_filters[i], nn.Conv2d):
+                # Init the patchify stem
+                fan_in = self.patching_filters[i].in_channels * self.patching_filters[i].kernel_size[0] * self.patching_filters[i].kernel_size[1]
+                nn.init.trunc_normal_(self.patching_filters[i].weight, std=math.sqrt(1 / fan_in))
+                if self.patching_filters[i].bias is not None:
+                    nn.init.zeros_(self.patching_filters[i].bias)
+            elif self.patching_filters[i].conv_last is not None and isinstance(self.patching_filters[i].conv_last, nn.Conv2d):
+                # Init the last 1x1 conv of the conv stem
+                nn.init.normal_(
+                    self.patching_filters[i].conv_last.weight, mean=0.0, std=math.sqrt(2.0 / self.patching_filters[i].conv_last.out_channels)
+                )
+                if self.patching_filters[i].conv_last.bias is not None:
+                    nn.init.zeros_(self.patching_filters[i].conv_last.bias)
 
         if hasattr(self.heads, "pre_logits") and isinstance(self.heads.pre_logits, nn.Linear):
             fan_in = self.heads.pre_logits.in_features
@@ -256,23 +264,30 @@ class VisionTransformer(nn.Module):
 
     def _process_input(self, x: torch.Tensor) -> torch.Tensor:
         n, c, h, w = x.shape
-        p = self.patch_size
+        #p = self.patch_size
         torch._assert(h == self.image_size, f"Wrong image height! Expected {self.image_size} but got {h}!")
         torch._assert(w == self.image_size, f"Wrong image width! Expected {self.image_size} but got {w}!")
-        n_h = h // p
-        n_w = w // p
+        #n_h = h // p
+        #n_w = w // p
 
         # (n, c, h, w) -> (n, hidden_dim, n_h, n_w)
-        x = self.conv_proj(x)
+        #x = self.conv_proj(x)
         # (n, hidden_dim, n_h, n_w) -> (n, hidden_dim, (n_h * n_w))
-        x = x.reshape(n, self.hidden_dim, n_h * n_w)
+        #x = x.reshape(n, self.hidden_dim, n_h * n_w)
+        
+        multiscale_patched_input = [patching(x) for patching in self.patching_filters]
+        multiscale_patched_input = [x.reshape(n, self.hidden_dim, seq_length) for (x, seq_length) in zip(multiscale_patched_input, self.sequence_lengths)]
 
         # (n, hidden_dim, (n_h * n_w)) -> (n, (n_h * n_w), hidden_dim)
         # The self attention layer expects inputs in the format (N, S, E)
         # where S is the source sequence length, N is the batch size, E is the
         # embedding dimension
-        x = x.permute(0, 2, 1)
+        #x = x.permute(0, 2, 1)
 
+        multiscale_patched_input = [x.permute(0,2,1) for x in multiscale_patched_input]
+        
+        x = torch.cat(multiscale_patched_input, dim=1) # concatenate along the sequence dimension
+        
         return x
 
     def forward(self, x: torch.Tensor):
