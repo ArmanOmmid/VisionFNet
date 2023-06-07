@@ -143,6 +143,7 @@ def main(args):
         def parameter_nan_hook(module, grad_input, grad_output):
             for param in module.named_parameters():
                 for i, weights in enumerate(param):
+                    print(weights)
                     if weights.isnan().any():
                         print(f"Found NaN in parameters")
                         print(param)
