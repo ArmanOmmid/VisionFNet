@@ -141,12 +141,10 @@ def main(args):
     # If Debug, set a hook for modules with an arbitrary debug attribute 
     if config.debug:
         def parameter_nan_hook(module, grad_input, grad_output):
-            for param in module.named_parameters():
-                for i, weights in enumerate(param):
-                    print(weights)
-                    if weights.isnan().any():
-                        print(f"Found NaN in parameters")
-                        print(param)
+            for name, param in module.named_parameters():
+                if param.isnan().any():
+                    print(f"Found NaN in parameters")
+                    print(param)
             print("Output", grad_output)
         def input_nan_hook(self, input, output):
             if not isinstance(output, tuple):
