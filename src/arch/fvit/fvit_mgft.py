@@ -39,7 +39,7 @@ class EncoderBlock(nn.Module):
 
         number_of_scales = 3
 
-        self.channel_control = MLP(hidden_dim * number_of_scales, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+        self.channel_control = MLP(hidden_dim * number_of_scales, [hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
