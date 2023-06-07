@@ -172,7 +172,6 @@ def main(args):
             if 'forward' in config.hooks:
                 module.register_forward_hook(forward_nan_hook)
 
-
     summary_columns =[ "input_size", "output_size", "num_params", "params_percent", "kernel_size", "mult_adds", "trainable"]
     torchinfo.summary(model=model, input_size=(config.batch_size, 3, config.image_size, config.image_size), col_names=summary_columns)
 
