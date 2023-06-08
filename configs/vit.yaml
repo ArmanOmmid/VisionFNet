@@ -2,7 +2,7 @@
 model: vit
 image_size: 32
 patch_size: 8
-num_layers: 4
+num_layers: 6
 num_heads: 8
 hidden_dim: 64
 expansion: 4
@@ -13,7 +13,7 @@ dataset: CIFAR10
 # HyperParameters
 epochs: 8
 batch_size: 8
-learning_rate: 0.0001
+learning_rate: 0.00001
 scheduler: False
 num_workers: 1
 weighted_loss: False
