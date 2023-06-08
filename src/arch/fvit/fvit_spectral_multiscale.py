@@ -84,6 +84,8 @@ class SpectralBlock(nn.Module):
         x = self.ln_1(input)
         
         multiscale_view = torch.split(x, self.sequence_lengths, dim=1)
+        print(type(multiscale_view))
+        print(multiscale_view.shape)
         
         for i in range(len(multiscale_view)):
             x = multiscale_view[i]
