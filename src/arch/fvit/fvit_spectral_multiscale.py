@@ -84,20 +84,23 @@ class SpectralBlock(nn.Module):
         x = self.ln_1(input)
         
         multiscale_view = torch.split(x, self.sequence_lengths, dim=1)
+        multiscale_output = []
         
-        for x in multiscale_view:
+        for tensor in multiscale_view:
             N, L, C = x.shape
             H = W = int(math.sqrt(L))
 
-            x = x.view(N, H, W, C)
-            x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+            tensor = tensor.view(N, H, W, C)
+            tensor = torch.fft.rfft2(tensor, dim=(1, 2), norm='ortho')
 
-            x = torch.matmul(x, torch.view_as_complex(self.weight_c))
+            tensor = torch.matmul(x, torch.view_as_complex(self.weight_c))
 
-            x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-            x = x.reshape(N, L, C)
+            tensor = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
+            tensor = tensor.reshape(N, L, C)
 
-        x = torch.cat(multiscale_view, dim=1)   
+            multiscale_output.append(tensor)
+
+        x = torch.cat(multiscale_output, dim=1)   
         
         x = self.dropout(x)
         # x = x + input

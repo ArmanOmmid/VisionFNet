@@ -86,10 +86,6 @@ class SmoothMLPMixer(nn.Module):
         :param kwargs:
         :return:
         """
-        recons = args[0]
-        input = args[1]
-        mu = args[2]
-        log_var = args[3]
 
         recons_loss = nn.CrossEntropyLoss(output, labels)
 
