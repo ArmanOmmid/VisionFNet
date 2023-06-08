@@ -69,7 +69,7 @@ class SpectralBlock(nn.Module):
         # FFT block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=1))  # from BERT
+        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))  # from BERT
     
         #self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
@@ -85,7 +85,8 @@ class SpectralBlock(nn.Module):
         
         multiscale_view = torch.split(x, self.sequence_lengths, dim=1)
         
-        for x in multiscale_view:
+        for i in range(len(multiscale_view)):
+            x = multiscale_view[i]
             N, L, C = x.shape
             H = W = int(math.sqrt(L))
 
@@ -96,6 +97,7 @@ class SpectralBlock(nn.Module):
 
             x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
             x = x.reshape(N, L, C)
+            multiscale_view[i] = x
 
         x = torch.cat(multiscale_view, dim=1)   
         
