@@ -231,7 +231,7 @@ class VisionTransformer(nn.Module):
             norm_layer,
         )
 
-        seq_length = torch.sum(self.sequence_lengths)
+        seq_length = sum(self.sequence_lengths)
 
         reduced_tokens = int(math.sqrt(seq_length))
         self.token_control = torch.nn.Conv1d(seq_length, reduced_tokens, kernel_size=1)
