@@ -69,7 +69,7 @@ class SpectralBlock(nn.Module):
         # FFT block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=1))  # from BERT
+        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))  # from BERT
     
         #self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
