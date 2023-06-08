@@ -84,23 +84,23 @@ class SpectralBlock(nn.Module):
         x = self.ln_1(input)
         
         multiscale_view = torch.split(x, self.sequence_lengths, dim=1)
-        multiscale_transformed = []
         
-        for scale_set in multiscale_view:
-            N, L, C = scale_set.shape
+        for i in range(len(multiscale_view)):
+            x_set = multiscale_view[i]
+            N, L, C = x_set.shape
             H = W = int(math.sqrt(L))
 
-            scale_set = scale_set.view(N, H, W, C)
-            scale_set = torch.fft.rfft2(scale_set, dim=(1, 2), norm='ortho')
+            x_set = x_set.view(N, H, W, C)
+            x_set = torch.fft.rfft2(x_set, dim=(1, 2), norm='ortho')
 
-            scale_set = torch.matmul(x, torch.view_as_complex(self.weight_c))
+            x_set = torch.matmul(x, torch.view_as_complex(self.weight_c))
 
-            scale_set = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-            scale_set = scale_set.reshape(N, L, C)
+            x_set = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
+            x_set = x_set.reshape(N, L, C)
 
-            multiscale_transformed.append(scale_set)
+            multiscale_view[i] = x_set
 
-        x = torch.cat(multiscale_transformed, dim=1)   
+        x = torch.cat(multiscale_view, dim=1)   
         
         x = self.dropout(x)
         # x = x + input
