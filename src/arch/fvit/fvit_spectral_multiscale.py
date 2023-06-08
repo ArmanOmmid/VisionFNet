@@ -69,7 +69,7 @@ class SpectralBlock(nn.Module):
         # FFT block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))  # from BERT
+        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=1))  # from BERT
     
         #self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
@@ -85,20 +85,17 @@ class SpectralBlock(nn.Module):
         
         multiscale_view = torch.split(x, self.sequence_lengths, dim=1)
         
-        for i in range(len(multiscale_view)):
-            x_set = multiscale_view[i]
-            N, L, C = x_set.shape
+        for x in multiscale_view:
+            N, L, C = x.shape
             H = W = int(math.sqrt(L))
 
-            x_set = x_set.view(N, H, W, C)
-            x_set = torch.fft.rfft2(x_set, dim=(1, 2), norm='ortho')
+            x = x.view(N, H, W, C)
+            x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
-            x_set = torch.matmul(x, torch.view_as_complex(self.weight_c))
+            x = torch.matmul(x, torch.view_as_complex(self.weight_c))
 
-            x_set = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
-            x_set = x_set.reshape(N, L, C)
-
-            multiscale_view[i] = x_set
+            x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
+            x = x.reshape(N, L, C)
 
         x = torch.cat(multiscale_view, dim=1)   
         
@@ -231,21 +228,11 @@ class VisionTransformer(nn.Module):
             norm_layer,
         )
 
-        seq_length = sum(self.sequence_lengths)
-
-        reduced_tokens = int(math.sqrt(seq_length))
-        self.token_control = torch.nn.Conv1d(seq_length, reduced_tokens, kernel_size=1)
-        
-        reduced_dims = int(math.sqrt(hidden_dim))
-        self.channel_control = MLP(hidden_dim, [reduced_dims], activation_layer=nn.GELU, inplace=None, dropout=dropout)
-
-        linear_dims = reduced_dims * reduced_tokens
-
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
         if representation_size is None:
-            heads_layers["head"] = nn.Linear(linear_dims, num_classes)
+            heads_layers["head"] = nn.Linear(hidden_dim, num_classes)
         else:
-            heads_layers["pre_logits"] = nn.Linear(linear_dims, representation_size)
+            heads_layers["pre_logits"] = nn.Linear(hidden_dim, representation_size)
             heads_layers["act"] = nn.Tanh()
             heads_layers["head"] = nn.Linear(representation_size, num_classes)
 
@@ -308,13 +295,14 @@ class VisionTransformer(nn.Module):
         x = self._process_input(x)
         n = x.shape[0]
 
+        # Expand the class token to the full batch
+#         batch_class_token = self.class_token.expand(n, -1, -1)
+#         x = torch.cat([batch_class_token, x], dim=1)
+
         x = self.encoder(x)
 
-        x = self.token_control(x)
-
-        x = self.channel_control(x)
-
-        x = x.view(n, -1)
+        # Classifier "token" as used by standard language architectures
+        x = x[:, 0]
 
         x = self.heads(x)
 
