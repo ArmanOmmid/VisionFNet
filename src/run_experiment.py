@@ -124,17 +124,19 @@ def main(args):
     print(f"Dataset: {config.dataset}")
     print(data_sizes)
 
-    """ Criterion """
-    if config.weighted_loss:
-        class_weights = get_class_weights(train_loader, len(class_names)).to(device)
-        criterion = nn.CrossEntropyLoss(weight=class_weights)
-    else:
-        criterion = nn.CrossEntropyLoss()
-
     """ Model """
     model = build_model(config, len(class_names))
     model = model.to(device) # transfer the model to the device
     print("Model Architecture: ", config.model)
+
+    """ Criterion """
+    if hasattr(model, 'loss_function'):
+        criterion = model.loss_function
+    elif config.weighted_loss:
+        class_weights = get_class_weights(train_loader, len(class_names)).to(device)
+        criterion = nn.CrossEntropyLoss(weight=class_weights)
+    else:
+        criterion = nn.CrossEntropyLoss()
 
     """ Debugging """
     # If Debug, set a hook for modules with an arbitrary debug attribute 

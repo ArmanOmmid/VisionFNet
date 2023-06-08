@@ -187,25 +187,10 @@ class Experiment(object):
 
                 if self.config.debug and epoch >= self.config.debug: 
                     torch.autograd.set_detect_anomaly(True)
+
                 outputs = self.model(inputs)
-
-                # if torch.any(torch.isnan(outputs)):
-                #     raise Exception(f"Output is NaN | Batch[{iter}]\nPrevious optimizer step evaluated at least one Parameter to NaN.")
-                
-                # nan = torch.any(torch.isnan(outputs))
-                # if not nan:
-                #     param_copy = copy.deepcopy(list(self.model.named_parameters()))
-
                 _, preds = torch.max(outputs, dim=1)
-
                 loss = self.criterion(outputs, labels)
-
-                # nan = torch.any(torch.isnan(loss))
-                # if nan:
-                #     print("NaN Loss | Batch[{}]".format(iter))
-                #     for name, param in self.model.named_parameters():
-                #         print(name, param)
-                #     raise Exception("NaN Output")
 
                 loss.backward()
                 if self.config.clip:
@@ -213,18 +198,6 @@ class Experiment(object):
                 self.optimizer.step()
 
                 if self.config.debug: torch.autograd.set_detect_anomaly(False)
-
-                # for name, param in self.model.named_parameters():
-                #     if torch.any(torch.isnan(param)):
-                #         print("NaN | Batch[{}]".format(iter))
-                #         print("\nBefore\n")
-                #         for name, param in param_copy:
-                #             print(name, param)
-                #         print("\nAfter\n")
-                #         for name, param in self.model.named_parameters():
-                #             print(name, param)
-                #         print("NaN Update | Batch[{}]".format(iter))
-                #         raise Exception("NaN")
 
             self.model.train(False)
             if self.config.debug and epoch >= self.config.debug: 
