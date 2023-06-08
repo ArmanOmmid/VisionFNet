@@ -83,9 +83,7 @@ class SpectralBlock(nn.Module):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         x = self.ln_1(input)
         
-        multiscale_view = torch.split(x, self.sequence_lengths, dim=1)
-        print(type(multiscale_view))
-        print(multiscale_view.shape)
+        multiscale_view = list(torch.split(x, self.sequence_lengths, dim=1))
         
         for i in range(len(multiscale_view)):
             x = multiscale_view[i]
