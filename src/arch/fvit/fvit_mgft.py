@@ -31,12 +31,41 @@ class EncoderBlock(nn.Module):
 
         self.L = seq_length
         self.H = self.W = int(math.sqrt(self.L))
-        self.F = int(self.W // 2) + 1
-        self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+        self.hidden_dim = hidden_dim
+
+        self.scales = [1, 0.5, 0.25]
+        self.channel_mixing = True
+
+        self.scale_parameters = torch.nn.ParameterList([
+            nn.Parameter(torch.empty(*self.fourier_dims(scale, self.channel_mixing), 2, dtype=torch.float32).normal_(std=0.02))
+            for scale in self.scales
+        ])
+
+        self.channel_control = MLP(hidden_dim * len(self.scale_parameters), [hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
         self.mlp = MLP(hidden_dim, [mlp_dim, hidden_dim], activation_layer=nn.GELU, inplace=None, dropout=dropout)
+
+    def fourier_dims(self, scale, channel_mixing=False):
+        HW = int(self.H // scale)
+        F = int(HW // 2) + 1
+        C = int(self.hidden_dim * (scale * scale))
+        if channel_mixing:
+            return HW, F, C, C
+        return HW, F, C
+
+    def fourier_operate(self, x, parameters, N):
+        parameters = torch.view_as_complex(parameters)
+        HW, F, C = parameters.shape[:3]
+        x = x.view(N, HW, HW, C)
+        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+        if self.channel_mixing:
+            x = torch.einsum("nhfd,hfds->nhfd", x, parameters)
+        else:
+            x = x * parameters
+        x = torch.fft.irfft2(x, s=(HW, HW), dim=(1, 2), norm='ortho')
+        return x.reshape(N, self.H, self.H, self.hidden_dim)
 
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
@@ -47,24 +76,26 @@ class EncoderBlock(nn.Module):
 
         x = self.ln_1(input)
 
-        x = x.view(N, H, W, C)
-        x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
+        scales = [
+            self.fourier_operate(x, parameter, N)
+            for parameter in self.scale_parameters
+        ]
 
-        mixer = torch.view_as_complex(self.mixer)
-        x = torch.einsum("nhfd,hfds->nhfd", x, mixer)
+        x = torch.cat(scales, axis=-1)
 
-        x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
+        x = self.dropout(x)
+        x = self.channel_control(x)
         x = x.reshape(N, L, C)
 
         # x, _ = self.self_attention(x, x, x, need_weights=False)
-
+            
         x = self.dropout(x)
         x = x + input
 
         y = self.ln_2(x)
         y = self.mlp(y)
 
-        return x + y
+        return y + input
 
 class Encoder(nn.Module):
     def __init__(

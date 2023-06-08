@@ -7,10 +7,8 @@ checkpoints/*
 weights/*
 !weights/.gitignore
 
-__pycache__
+experiments/*
+!experiments/.gitignore
 
-Accuracy.png
-Intersection over Union.png
-Loss.png
-img_and_colormappedpredictions.png
+__pycache__
 *__pycache__

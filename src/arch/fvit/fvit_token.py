@@ -17,10 +17,12 @@ class EncoderBlock(nn.Module):
         dropout: float,
         attention_dropout: float,
         seq_length: int,
+        config : object,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
     ):
         super().__init__()
         self.num_heads = num_heads
+        self.config = config
 
         # Attention block
         self.ln_1 = norm_layer(hidden_dim)
@@ -29,10 +31,27 @@ class EncoderBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-        self.L = seq_length
+        self.L = seq_length if not self.config.class_token else seq_length - 1
         self.H = self.W = int(math.sqrt(self.L))
         self.F = int(self.W // 2) + 1
         self.mixer = nn.Parameter(torch.empty(self.H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+
+        self.G = seq_length
+        self.in_dims = (hidden_dim // self.num_heads)# * 2 NOT complex
+        self.QK_d = self.in_dims
+        self.V_d = self.in_dims
+
+        # self.injecter = MLP(hidden_dim, int(math.sqrt(hidden_dim)), activation_layer=nn.GELU, inplace=None, dropout=dropout)
+
+        # Q is on a vector
+        self.Q_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
+        self.Q_b = nn.Parameter(torch.empty(1, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+
+        self.K_w = nn.Parameter(torch.empty(self.QK_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
+        self.K_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
+
+        self.V_w = nn.Parameter(torch.empty(self.V_d, self.num_heads, self.in_dims, dtype=torch.float32).normal_(std=0.02))
+        self.V_b = nn.Parameter(torch.empty(self.G, self.num_heads, 1, dtype=torch.float32).normal_(std=0.02))
 
         # MLP block
         self.ln_2 = norm_layer(hidden_dim)
@@ -41,11 +60,17 @@ class EncoderBlock(nn.Module):
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
 
-        N, L, C = input.shape
-        H = W = int(math.sqrt(L))
-        F = int(W // 2) + 1
-
         x = self.ln_1(input)
+
+        N, L, C = input.shape
+        if self.config.class_token:
+            class_token, x = input[:, 0].reshape(N, 1, C), input[:, 1:]
+            L = L - 1
+
+        H = W = int(math.sqrt(L))
+        F = int(W // 2) + 1 # Fourier Width
+        G = L + 1
+
 
         x = x.view(N, H, W, C)
         x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
@@ -56,8 +81,27 @@ class EncoderBlock(nn.Module):
         x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
         x = x.reshape(N, L, C)
 
-        # x, _ = self.self_attention(x, x, x, need_weights=False)
+        if self.config.class_token:
+            
+            full = torch.cat((class_token, x), axis=1)
 
+            Q = class_token.view(N, 1, self.num_heads, self.QK_d)
+            K = full.view(N, G, self.num_heads, self.QK_d)
+            V = full.view(N, G, self.num_heads, self.V_d)
+
+            Q = torch.einsum("nqhd,xhd->nqhx", Q, self.Q_w) + self.Q_b
+            K = torch.einsum("nkhd,xhd->nkhx", K, self.K_w) + self.K_b
+            V = torch.einsum("nvhd,xhd->nvhx", V, self.V_w) + self.V_b
+
+            A = torch.einsum("nqhd,nkhd->nhqk", Q, K) # q and k are the lengths which equal g. d represents the q and k dims
+            A = torch.softmax(A / (self.QK_d ** 0.5), dim=3)
+
+            new_class_token = torch.einsum("nhqk,nkhd->nqhd", A, V)
+            new_class_token = new_class_token.reshape(N, 1, C)
+            x = torch.cat((new_class_token, x), axis=1)
+
+        # x, _ = self.self_attention(x, x, x, need_weights=False)
+            
         x = self.dropout(x)
         x = x + input
 
@@ -76,6 +120,7 @@ class Encoder(nn.Module):
         mlp_dim: int,
         dropout: float,
         attention_dropout: float,
+        config: object,
         norm_layer: Callable[..., torch.nn.Module] = partial(nn.LayerNorm, eps=1e-6),
     ):
         super().__init__()
@@ -92,6 +137,7 @@ class Encoder(nn.Module):
                 dropout,
                 attention_dropout,
                 seq_length,
+                config,
                 norm_layer,
             )
         self.layers = nn.Sequential(layers)
@@ -112,6 +158,7 @@ class VisionTransformer(nn.Module):
         num_heads: int,
         hidden_dim: int,
         mlp_dim: int,
+        config: object,
         dropout: float = 0.0,
         attention_dropout: float = 0.0,
         num_classes: int = 1000,
@@ -130,11 +177,21 @@ class VisionTransformer(nn.Module):
         self.representation_size = representation_size
         self.norm_layer = norm_layer
 
+        self.config = config
+
         self.conv_proj = nn.Conv2d(
             in_channels=3, out_channels=hidden_dim, kernel_size=patch_size, stride=patch_size
         )
 
         seq_length = (image_size // patch_size) ** 2
+
+        linear_size = hidden_dim
+        if self.config.class_token:
+            # Add a class token
+            self.class_token = nn.Parameter(torch.zeros(1, 1, hidden_dim))
+            seq_length += 1
+        else:
+            linear_size = hidden_dim * seq_length
 
         self.encoder = Encoder(
             seq_length,
@@ -144,24 +201,16 @@ class VisionTransformer(nn.Module):
             mlp_dim,
             dropout,
             attention_dropout,
+            config,
             norm_layer,
         )
         self.seq_length = seq_length
 
-        reduced_tokens = int(math.sqrt(seq_length))
-        self.token_control = torch.nn.Conv1d(seq_length, reduced_tokens, kernel_size=1)
-        
-        reduced_dims = int(math.sqrt(hidden_dim))
-        self.channel_control = MLP(hidden_dim, [reduced_dims], activation_layer=nn.GELU, inplace=None, dropout=dropout)
-
-        linear_dims = reduced_dims * reduced_tokens
-
         heads_layers: OrderedDict[str, nn.Module] = OrderedDict()
-
         if representation_size is None:
-            heads_layers["head"] = nn.Linear(linear_dims, num_classes)
+            heads_layers["head"] = nn.Linear(linear_size, num_classes)
         else:
-            heads_layers["pre_logits"] = nn.Linear(linear_dims, representation_size)
+            heads_layers["pre_logits"] = nn.Linear(linear_size, representation_size)
             heads_layers["act"] = nn.Tanh()
             heads_layers["head"] = nn.Linear(representation_size, num_classes)
 
@@ -216,13 +265,18 @@ class VisionTransformer(nn.Module):
         x = self._process_input(x)
         n = x.shape[0]
 
+        if self.config.class_token:
+            # Expand the class token to the full batch
+            batch_class_token = self.class_token.expand(n, -1, -1)
+            x = torch.cat([batch_class_token, x], dim=1)
+
         x = self.encoder(x)
 
-        x = self.token_control(x)
-
-        x = self.channel_control(x)
-
-        x = x.view(n, -1)
+        if self.config.class_token:
+            # Classifier "token" as used by standard language architectures
+            x = x[:, 0]
+        else:
+            x = x.view(n, -1)
 
         x = self.heads(x)
 
