@@ -114,28 +114,29 @@ class SpectralBlock(nn.Module):
 
         """
         0 = Attention (Not Included Here)
-        1 = F_Linear (Shared)
-        2 = F_Linear 
-        3 = GFT
-        4 = FNO
+        -1 = F_Linear (Shared)
+        1 = F_Linear 
+        2 = GFT
+        3 = FNO
+        4 = Fourier Attention
         """
 
         self.spectral_operations = [None for _ in self.sequence_lengths]
         self.spectral_indices = [0 for _ in self.sequence_lengths]
 
-        if layer_encoding == 1:
+        if layer_encoding == -1:
             self.spectral_operations[0] = F_Linear(None, None, hidden_dim)
         else:
             for i, sequence_length in enumerate(self.sequence_lengths):
                 self.spectral_indices[i] = i
                 H = W = int(math.sqrt(sequence_length))
-                if layer_encoding == 2:
+                if layer_encoding == 1:
                     self.spectral_operations[i] = F_Linear(H, W, hidden_dim)
-                elif layer_encoding == 3:
+                elif layer_encoding == 2:
                     self.spectral_operations[i] = GFT(H, W, hidden_dim)
-                elif layer_encoding == 4:
+                elif layer_encoding == 3:
                     self.spectral_operations[i] = FNO(H, W, hidden_dim)
-                elif layer_encoding == 5:
+                elif layer_encoding == 4:
                     self.spectral_operations[i] = F_Attention(H, W, hidden_dim, num_heads, dropout)
                 else:
                     raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
