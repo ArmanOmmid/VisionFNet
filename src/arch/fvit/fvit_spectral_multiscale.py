@@ -113,7 +113,7 @@ class Encoder(nn.Module):
     def __init__(
         self,
         sequence_lengths: List[int],
-        num_layers: int,
+        layer_config: list,
         num_heads: int,
         hidden_dim: int,
         mlp_dim: int,
@@ -128,23 +128,25 @@ class Encoder(nn.Module):
         self.pos_embedding = nn.Parameter(torch.empty(1, seq_length, hidden_dim).normal_(std=0.02))  # from BERT
         self.dropout = nn.Dropout(dropout)
         layers: OrderedDict[str, nn.Module] = OrderedDict()
-        for i in range(num_layers):
-            layers[f"spct_layer_{i}"] = SpectralBlock(
-                sequence_lengths,
-                num_heads,
-                hidden_dim,
-                mlp_dim,
-                dropout,
-                norm_layer,
-            )
-            layers[f"atn_layer_{i}"] = AttentionBlock(
-                num_heads,
-                hidden_dim,
-                mlp_dim,
-                dropout,
-                attention_dropout,
-                norm_layer,
-            )
+        for i, layer in enumerate(layer_config):
+            if layer == 0:
+                layers[f"spct_layer_{i}"] = SpectralBlock(
+                    sequence_lengths,
+                    num_heads,
+                    hidden_dim,
+                    mlp_dim,
+                    dropout,
+                    norm_layer,
+                )
+            elif layer == 1:
+                layers[f"atn_layer_{i}"] = AttentionBlock(
+                    num_heads,
+                    hidden_dim,
+                    mlp_dim,
+                    dropout,
+                    attention_dropout,
+                    norm_layer,
+                )
         self.layers = nn.Sequential(layers)
         self.ln = norm_layer(hidden_dim)
 
@@ -160,7 +162,7 @@ class VisionTransformer(nn.Module):
         image_size: int,
         base_patch_size: int,
         scale_factors: List[float],
-        num_layers: int,
+        layer_config: list,
         num_heads: int,
         hidden_dim: int,
         mlp_dim: int,
@@ -176,7 +178,7 @@ class VisionTransformer(nn.Module):
         self.image_size = image_size
         self.base_patch_size = base_patch_size
         self.scale_factors = scale_factors
-        self.num_layers = num_layers
+        self.layer_config = layer_config
         self.hidden_dim = hidden_dim
         self.mlp_dim = mlp_dim
         self.attention_dropout = attention_dropout
@@ -221,7 +223,7 @@ class VisionTransformer(nn.Module):
 
         self.encoder = Encoder(
             sequence_lengths,
-            num_layers,
+            layer_config,
             num_heads,
             hidden_dim,
             mlp_dim,
