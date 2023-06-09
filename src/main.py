@@ -71,10 +71,6 @@ def main(args, unparsed_args):
     return return_code
 
 
-
-
-
-
 if __name__ == "__main__":
 
     args, unkown_args = parser.parse_known_args()
