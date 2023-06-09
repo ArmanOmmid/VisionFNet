@@ -103,20 +103,21 @@ class SpectralBlock(nn.Module):
         # FFT block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.spectral_operations = [None for _ in self.sequence_lengths]
-        for i, sequence_length in enumerate(self.sequence_lengths):
-            H = W = int(math.sqrt(sequence_length))
-            F = W // 2 + 1
-            if layer_encoding == 1:
-                self.spectral_operations[i] = F_Linear(H, F, hidden_dim)
-            elif layer_encoding == 2:
-                self.spectral_operations[i] = GFT(H, F, hidden_dim)
-            elif layer_encoding == 3:
-                self.spectral_operations[i] = FNO(H, F, hidden_dim)
-            else:
-                raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
-            
-        self.spectral_operations = nn.ModuleList(self.spectral_operations)
+        # self.spectral_operations = [None for _ in self.sequence_lengths]
+        # for i, sequence_length in enumerate(self.sequence_lengths):
+        #     H = W = int(math.sqrt(sequence_length))
+        #     F = W // 2 + 1
+        #     if layer_encoding == 1:
+        #         self.spectral_operations[i] = F_Linear(H, F, hidden_dim)
+        #     elif layer_encoding == 2:
+        #         self.spectral_operations[i] = GFT(H, F, hidden_dim)
+        #     elif layer_encoding == 3:
+        #         self.spectral_operations[i] = FNO(H, F, hidden_dim)
+        #     else:
+        #         raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
+        # self.spectral_operations = nn.ModuleList(self.spectral_operations)
+
+        self.weights = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))
 
         self.dropout = nn.Dropout(dropout)
 
@@ -138,7 +139,9 @@ class SpectralBlock(nn.Module):
             x = x.view(N, H, W, C)
             x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
-            x = self.spectral_operations[0](x)
+            # x = self.spectral_operations[i](x)
+
+            x = torch.matmul(x, torch.view_as_complex(self.weights))
 
             x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
             x = x.reshape(N, L, C)
