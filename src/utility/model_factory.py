@@ -134,6 +134,6 @@ def build_model(config, classes):
         raise NotImplementedError("Model Architecture Not Found")
 
     init_weights = get_weight_initializer()
-    model.apply(init_weights)
+    # model.apply(init_weights)
 
     return model
