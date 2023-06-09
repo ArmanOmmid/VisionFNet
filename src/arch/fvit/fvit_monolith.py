@@ -54,6 +54,7 @@ class AttentionBlock(nn.Module):
 
 class SpectralOperation(nn.Module):
     def __init__(self, H, F, hidden_dim):
+        super().__init__()
         self.H = H
         self.F = F
         self.hidden_dim = hidden_dim
