@@ -46,38 +46,54 @@ class AttentionBlock(nn.Module):
         return x + y
 
 class SpectralOperation(nn.Module):
-    def __init__(self, H, F, hidden_dim):
+    def __init__(self, H, W, hidden_dim):
         super().__init__()
         self.H = H
-        self.F = F
+        self.W = W
+        self.F = W // 2 + 1
+        self.G = H * self.F
         self.hidden_dim = hidden_dim
     def forward(self, x):
         raise NotImplementedError()
 
 class F_Linear(SpectralOperation):
-    def __init__(self, H, F, hidden_dim):
-        super().__init__(H, F, hidden_dim)
+    def __init__(self, H, W, hidden_dim):
+        super().__init__(H, W, hidden_dim)
         self.weights = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))
     def forward(self, x):
         x = torch.matmul(x, torch.view_as_complex(self.weights))
         return x
 
 class GFT(SpectralOperation):
-    def __init__(self, H, F, hidden_dim):
-        super().__init__(H, F, hidden_dim)
-        self.weights = nn.Parameter(torch.empty(H, F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+    def __init__(self, H, W, hidden_dim):
+        super().__init__(H, W, hidden_dim)
+        self.weights = nn.Parameter(torch.empty(H, self.F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
     def forward(self, x):
         x = x * torch.view_as_complex(self.weights)
         return x
 
 class FNO(SpectralOperation):
-    def __init__(self, H, F, hidden_dim):
-        super().__init__(H, F, hidden_dim)
-        self.weights = nn.Parameter(torch.empty(H, F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+    def __init__(self, H, W, hidden_dim):
+        super().__init__(H, W, hidden_dim)
+        self.weights = nn.Parameter(torch.empty(H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
     def forward(self, x):
         x = torch.einsum("nhfd,hfds->nhfd", x, self.weights)
         return x
 
+class F_Attention(SpectralOperation):
+    def __init__(self, H, W, hidden_dim, num_heads, dropout):
+        super().__init__(H, W, hidden_dim)
+        self.self_attention = nn.MultiheadAttention(hidden_dim*2, num_heads, dropout=dropout, batch_first=True)
+    def forward(self, x):
+        N = x.shape[0]
+        x = torch.view_as_real(x)
+        x = x.reshape(N, self.H, self.F, self.hidden_dim*2)
+        x = x.view(N, self.G, self.hidden_dim*2)
+        x, _= self.self_attention(x, x, x)
+        x = x.reshape(N, self.G, self.hidden_dim*2).reshape(N, self.H, self.F, self.hidden_dim, 2)
+        x = torch.view_as_complex(x)
+        return x
+    
 class SpectralBlock(nn.Module):
     def __init__(
         self,
@@ -113,13 +129,14 @@ class SpectralBlock(nn.Module):
             for i, sequence_length in enumerate(self.sequence_lengths):
                 self.spectral_indices[i] = i
                 H = W = int(math.sqrt(sequence_length))
-                F = W // 2 + 1
                 if layer_encoding == 2:
-                    self.spectral_operations[i] = F_Linear(None, None, hidden_dim)
+                    self.spectral_operations[i] = F_Linear(H, W, hidden_dim)
                 elif layer_encoding == 3:
-                    self.spectral_operations[i] = GFT(H, F, hidden_dim)
+                    self.spectral_operations[i] = GFT(H, W, hidden_dim)
                 elif layer_encoding == 4:
-                    self.spectral_operations[i] = FNO(H, F, hidden_dim)
+                    self.spectral_operations[i] = FNO(H, W, hidden_dim)
+                elif layer_encoding == 5:
+                    self.spectral_operations[i] = F_Attention(H, W, hidden_dim, num_heads, dropout)
                 else:
                     raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
         
