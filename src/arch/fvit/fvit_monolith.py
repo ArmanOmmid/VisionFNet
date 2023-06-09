@@ -309,25 +309,12 @@ class VisionTransformer(nn.Module):
 
     def _process_input(self, x: torch.Tensor) -> torch.Tensor:
         n, c, h, w = x.shape
-        #p = self.patch_size
+
         torch._assert(h == self.image_size, f"Wrong image height! Expected {self.image_size} but got {h}!")
         torch._assert(w == self.image_size, f"Wrong image width! Expected {self.image_size} but got {w}!")
-        #n_h = h // p
-        #n_w = w // p
-
-        # (n, c, h, w) -> (n, hidden_dim, n_h, n_w)
-        #x = self.conv_proj(x)
-        # (n, hidden_dim, n_h, n_w) -> (n, hidden_dim, (n_h * n_w))
-        #x = x.reshape(n, self.hidden_dim, n_h * n_w)
         
         multiscale_patched_input = [patching(x) for patching in self.patching_filters]
         multiscale_patched_input = [x.reshape(n, self.hidden_dim, seq_length) for (x, seq_length) in zip(multiscale_patched_input, self.sequence_lengths)]
-
-        # (n, hidden_dim, (n_h * n_w)) -> (n, (n_h * n_w), hidden_dim)
-        # The self attention layer expects inputs in the format (N, S, E)
-        # where S is the source sequence length, N is the batch size, E is the
-        # embedding dimension
-        #x = x.permute(0, 2, 1)
 
         multiscale_patched_input = [x.permute(0,2,1) for x in multiscale_patched_input]
         
