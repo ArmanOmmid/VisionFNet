@@ -52,6 +52,24 @@ class AttentionBlock(nn.Module):
         y = self.mlp(y)
         return x + y
 
+class FourierOperation(nn.Module):
+    def __init__(self, H, W, C):
+        self.H = H
+        self.W = W
+        self.C = C
+
+class F_Linear(FourierOperation):
+    def __init__(self, H, W, C):
+        super().__init__(H, W, C)
+
+class GFT(FourierOperation):
+    def __init__(self, H, W, C):
+        super().__init__(H, W, C)
+
+class FNO(FourierOperation):
+    def __init__(self, H, W, C):
+        super().__init__(H, W, C)
+
 class SpectralBlock(nn.Module):
     def __init__(
         self,
@@ -70,8 +88,6 @@ class SpectralBlock(nn.Module):
         self.ln_1 = norm_layer(hidden_dim)
 
         self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))  # from BERT
-    
-        #self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -84,6 +100,8 @@ class SpectralBlock(nn.Module):
         x = self.ln_1(input)
         
         multiscale_view = list(torch.split(x, self.sequence_lengths, dim=1))
+
+        print(self.sequence_lengths)
         
         for i in range(len(multiscale_view)):
             x = multiscale_view[i]
