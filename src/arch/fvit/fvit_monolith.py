@@ -147,6 +147,8 @@ class SpectralBlock(nn.Module):
 
             x = self.spectral_operations[i](x)
 
+            print(self.spectral_operations[i])
+
             # x = torch.matmul(x, torch.view_as_complex(self.weights))
 
             x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
