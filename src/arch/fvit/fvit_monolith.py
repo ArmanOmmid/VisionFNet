@@ -73,6 +73,7 @@ class FNO(FourierOperation):
 class SpectralBlock(nn.Module):
     def __init__(
         self,
+        layer_encoding: int,
         sequence_lengths: List[int],
         num_heads: int,
         hidden_dim: int,
