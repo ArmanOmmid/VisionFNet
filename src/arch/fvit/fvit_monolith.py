@@ -124,9 +124,6 @@ class SpectralBlock(nn.Module):
                     raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
         
         self.spectral_operations = nn.ModuleList(self.spectral_operations)
-
-        # self.weights = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))
-
         self.dropout = nn.Dropout(dropout)
 
         # MLP block
@@ -148,8 +145,6 @@ class SpectralBlock(nn.Module):
             x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
             x = self.spectral_operations[self.spectral_indices[i]](x)
-
-            # x = torch.matmul(x, torch.view_as_complex(self.weights))
 
             x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
             x = x.reshape(N, L, C)
