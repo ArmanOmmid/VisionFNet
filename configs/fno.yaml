@@ -3,7 +3,7 @@ model: fvit_monolith
 image_size: 32
 base_patch_size: 8
 scale_factors: [1]
-layer_config: [2, 2, 2, 2, 0, 0]
+layer_config: [3, 3, 3, 3, 0, 0]
 num_heads: 8
 hidden_dim: 64
 expansion: 4
