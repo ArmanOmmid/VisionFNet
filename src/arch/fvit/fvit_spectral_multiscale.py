@@ -129,7 +129,7 @@ class Encoder(nn.Module):
         self.dropout = nn.Dropout(dropout)
         layers: OrderedDict[str, nn.Module] = OrderedDict()
         for i, layer in enumerate(layer_config):
-            if layer == 0:
+            if layer == 1:
                 layers[f"spct_layer_{i}"] = SpectralBlock(
                     sequence_lengths,
                     num_heads,
@@ -138,7 +138,7 @@ class Encoder(nn.Module):
                     dropout,
                     norm_layer,
                 )
-            elif layer == 1:
+            elif layer == 0:
                 layers[f"atn_layer_{i}"] = AttentionBlock(
                     num_heads,
                     hidden_dim,
