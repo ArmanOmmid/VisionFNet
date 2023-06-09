@@ -128,17 +128,8 @@ class Encoder(nn.Module):
         self.pos_embedding = nn.Parameter(torch.empty(1, seq_length, hidden_dim).normal_(std=0.02))  # from BERT
         self.dropout = nn.Dropout(dropout)
         layers: OrderedDict[str, nn.Module] = OrderedDict()
-        for i, layer in enumerate(layer_config):
-            if layer == 0:
-                layers[f"spct_layer_{i}"] = SpectralBlock(
-                    sequence_lengths,
-                    num_heads,
-                    hidden_dim,
-                    mlp_dim,
-                    dropout,
-                    norm_layer,
-                )
-            elif layer == 1:
+        for i, layer_encoding in enumerate(layer_config):
+            if layer_encoding == 0:
                 layers[f"atn_layer_{i}"] = AttentionBlock(
                     num_heads,
                     hidden_dim,
@@ -147,9 +138,20 @@ class Encoder(nn.Module):
                     attention_dropout,
                     norm_layer,
                 )
+            elif layer_encoding in [1, 2, 3]:
+                layers[f"spct_layer_{i}"] = SpectralBlock(
+                    layer_encoding,
+                    sequence_lengths,
+                    num_heads,
+                    hidden_dim,
+                    mlp_dim,
+                    dropout,
+                    norm_layer,
+                )
+            else:
+                raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
         self.layers = nn.Sequential(layers)
         self.ln = norm_layer(hidden_dim)
-
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         input = input + self.pos_embedding
