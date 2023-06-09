@@ -190,33 +190,14 @@ class VisionTransformer(nn.Module):
         patch_sizes = [int(base_patch_size * alpha) for alpha in scale_factors]
         self.patch_sizes = patch_sizes
         
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        
-        if conv_stem_configs is not None:
-            # As per https://arxiv.org/abs/2106.14881
-            seq_proj = nn.Sequential()
-            prev_channels = 3
-            for i, conv_stem_layer_config in enumerate(conv_stem_configs):
-                seq_proj.add_module(
-                    f"conv_bn_relu_{i}",
-                    Conv2dNormActivation(
-                        in_channels=prev_channels,
-                        out_channels=conv_stem_layer_config.out_channels,
-                        kernel_size=conv_stem_layer_config.kernel_size,
-                        stride=conv_stem_layer_config.stride,
-                        norm_layer=conv_stem_layer_config.norm_layer,
-                        activation_layer=conv_stem_layer_config.activation_layer,
-                    ),
+        self.patching_filters = torch.nn.ModuleList(
+            [
+                nn.Conv2d(
+                    in_channels=3, out_channels=hidden_dim, kernel_size=patch_size, stride=patch_size
                 )
-                prev_channels = conv_stem_layer_config.out_channels
-            seq_proj.add_module(
-                "conv_last", nn.Conv2d(in_channels=prev_channels, out_channels=hidden_dim, kernel_size=1)
-            )
-            self.conv_proj: nn.Module = seq_proj
-        else:
-            self.patching_filters = [nn.Conv2d(
-                in_channels=3, out_channels=hidden_dim, kernel_size=p, stride=p
-            ).to(device) for p in patch_sizes]
+                for patch_size in patch_sizes
+            ]
+        )
 
         sequence_lengths = [((image_size // p) ** 2) for p in patch_sizes]
         self.sequence_lengths = sequence_lengths
