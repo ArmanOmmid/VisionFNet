@@ -193,9 +193,9 @@ class VisionTransformer(nn.Module):
         self.patching_filters = torch.nn.ModuleList(
             [
                 nn.Conv2d(
-                    in_channels=3, out_channels=hidden_dim, kernel_size=patch_size, stride=patch_size
+                    in_channels=3, out_channels=hidden_dim, kernel_size=p, stride=p
                 )
-                for patch_size in patch_sizes
+                for p in patch_sizes
             ]
         )
 
