@@ -3,7 +3,7 @@ model: fvit_spectral_multiscale
 image_size: 32
 base_patch_size: 8
 scale_factors: [0.25, 0.5, 1, 2]
-layer_config: [0, 1]
+layer_config: [1, 0]
 num_heads: 8
 hidden_dim: 64
 expansion: 4
