@@ -98,10 +98,10 @@ class SpectralBlock(nn.Module):
 
         """
         0 = Attention (Not Included Here)
-        1 = Shared F_Linear
-        2 = Unshared F_Linear 
-        3 = Unshared GFT
-        4 = Unshared FNO
+        1 = F_Linear (Shared)
+        2 = F_Linear 
+        3 = GFT
+        4 = FNO
         """
 
         self.spectral_operations = [None for _ in self.sequence_lengths]
