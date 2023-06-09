@@ -7,13 +7,6 @@ from typing import Any, Callable, Dict, List, NamedTuple, Optional
 import torch
 import torch.nn as nn
 from torchvision.ops import MLP, Conv2dNormActivation
-
-class ConvStemConfig(NamedTuple):
-    out_channels: int
-    kernel_size: int
-    stride: int
-    norm_layer: Callable[..., nn.Module] = nn.BatchNorm2d
-    activation_layer: Callable[..., nn.Module] = nn.ReLU
         
 class AttentionBlock(nn.Module):
     def __init__(
@@ -52,9 +45,43 @@ class AttentionBlock(nn.Module):
         y = self.mlp(y)
         return x + y
 
+class SpectralOperation(nn.Module):
+    def __init__(self, H, F, hidden_dim):
+        super().__init__()
+        self.H = H
+        self.F = F
+        self.hidden_dim = hidden_dim
+    def forward(self, x):
+        raise NotImplementedError()
+
+class F_Linear(SpectralOperation):
+    def __init__(self, H, F, hidden_dim):
+        super().__init__(H, F, hidden_dim)
+        self.weights = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))
+    def forward(self, x):
+        x = torch.matmul(x, torch.view_as_complex(self.weights))
+        return x
+
+class GFT(SpectralOperation):
+    def __init__(self, H, F, hidden_dim):
+        super().__init__(H, F, hidden_dim)
+        self.weights = nn.Parameter(torch.empty(H, F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+    def forward(self, x):
+        x = x * torch.view_as_complex(self.weights)
+        return x
+
+class FNO(SpectralOperation):
+    def __init__(self, H, F, hidden_dim):
+        super().__init__(H, F, hidden_dim)
+        self.weights = nn.Parameter(torch.empty(H, F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+    def forward(self, x):
+        x = torch.einsum("nhfd,hfds->nhfd", x, self.weights)
+        return x
+
 class SpectralBlock(nn.Module):
     def __init__(
         self,
+        layer_encoding: int,
         sequence_lengths: List[int],
         num_heads: int,
         hidden_dim: int,
@@ -69,9 +96,34 @@ class SpectralBlock(nn.Module):
         # FFT block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))  # from BERT
-    
-        #self.self_attention = nn.MultiheadAttention(hidden_dim, num_heads, dropout=attention_dropout, batch_first=True)
+        """
+        1 = Shared F_Linear
+        2 = Unshared F_Linear 
+        3 = Unshared GFT
+        4 = Unshared FNO
+        """
+
+        self.spectral_operations = [None for _ in self.sequence_lengths]
+        self.spectral_indices = [0 for _ in self.sequence_lengths]
+
+        if layer_encoding == 1:
+            self.spectral_operations[0] = F_Linear(None, None, hidden_dim)
+        else:
+            for i, sequence_length in enumerate(self.sequence_lengths):
+                H = W = int(math.sqrt(sequence_length))
+                F = W // 2 + 1
+                if layer_encoding == 2:
+                    self.spectral_operations[i] = F_Linear(None, None, hidden_dim)
+                elif layer_encoding == 3:
+                    self.spectral_operations[i] = GFT(H, F, hidden_dim)
+                elif layer_encoding == 4:
+                    self.spectral_operations[i] = FNO(H, F, hidden_dim)
+                else:
+                    raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
+        
+        self.spectral_operations = nn.ModuleList(self.spectral_operations)
+
+        # self.weights = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))
 
         self.dropout = nn.Dropout(dropout)
 
@@ -93,7 +145,9 @@ class SpectralBlock(nn.Module):
             x = x.view(N, H, W, C)
             x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
-            x = torch.matmul(x, torch.view_as_complex(self.weight_c))
+            x = self.spectral_operations[i](x)
+
+            # x = torch.matmul(x, torch.view_as_complex(self.weights))
 
             x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
             x = x.reshape(N, L, C)
@@ -128,17 +182,8 @@ class Encoder(nn.Module):
         self.pos_embedding = nn.Parameter(torch.empty(1, seq_length, hidden_dim).normal_(std=0.02))  # from BERT
         self.dropout = nn.Dropout(dropout)
         layers: OrderedDict[str, nn.Module] = OrderedDict()
-        for i, layer in enumerate(layer_config):
-            if layer == 1:
-                layers[f"spct_layer_{i}"] = SpectralBlock(
-                    sequence_lengths,
-                    num_heads,
-                    hidden_dim,
-                    mlp_dim,
-                    dropout,
-                    norm_layer,
-                )
-            elif layer == 0:
+        for i, layer_encoding in enumerate(layer_config):
+            if layer_encoding == 0:
                 layers[f"atn_layer_{i}"] = AttentionBlock(
                     num_heads,
                     hidden_dim,
@@ -147,9 +192,18 @@ class Encoder(nn.Module):
                     attention_dropout,
                     norm_layer,
                 )
+            else:
+                layers[f"spct_layer_{i}"] = SpectralBlock(
+                    layer_encoding,
+                    sequence_lengths,
+                    num_heads,
+                    hidden_dim,
+                    mlp_dim,
+                    dropout,
+                    norm_layer,
+                )
         self.layers = nn.Sequential(layers)
         self.ln = norm_layer(hidden_dim)
-
     def forward(self, input: torch.Tensor):
         torch._assert(input.dim() == 3, f"Expected (batch_size, seq_length, hidden_dim) got {input.shape}")
         input = input + self.pos_embedding
@@ -193,9 +247,9 @@ class VisionTransformer(nn.Module):
         self.patching_filters = torch.nn.ModuleList(
             [
                 nn.Conv2d(
-                    in_channels=3, out_channels=hidden_dim, kernel_size=p, stride=p
+                    in_channels=3, out_channels=hidden_dim, kernel_size=patch_size, stride=patch_size
                 )
-                for p in patch_sizes
+                for patch_size in patch_sizes
             ]
         )
 
