@@ -56,7 +56,6 @@ def build_model(config, classes):
         model.fc = nn.Sequential(
             nn.Linear(in_features, class_count)
         )
-
     elif config.model == 'vit_standard':
         weights = None if not config.pretrained else torchvision.models.ViT_B_16_Weights.DEFAULT # IMAGENET1K_SWAG_E2E_V1 # SWAG weights
         model = torchvision.models.vit_b_16(weights=weights)
