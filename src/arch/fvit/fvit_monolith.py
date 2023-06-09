@@ -77,7 +77,7 @@ class FNO(SpectralOperation):
         super().__init__(H, W, hidden_dim)
         self.weights = nn.Parameter(torch.empty(H, self.F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
     def forward(self, x):
-        x = torch.einsum("nhfd,hfds->nhfd", x, self.weights)
+        x = torch.einsum("nhfd,hfds->nhfd", x, torch.view_as_complex(self.weights))
         return x
 
 class F_Attention(SpectralOperation):
