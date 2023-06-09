@@ -139,6 +139,7 @@ class SpectralBlock(nn.Module):
             x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
             x = self.spectral_operations[i](x)
+            print(self.spectral_operations[i])
 
             x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
             x = x.reshape(N, L, C)
