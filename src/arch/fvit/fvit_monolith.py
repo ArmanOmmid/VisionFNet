@@ -97,6 +97,7 @@ class SpectralBlock(nn.Module):
         self.ln_1 = norm_layer(hidden_dim)
 
         """
+        0 = Attention (Not Included Here)
         1 = Shared F_Linear
         2 = Unshared F_Linear 
         3 = Unshared GFT
