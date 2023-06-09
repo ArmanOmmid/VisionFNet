@@ -187,7 +187,7 @@ class VisionTransformer(nn.Module):
         self.representation_size = representation_size
         self.norm_layer = norm_layer
 
-        patch_sizes = [int(base_patch_size * alpha) for alpha in scale_factors]
+        patch_sizes = [int(base_patch_size * scale) for scale in scale_factors]
         self.patch_sizes = patch_sizes
         
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
