@@ -52,23 +52,37 @@ class AttentionBlock(nn.Module):
         y = self.mlp(y)
         return x + y
 
-class FourierOperation(nn.Module):
-    def __init__(self, H, W, C):
+class SpectralOperation(nn.Module):
+    def __init__(self, H, F, hidden_dim):
         self.H = H
-        self.W = W
-        self.C = C
+        self.F = F
+        self.hidden_dim = hidden_dim
+    def forward(self, x):
+        raise NotImplementedError()
 
-class F_Linear(FourierOperation):
-    def __init__(self, H, W, C):
-        super().__init__(H, W, C)
+class F_Linear(SpectralOperation):
+    def __init__(self, H, F, hidden_dim):
+        super().__init__(H, F, hidden_dim)
+        self.weights = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))
+    def forward(self, x):
+        x = torch.matmul(x, torch.view_as_complex(self.weights))
+        return x
 
-class GFT(FourierOperation):
-    def __init__(self, H, W, C):
-        super().__init__(H, W, C)
+class GFT(SpectralOperation):
+    def __init__(self, H, F, hidden_dim):
+        super().__init__(H, F, hidden_dim)
+        self.weights = nn.Parameter(torch.empty(H, F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+    def forward(self, x):
+        x = x * torch.view_as_complex(self.weights)
+        return x
 
-class FNO(FourierOperation):
-    def __init__(self, H, W, C):
-        super().__init__(H, W, C)
+class FNO(SpectralOperation):
+    def __init__(self, H, F, hidden_dim):
+        super().__init__(H, F, hidden_dim)
+        self.weights = nn.Parameter(torch.empty(H, F, hidden_dim, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
+    def forward(self, x):
+        x = torch.einsum("nhfd,hfds->nhfd", x, self.weights)
+        return x
 
 class SpectralBlock(nn.Module):
     def __init__(
@@ -88,7 +102,18 @@ class SpectralBlock(nn.Module):
         # FFT block
         self.ln_1 = norm_layer(hidden_dim)
 
-        self.weight_c = nn.Parameter(torch.empty(hidden_dim, hidden_dim, 2).normal_(std=0.02))  # from BERT
+        self.spectral_operations = [None for _ in self.sequence_lengths]
+        for i, sequence_length in enumerate(self.sequence_lengths):
+            H = W = int(math.sqrt(sequence_length))
+            F = W // 2 + 1
+            if layer_encoding == 1:
+                self.spectral_operations[i] = F_Linear(H, F, hidden_dim)
+            elif layer_encoding == 2:
+                self.spectral_operations[i] = GFT(H, F, hidden_dim)
+            elif layer_encoding == 3:
+                self.spectral_operations[i] = FNO(H, F, hidden_dim)
+            else:
+                raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
 
         self.dropout = nn.Dropout(dropout)
 
@@ -157,7 +182,7 @@ class Encoder(nn.Module):
                     attention_dropout,
                     norm_layer,
                 )
-            elif layer_encoding in [1, 2, 3]:
+            else:
                 layers[f"spct_layer_{i}"] = SpectralBlock(
                     layer_encoding,
                     sequence_lengths,
@@ -167,8 +192,6 @@ class Encoder(nn.Module):
                     dropout,
                     norm_layer,
                 )
-            else:
-                raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
         self.layers = nn.Sequential(layers)
         self.ln = norm_layer(hidden_dim)
     def forward(self, input: torch.Tensor):
