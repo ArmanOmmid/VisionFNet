@@ -1,8 +1,9 @@
 # Architecture
-model: vit_token
+model: fvit_monolith
 image_size: 32
-patch_size: 8
-num_layers: 6
+base_patch_size: 8
+scale_factors: [0.25, 0.5, 1, 2]
+layer_config: [0, 0, 0, 0, 0, 0]
 num_heads: 8
 hidden_dim: 64
 expansion: 4
