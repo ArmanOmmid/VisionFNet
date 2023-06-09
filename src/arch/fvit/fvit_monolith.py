@@ -114,6 +114,8 @@ class SpectralBlock(nn.Module):
                 self.spectral_operations[i] = FNO(H, F, hidden_dim)
             else:
                 raise NotImplementedError(f"Layer Encoding Not Mapped: {layer_encoding}")
+            
+        self.spectral_operations = nn.ModuleList(self.spectral_operations)
 
         self.dropout = nn.Dropout(dropout)
 
@@ -126,8 +128,6 @@ class SpectralBlock(nn.Module):
         x = self.ln_1(input)
         
         multiscale_view = list(torch.split(x, self.sequence_lengths, dim=1))
-
-        print(self.sequence_lengths)
         
         for i in range(len(multiscale_view)):
             x = multiscale_view[i]
@@ -137,7 +137,7 @@ class SpectralBlock(nn.Module):
             x = x.view(N, H, W, C)
             x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
-            x = torch.matmul(x, torch.view_as_complex(self.weight_c))
+            x = self.spectral_operations[i](x)
 
             x = torch.fft.irfft2(x, s=(H, W), dim=(1, 2), norm='ortho')
             x = x.reshape(N, L, C)
