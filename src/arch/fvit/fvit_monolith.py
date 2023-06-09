@@ -110,6 +110,7 @@ class SpectralBlock(nn.Module):
             self.spectral_operations[0] = F_Linear(None, None, hidden_dim)
         else:
             for i, sequence_length in enumerate(self.sequence_lengths):
+                self.spectral_indices[i] = i
                 H = W = int(math.sqrt(sequence_length))
                 F = W // 2 + 1
                 if layer_encoding == 2:
@@ -145,9 +146,7 @@ class SpectralBlock(nn.Module):
             x = x.view(N, H, W, C)
             x = torch.fft.rfft2(x, dim=(1, 2), norm='ortho')
 
-            x = self.spectral_operations[i](x)
-
-            print(self.spectral_operations[i])
+            x = self.spectral_operations[self.spectral_indices[i]](x)
 
             # x = torch.matmul(x, torch.view_as_complex(self.weights))
 
