@@ -116,6 +116,10 @@ def get_results(experiments_path, styles):
 
     all_results = [train_loss, val_loss, test_loss, train_accuracy, val_accuracy, test_accuracy]
 
+    for name in styles.keys():
+        if isinstance(styles[name][0], int):
+            styles[name][0] = f'C{styles[name][0]}'
+
     def order_styles_first(dict, styles):
         dict_set = list(dict.keys())
         styles_set = list(styles.keys())
