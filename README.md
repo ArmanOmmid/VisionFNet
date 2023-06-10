@@ -11,7 +11,7 @@ Our main program takes 5 main arguments; other arguments can be observed in **ro
 
 Template:
 
-    python3 repository/src/main.py config_name -D dataset_path -E experiments_path -N experiment_name --download
+    python3 repository/src/main.py config_name -D data_path -E exp_path -N exp_name --download
 
 Example:
 
