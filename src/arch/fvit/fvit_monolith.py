@@ -64,7 +64,7 @@ class F_Linear(SpectralOperation):
         x = torch.matmul(x, torch.view_as_complex(self.weights))
         return x
 
-class GFT(SpectralOperation):
+class GFN(SpectralOperation):
     def __init__(self, H, W, hidden_dim):
         super().__init__(H, W, hidden_dim)
         self.weights = nn.Parameter(torch.empty(H, self.F, hidden_dim, 2, dtype=torch.float32).normal_(std=0.02))
@@ -133,7 +133,7 @@ class SpectralBlock(nn.Module):
                 if layer_encoding == 1:
                     self.spectral_operations[i] = F_Linear(H, W, hidden_dim)
                 elif layer_encoding == 2:
-                    self.spectral_operations[i] = GFT(H, W, hidden_dim)
+                    self.spectral_operations[i] = GFN(H, W, hidden_dim)
                 elif layer_encoding == 3:
                     self.spectral_operations[i] = FNO(H, W, hidden_dim)
                 elif layer_encoding == 4:
