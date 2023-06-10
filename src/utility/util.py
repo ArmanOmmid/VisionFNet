@@ -150,6 +150,7 @@ def plot_results(results_dict, title, y_axis_name, styles={}):
 
 def print_test_results(results, title, max_first):
     print(title)
+    print("="*len(title))
     results = sorted(results.items(), key=lambda x:x[1], reverse=max_first)
     max_len = np.argmax([len(name) for name, _ in results])
     for name, result in results:
@@ -158,8 +159,9 @@ def print_test_results(results, title, max_first):
 
 def print_best_val_epoch(val_accuracy, title):
     print(title)
+    print("="*len(title))
     results = list(val_accuracy.items())
-    max_len = np.argmax([len(name) for name, _ in results])
+    max_len = np.argmax([len(name) for name in val_accuracy.keys()])
     for name, exp in val_accuracy.items():
         pad = " "*(max_len - len(name) + 5)
         print(f"{name}{pad}: {np.argmax(exp)}")
