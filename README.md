@@ -2,5 +2,5 @@
 
 ### Quickstart Guide
 
-> python3 repository/src/main.py fno_m -D 'datasets' -E 'experiments' -N 'fno_3' --download
+    python3 repository/src/main.py fno_m -D 'datasets' -E 'experiments' -N 'fno_3' --download
 
