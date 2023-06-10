@@ -31,10 +31,10 @@ We can configurate the multiple patch scales with a list in **scale_factors**. N
 
 #### layer_config
 We can configurate the network depth and layer types with a list in **layer_config**. The layer encodings are below:
-0. Attention Layer
-1. FViT Spectral Layer  
-2. GFN Spectral Layer 
-3. FNO Spectral Layer
-4. Spectral Attention Layer
+0 = Attention Layer
+1 = FViT Spectral Layer  
+2 = GFN Spectral Layer 
+3 = FNO Spectral Layer
+4 = Spectral Attention Layer
 
 The remaining configs deal with either attention module hyparameters, dataset choice, and general experiment hyperparameters. 
