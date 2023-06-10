@@ -86,15 +86,15 @@ def save_sample(orig, true, pred):
 
 def get_results(experiments_path, styles, strict):
 
+    strict_keys = styles.keys()
+
     results = {
         name : os.path.join(experiments_path, name, 'results.json') 
         for name in os.listdir(experiments_path)
-        if os.path.exists(os.path.join(experiments_path, name, 'results.json'))
+        if os.path.exists(os.path.join(experiments_path, name, 'results.json')) and (not strict or name in strict_keys)
     }
 
-    strict_keys = styles.keys()
     for name in results.keys():
-        if strict and name not in strict_keys: continue
         with open(results[name], 'r') as json_file:
             results[name] = json.loads(json_file.read())
 
