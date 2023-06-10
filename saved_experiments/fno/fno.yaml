@@ -1,0 +1,24 @@
+# Architecture
+model: fvit_monolith
+image_size: 32
+base_patch_size: 8
+scale_factors: [1]
+layer_config: [3, 3, 3, 3, 0, 0]
+num_heads: 8
+hidden_dim: 64
+expansion: 4
+
+# Dataset
+dataset: CIFAR10
+
+# HyperParameters
+epochs: 50
+batch_size: 8
+learning_rate: 0.0001
+scheduler: True
+num_workers: 1
+weighted_loss: True
+early_stop_tolerance: 20
+
+# Misc
+augment: False

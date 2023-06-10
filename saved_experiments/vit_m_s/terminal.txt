@@ -1,0 +1,446 @@
+python3 /home/zsadler/private/VisionFNet/src/run_experiment.py --experiment_path /home/zsadler/private/VisionFNet/experiments --experiment_name vit_m_small vit_m -D datasets --download
+
+==== Start Main ====
+Files already downloaded and verified
+Files already downloaded and verified
+Dataset: CIFAR10
+{'train': 41666, 'val': 8334, 'test': 10000}
+Model Architecture:  fvit_monolith
+Class weights: tensor([0.9999, 0.9999, 0.9999, 0.9999, 1.0001, 1.0001, 1.0001, 1.0001, 0.9999,
+        0.9999], dtype=torch.float64)
+============================================================================================================================================================================================================================
+Layer (type:depth-idx)                        Input Shape               Output Shape              Param #                   Param %                   Kernel Shape              Mult-Adds                 Trainable
+============================================================================================================================================================================================================================
+VisionTransformer                             [8, 3, 32, 32]            [8, 10]                   --                             --                   --                        --                        True
+├─ModuleList: 1-1                             --                        --                        --                             --                   --                        --                        True
+│    └─Conv2d: 2-1                            [8, 3, 32, 32]            [8, 64, 16, 16]           832                         0.34%                   [2, 2]                    1,703,936                 True
+│    └─Conv2d: 2-2                            [8, 3, 32, 32]            [8, 64, 8, 8]             3,136                       1.28%                   [4, 4]                    1,605,632                 True
+│    └─Conv2d: 2-3                            [8, 3, 32, 32]            [8, 64, 4, 4]             12,352                      5.03%                   [8, 8]                    1,581,056                 True
+│    └─Conv2d: 2-4                            [8, 3, 32, 32]            [8, 64, 2, 2]             49,216                     20.05%                   [16, 16]                  1,574,912                 True
+├─Encoder: 1-2                                [8, 340, 64]              [8, 340, 64]              21,760                      8.86%                   --                        --                        True
+│    └─Dropout: 2-5                           [8, 340, 64]              [8, 340, 64]              --                             --                   --                        --                        --
+│    └─Sequential: 2-6                        [8, 340, 64]              [8, 340, 64]              --                             --                   --                        --                        True
+│    │    └─AttentionBlock: 3-1               [8, 340, 64]              [8, 340, 64]              49,984                     20.36%                   --                        266,752                   True
+│    │    └─AttentionBlock: 3-2               [8, 340, 64]              [8, 340, 64]              49,984                     20.36%                   --                        266,752                   True
+│    │    └─AttentionBlock: 3-3               [8, 340, 64]              [8, 340, 64]              49,984                     20.36%                   --                        266,752                   True
+│    └─LayerNorm: 2-7                         [8, 340, 64]              [8, 340, 64]              128                         0.05%                   --                        1,024                     True
+├─Conv1d: 1-3                                 [8, 340, 64]              [8, 18, 64]               6,138                       2.50%                   [1]                       3,142,656                 True
+├─MLP: 1-4                                    [8, 18, 64]               [8, 18, 8]                --                             --                   --                        --                        True
+│    └─Linear: 2-8                            [8, 18, 64]               [8, 18, 8]                520                         0.21%                   --                        4,160                     True
+│    └─Dropout: 2-9                           [8, 18, 8]                [8, 18, 8]                --                             --                   --                        --                        --
+├─Sequential: 1-5                             [8, 144]                  [8, 10]                   --                             --                   --                        --                        True
+│    └─Linear: 2-10                           [8, 144]                  [8, 10]                   1,450                       0.59%                   --                        11,600                    True
+============================================================================================================================================================================================================================
+Total params: 245,484
+Trainable params: 245,484
+Non-trainable params: 0
+Total mult-adds (M): 10.43
+============================================================================================================================================================================================================================
+Input size (MB): 0.10
+Forward/backward pass size (MB): 32.11
+Params size (MB): 0.70
+Estimated Total Size (MB): 32.91
+============================================================================================================================================================================================================================
+Initializing Experiments
+Training
+
+--------------------
+Epoch 1 / 50
+--------------------
+Learning Rate: 0.0001
+Epoch 1 | Time Elapsed: 73.27625608444214 |
+                      Train | Accuracy: 0.4035 | Loss: 1.6446
+                 Validation | Accuracy: 0.4861 | Loss: 1.4167
+
+--------------------
+Epoch 2 / 50
+--------------------
+Learning Rate: 9.990133642141359e-05
+Epoch 2 | Time Elapsed: 72.49351143836975 |
+                      Train | Accuracy: 0.5272 | Loss: 1.3153
+                 Validation | Accuracy: 0.5553 | Loss: 1.2296
+
+--------------------
+Epoch 3 / 50
+--------------------
+Learning Rate: 9.96057350657239e-05
+Epoch 3 | Time Elapsed: 76.86629462242126 |
+                      Train | Accuracy: 0.5751 | Loss: 1.1878
+                 Validation | Accuracy: 0.5857 | Loss: 1.1647
+
+--------------------
+Epoch 4 / 50
+--------------------
+Learning Rate: 9.911436253643444e-05
+Epoch 4 | Time Elapsed: 74.8037977218628 |
+                      Train | Accuracy: 0.6118 | Loss: 1.0907
+                 Validation | Accuracy: 0.6169 | Loss: 1.0665
+
+--------------------
+Epoch 5 / 50
+--------------------
+Learning Rate: 9.842915805643155e-05
+Epoch 5 | Time Elapsed: 75.87797927856445 |
+                      Train | Accuracy: 0.6390 | Loss: 1.0262
+                 Validation | Accuracy: 0.6329 | Loss: 1.0324
+
+--------------------
+Epoch 6 / 50
+--------------------
+Learning Rate: 9.755282581475769e-05
+Epoch 6 | Time Elapsed: 79.48131346702576 |
+                      Train | Accuracy: 0.6536 | Loss: 0.9790
+                 Validation | Accuracy: 0.6405 | Loss: 1.0114
+
+--------------------
+Epoch 7 / 50
+--------------------
+Learning Rate: 9.648882429441257e-05
+Epoch 7 | Time Elapsed: 75.12293267250061 |
+                      Train | Accuracy: 0.6672 | Loss: 0.9375
+                 Validation | Accuracy: 0.6501 | Loss: 0.9927
+
+--------------------
+Epoch 8 / 50
+--------------------
+Learning Rate: 9.524135262330098e-05
+Epoch 8 | Time Elapsed: 73.78999900817871 |
+                      Train | Accuracy: 0.6784 | Loss: 0.9022
+                 Validation | Accuracy: 0.6464 | Loss: 0.9859
+
+--------------------
+Epoch 9 / 50
+--------------------
+Learning Rate: 9.381533400219317e-05
+Epoch 9 | Time Elapsed: 77.43049693107605 |
+                      Train | Accuracy: 0.6911 | Loss: 0.8705
+                 Validation | Accuracy: 0.6574 | Loss: 0.9663
+
+--------------------
+Epoch 10 / 50
+--------------------
+Learning Rate: 9.221639627510075e-05
+Epoch 10 | Time Elapsed: 80.18024373054504 |
+                      Train | Accuracy: 0.7003 | Loss: 0.8440
+                 Validation | Accuracy: 0.6739 | Loss: 0.9327
+
+--------------------
+Epoch 11 / 50
+--------------------
+Learning Rate: 9.045084971874735e-05
+Epoch 11 | Time Elapsed: 78.25732827186584 |
+                      Train | Accuracy: 0.7074 | Loss: 0.8189
+                 Validation | Accuracy: 0.6722 | Loss: 0.9399
+
+--------------------
+Epoch 12 / 50
+--------------------
+Learning Rate: 8.852566213878945e-05
+Epoch 12 | Time Elapsed: 79.03418231010437 |
+                      Train | Accuracy: 0.7168 | Loss: 0.7941
+                 Validation | Accuracy: 0.6777 | Loss: 0.9325
+
+--------------------
+Epoch 13 / 50
+--------------------
+Learning Rate: 8.644843137107056e-05
+Epoch 13 | Time Elapsed: 76.6806972026825 |
+                      Train | Accuracy: 0.7268 | Loss: 0.7727
+                 Validation | Accuracy: 0.6680 | Loss: 0.9540
+
+--------------------
+Epoch 14 / 50
+--------------------
+Learning Rate: 8.422735529643442e-05
+Epoch 14 | Time Elapsed: 67.88190793991089 |
+                      Train | Accuracy: 0.7306 | Loss: 0.7528
+                 Validation | Accuracy: 0.6842 | Loss: 0.9172
+
+--------------------
+Epoch 15 / 50
+--------------------
+Learning Rate: 8.187119948743447e-05
+Epoch 15 | Time Elapsed: 71.53676867485046 |
+                      Train | Accuracy: 0.7389 | Loss: 0.7331
+                 Validation | Accuracy: 0.6698 | Loss: 0.9443
+
+--------------------
+Epoch 16 / 50
+--------------------
+Learning Rate: 7.938926261462366e-05
+Epoch 16 | Time Elapsed: 71.07500648498535 |
+                      Train | Accuracy: 0.7473 | Loss: 0.7121
+                 Validation | Accuracy: 0.6628 | Loss: 0.9814
+
+--------------------
+Epoch 17 / 50
+--------------------
+Learning Rate: 7.679133974894982e-05
+Epoch 17 | Time Elapsed: 81.43475699424744 |
+                      Train | Accuracy: 0.7538 | Loss: 0.6934
+                 Validation | Accuracy: 0.6868 | Loss: 0.9288
+
+--------------------
+Epoch 18 / 50
+--------------------
+Learning Rate: 7.408768370508575e-05
+Epoch 18 | Time Elapsed: 80.6502161026001 |
+                      Train | Accuracy: 0.7597 | Loss: 0.6740
+                 Validation | Accuracy: 0.6848 | Loss: 0.9261
+
+--------------------
+Epoch 19 / 50
+--------------------
+Learning Rate: 7.128896457825361e-05
+Epoch 19 | Time Elapsed: 70.54263806343079 |
+                      Train | Accuracy: 0.7650 | Loss: 0.6572
+                 Validation | Accuracy: 0.6824 | Loss: 0.9367
+
+--------------------
+Epoch 20 / 50
+--------------------
+Learning Rate: 6.840622763423389e-05
+Epoch 20 | Time Elapsed: 68.36862206459045 |
+                      Train | Accuracy: 0.7723 | Loss: 0.6384
+                 Validation | Accuracy: 0.6794 | Loss: 0.9424
+
+--------------------
+Epoch 21 / 50
+--------------------
+Learning Rate: 6.545084971874736e-05
+Epoch 21 | Time Elapsed: 67.79033398628235 |
+                      Train | Accuracy: 0.7815 | Loss: 0.6191
+                 Validation | Accuracy: 0.6807 | Loss: 0.9429
+
+--------------------
+Epoch 22 / 50
+--------------------
+Learning Rate: 6.243449435824272e-05
+Epoch 22 | Time Elapsed: 80.0398781299591 |
+                      Train | Accuracy: 0.7863 | Loss: 0.6021
+                 Validation | Accuracy: 0.6813 | Loss: 0.9729
+
+--------------------
+Epoch 23 / 50
+--------------------
+Learning Rate: 5.9369065729286224e-05
+Epoch 23 | Time Elapsed: 73.30315327644348 |
+                      Train | Accuracy: 0.7945 | Loss: 0.5830
+                 Validation | Accuracy: 0.6847 | Loss: 0.9653
+
+--------------------
+Epoch 24 / 50
+--------------------
+Learning Rate: 5.626666167821521e-05
+Epoch 24 | Time Elapsed: 74.4522442817688 |
+                      Train | Accuracy: 0.8003 | Loss: 0.5649
+                 Validation | Accuracy: 0.6835 | Loss: 0.9777
+
+--------------------
+Epoch 25 / 50
+--------------------
+Learning Rate: 5.3139525976465657e-05
+Epoch 25 | Time Elapsed: 67.87095618247986 |
+                      Train | Accuracy: 0.8072 | Loss: 0.5467
+                 Validation | Accuracy: 0.6826 | Loss: 0.9822
+
+--------------------
+Epoch 26 / 50
+--------------------
+Learning Rate: 4.999999999999998e-05
+Epoch 26 | Time Elapsed: 67.31440591812134 |
+                      Train | Accuracy: 0.8116 | Loss: 0.5282
+                 Validation | Accuracy: 0.6797 | Loss: 1.0047
+
+--------------------
+Epoch 27 / 50
+--------------------
+Learning Rate: 4.6860474023534314e-05
+Epoch 27 | Time Elapsed: 68.48480582237244 |
+                      Train | Accuracy: 0.8185 | Loss: 0.5113
+                 Validation | Accuracy: 0.6845 | Loss: 0.9992
+
+--------------------
+Epoch 28 / 50
+--------------------
+Learning Rate: 4.3733338321784775e-05
+Epoch 28 | Time Elapsed: 70.90633392333984 |
+                      Train | Accuracy: 0.8266 | Loss: 0.4924
+                 Validation | Accuracy: 0.6890 | Loss: 1.0078
+
+--------------------
+Epoch 29 / 50
+--------------------
+Learning Rate: 4.063093427071375e-05
+Epoch 29 | Time Elapsed: 71.6334240436554 |
+                      Train | Accuracy: 0.8330 | Loss: 0.4748
+                 Validation | Accuracy: 0.6784 | Loss: 1.0357
+
+--------------------
+Epoch 30 / 50
+--------------------
+Learning Rate: 3.756550564175724e-05
+Epoch 30 | Time Elapsed: 71.47704672813416 |
+                      Train | Accuracy: 0.8386 | Loss: 0.4582
+                 Validation | Accuracy: 0.6825 | Loss: 1.0514
+
+--------------------
+Epoch 31 / 50
+--------------------
+Learning Rate: 3.454915028125263e-05
+Epoch 31 | Time Elapsed: 69.78478050231934 |
+                      Train | Accuracy: 0.8463 | Loss: 0.4403
+                 Validation | Accuracy: 0.6755 | Loss: 1.0672
+
+--------------------
+Epoch 32 / 50
+--------------------
+Learning Rate: 3.1593772365766105e-05
+Epoch 32 | Time Elapsed: 73.84638047218323 |
+                      Train | Accuracy: 0.8505 | Loss: 0.4231
+                 Validation | Accuracy: 0.6848 | Loss: 1.0730
+
+--------------------
+Epoch 33 / 50
+--------------------
+Learning Rate: 2.8711035421746357e-05
+Epoch 33 | Time Elapsed: 72.96903276443481 |
+                      Train | Accuracy: 0.8585 | Loss: 0.4064
+                 Validation | Accuracy: 0.6806 | Loss: 1.0955
+
+--------------------
+Epoch 34 / 50
+--------------------
+Learning Rate: 2.591231629491422e-05
+Epoch 34 | Time Elapsed: 68.79326057434082 |
+                      Train | Accuracy: 0.8660 | Loss: 0.3922
+                 Validation | Accuracy: 0.6815 | Loss: 1.1137
+
+--------------------
+Epoch 35 / 50
+--------------------
+Learning Rate: 2.3208660251050148e-05
+Epoch 35 | Time Elapsed: 67.60691118240356 |
+                      Train | Accuracy: 0.8685 | Loss: 0.3772
+                 Validation | Accuracy: 0.6733 | Loss: 1.1549
+
+--------------------
+Epoch 36 / 50
+--------------------
+Learning Rate: 2.061073738537634e-05
+Epoch 36 | Time Elapsed: 68.49609994888306 |
+                      Train | Accuracy: 0.8765 | Loss: 0.3612
+                 Validation | Accuracy: 0.6777 | Loss: 1.1540
+
+--------------------
+Epoch 37 / 50
+--------------------
+Learning Rate: 1.8128800512565503e-05
+Epoch 37 | Time Elapsed: 66.63311862945557 |
+                      Train | Accuracy: 0.8818 | Loss: 0.3476
+                 Validation | Accuracy: 0.6766 | Loss: 1.1763
+
+--------------------
+Epoch 38 / 50
+--------------------
+Learning Rate: 1.5772644703565555e-05
+Epoch 38 | Time Elapsed: 68.26061820983887 |
+                      Train | Accuracy: 0.8886 | Loss: 0.3342
+                 Validation | Accuracy: 0.6763 | Loss: 1.1940
+
+--------------------
+Epoch 39 / 50
+--------------------
+Learning Rate: 1.3551568628929426e-05
+Epoch 39 | Time Elapsed: 72.6885461807251 |
+                      Train | Accuracy: 0.8929 | Loss: 0.3217
+                 Validation | Accuracy: 0.6747 | Loss: 1.2114
+
+--------------------
+Epoch 40 / 50
+--------------------
+Learning Rate: 1.1474337861210536e-05
+Epoch 40 | Time Elapsed: 71.40056562423706 |
+                      Train | Accuracy: 0.8973 | Loss: 0.3099
+                 Validation | Accuracy: 0.6815 | Loss: 1.2175
+
+--------------------
+Epoch 41 / 50
+--------------------
+Learning Rate: 9.549150281252626e-06
+Epoch 41 | Time Elapsed: 69.29506278038025 |
+                      Train | Accuracy: 0.9020 | Loss: 0.3002
+                 Validation | Accuracy: 0.6775 | Loss: 1.2338
+
+--------------------
+Epoch 42 / 50
+--------------------
+Learning Rate: 7.783603724899252e-06
+Epoch 42 | Time Elapsed: 73.73116326332092 |
+                      Train | Accuracy: 0.9070 | Loss: 0.2902
+                 Validation | Accuracy: 0.6784 | Loss: 1.2480
+
+--------------------
+Epoch 43 / 50
+--------------------
+Learning Rate: 6.184665997806817e-06
+Epoch 43 | Time Elapsed: 74.48962044715881 |
+                      Train | Accuracy: 0.9096 | Loss: 0.2820
+                 Validation | Accuracy: 0.6777 | Loss: 1.2570
+
+--------------------
+Epoch 44 / 50
+--------------------
+Learning Rate: 4.75864737669903e-06
+Epoch 44 | Time Elapsed: 68.77362823486328 |
+                      Train | Accuracy: 0.9134 | Loss: 0.2748
+                 Validation | Accuracy: 0.6761 | Loss: 1.2692
+
+--------------------
+Epoch 45 / 50
+--------------------
+Learning Rate: 3.5111757055874303e-06
+Epoch 45 | Time Elapsed: 67.0324342250824 |
+                      Train | Accuracy: 0.9156 | Loss: 0.2691
+                 Validation | Accuracy: 0.6758 | Loss: 1.2765
+
+--------------------
+Epoch 46 / 50
+--------------------
+Learning Rate: 2.4471741852423216e-06
+Epoch 46 | Time Elapsed: 75.05889010429382 |
+                      Train | Accuracy: 0.9187 | Loss: 0.2636
+                 Validation | Accuracy: 0.6764 | Loss: 1.2835
+
+--------------------
+Epoch 47 / 50
+--------------------
+Learning Rate: 1.5708419435684504e-06
+Epoch 47 | Time Elapsed: 73.52670907974243 |
+                      Train | Accuracy: 0.9201 | Loss: 0.2598
+                 Validation | Accuracy: 0.6764 | Loss: 1.2838
+
+--------------------
+Epoch 48 / 50
+--------------------
+Learning Rate: 8.856374635655631e-07
+Epoch 48 | Time Elapsed: 66.91021919250488 |
+                      Train | Accuracy: 0.9220 | Loss: 0.2567
+                 Validation | Accuracy: 0.6772 | Loss: 1.2880
+
+--------------------
+Epoch 49 / 50
+--------------------
+Learning Rate: 3.942649342761114e-07
+Epoch 49 | Time Elapsed: 73.62887048721313 |
+                      Train | Accuracy: 0.9231 | Loss: 0.2547
+                 Validation | Accuracy: 0.6765 | Loss: 1.2876
+Early Stopping...
+Best IoU score: None
+--------------------
+Test Loss 1.029197906115651
+Test Accuracy 0.6789000000000001
+/home/zsadler/.local/lib/python3.9/site-packages/torchinfo/torchinfo.py:477: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  action_fn=lambda data: sys.getsizeof(data.storage()),
+/home/zsadler/.local/lib/python3.9/site-packages/torch/storage.py:665: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return super().__sizeof__() + self.nbytes()
