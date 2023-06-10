@@ -42,4 +42,6 @@ The remaining configs deal with either attention module hyparameters, dataset ch
 
 ### Plotting Results
 1. Locate the Jupyter Notebook at **root/src/plotter.ipynb**.
-2. Specify the absolute path of your experiments folder containing all the needed experiments by assigning it as a string to the **experiments_path** variable in Cell[2]
+2. Specify the absolute path of your experiments folder containing all the needed experiments by assigning it as a string to the **experiments_path** variable in cell [2].
+3. Optional: Include a **styles** variable to specify which experiments are being plotted and how they are styled. 
+4. Run the Notebook and observe the plots.
