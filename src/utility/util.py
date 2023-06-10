@@ -144,7 +144,7 @@ def plot_results(results_dict, title, y_axis_name, styles={}):
 
     plt.xlabel('Epochs')
     plt.ylabel(y_axis_name)
-    plt.legend()
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     plt.title(title)
     plt.show
 
