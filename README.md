@@ -10,9 +10,9 @@ Our main program takes 5 main arguments; other arguments can be observed in **ro
 5. --download : Flag to download the dataset if it doesn't exist at the given location 
 
 Template:
+
     python3 repository/src/main.py config_name -D dataset_path -E experiments_path -N experiment_name --download
 
 Example:
-    python3 repository/src/main.py example -D <dataset_path> -E <experiments_path> -N <experiment_name> --download
 
-To plot all or selected experiment results, open the notebook under 
+    python3 repository/src/main.py example -D dataset -E experiment -N example --download
