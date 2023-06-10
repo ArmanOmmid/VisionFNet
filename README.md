@@ -41,3 +41,5 @@ We can configurate the network depth and layer types with a list in **layer_conf
 The remaining configs deal with either attention module hyparameters, dataset choice, and general experiment hyperparameters. 
 
 ### Plotting Results
+1. Locate the Jupyter Notebook at **root/src/plotter.ipynb**.
+2. Specify the absolute path of your experiments folder containing all the needed experiments by assigning it as a string to the **experiments_path** variable in Cell[2]
