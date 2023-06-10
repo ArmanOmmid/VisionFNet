@@ -19,7 +19,7 @@ Example:
     python3 repository/src/main.py example -D dataset -E experiment -N example --download
 
 ### Configuring Experiments
-Refer to, modify, and create config yaml files under **root/configs** and specify these in the *config_name* argument.
+Refer to, modify, and create config yaml files under **root/configs** and specify the choice in the *config_name* argument.
 In these yaml files, you can choose the model architecture, configurate the architecture, choose the dataset, set the hyperparameters, etc..
 
 ### The Monolothic Architecture
