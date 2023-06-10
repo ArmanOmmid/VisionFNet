@@ -39,3 +39,5 @@ We can configurate the network depth and layer types with a list in **layer_conf
 -1 = Multiscale Weight Sharing FViT Spectral Layer <br>
 
 The remaining configs deal with either attention module hyparameters, dataset choice, and general experiment hyperparameters. 
+
+### Plotting Results
