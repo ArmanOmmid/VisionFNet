@@ -3,7 +3,7 @@
 ### Quickstart Guide
 
 Our main program takes 5 main arguments; other arguments can be observed in **root/src/run_experiment**
-1. config_name : The config yaml file that configures this experiment (including architecture, dataset, hyperparameters, etc...)
+1. config_name : The config yaml file that configures this experiment
 2. -D dataset_path : The location to download and/or locate the chosen dataset
 3. -E experiments_path : The path to a folder to store all experiment results
 4. -N experiment_name : The name of the experiment identifying this experiment
