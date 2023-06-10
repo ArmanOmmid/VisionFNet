@@ -86,6 +86,7 @@ def save_sample(orig, true, pred):
 
 def get_results(experiments_path, styles, strict):
 
+    if len(styles) == 0: strict = False
     strict_keys = styles.keys()
 
     results = {
