@@ -30,12 +30,12 @@ All configurations below refer to this architecture **model: fvit_monolith** and
 We can configurate the multiple patch scales with a list in **scale_factors**. Numbers in this list determine the multiple scale factors that derive from the **base_patch_size**.
 
 #### layer_config
-We can configurate the network depth and layer types with a list in **layer_config**. The layer encodings are below:
-0 = Attention Layer
-1 = FViT Spectral Layer  
-2 = GFN Spectral Layer 
-3 = FNO Spectral Layer
-4 = Spectral Attention Layer
--1 = Multiscale Weight Sharing FViT Spectral Layer 
+We can configurate the network depth and layer types with a list in **layer_config**. The layer encodings are below: <br>
+0 = Attention Layer <br>
+1 = FViT Spectral Layer <br>
+2 = GFN Spectral Layer <br>
+3 = FNO Spectral Layer <br>
+4 = Spectral Attention Layer <br>
+-1 = Multiscale Weight Sharing FViT Spectral Layer <br>
 
 The remaining configs deal with either attention module hyparameters, dataset choice, and general experiment hyperparameters. 
