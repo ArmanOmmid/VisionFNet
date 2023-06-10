@@ -84,7 +84,7 @@ def save_sample(orig, true, pred):
 
 """ Plotting Experiment Results (ALL)"""
 
-def get_results(experiments_path, styles):
+def get_results(experiments_path, styles, strict):
 
     results = {
         name : os.path.join(experiments_path, name, 'results.json') 
@@ -92,7 +92,9 @@ def get_results(experiments_path, styles):
         if os.path.exists(os.path.join(experiments_path, name, 'results.json'))
     }
 
+    strict_keys = styles.keys()
     for name in results.keys():
+        if strict and name not in strict_keys: continue
         with open(results[name], 'r') as json_file:
             results[name] = json.loads(json_file.read())
 
