@@ -24,17 +24,17 @@ In these yaml files, you can choose the model architecture, configurate the arch
 
 ### The Monolothic Architecture
 For simplicity and for easy comparison, we have combined our various implemented architectures into a monolothic architecture that can be configured with the various spectral layers.
-All configurations below refer to this architecture **model: fvit_monolith** and from this we can represent all tested architectures including ViT, FViT, GFN, and FNO with their multiscale counterparts.
+All configurations below refer to this architecture **model: fvit_monolith** and from this we can represent all tested architectures and their multiscale counterparts.
 
 ##### scale_factors
-We can configurate the 
+We can configurate the multiple patch scales with a list in **scale_factors**. Numbers in this list determine the multiple scale factors that derive from the **base_patch_size**.
 
 ##### layer_config
-We can configurate the network depth 
-1. Attention Layer
-2. Spectral Layer  
-3. Spectral Layer 
-4. Spectral Layer
-5. Spectral Layer
+We can configurate the network depth and layer types with a list in **layer_config**. The layer encodings are below:
+0. Attention Layer
+1. FViT Spectral Layer  
+2. GFN Spectral Layer 
+3. FNO Spectral Layer
+4. Spectral Attention Layer
 
-We can 
+The remaining configs deal with either attention module hyparameters, dataset choice, and general experiment hyperparameters. 
