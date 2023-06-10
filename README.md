@@ -19,4 +19,8 @@ Example:
     python3 repository/src/main.py example -D dataset -E experiment -N example --download
 
 ### Configuring Experiments
-Refer to, modify, and create config yaml files under **root/configs** and specify these in the *config_name* argument
+Refer to, modify, and create config yaml files under **root/configs** and specify these in the *config_name* argument.
+In these yaml files, you can choose the model architecture, config the architecture, choose the dataset, set the hyperparameters, etc..
+
+##### model: fvit_monolith
+For simplicity and for easy comparison, we have combined our various implemented architectures into a monolothic architecture that can be configured with the various spectral layers.
