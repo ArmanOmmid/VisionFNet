@@ -36,5 +36,6 @@ We can configurate the network depth and layer types with a list in **layer_conf
 2 = GFN Spectral Layer 
 3 = FNO Spectral Layer
 4 = Spectral Attention Layer
+-1 = Multiscale Weight Sharing FViT Spectral Layer 
 
 The remaining configs deal with either attention module hyparameters, dataset choice, and general experiment hyperparameters. 
