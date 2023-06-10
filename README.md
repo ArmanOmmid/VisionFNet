@@ -22,5 +22,19 @@ Example:
 Refer to, modify, and create config yaml files under **root/configs** and specify these in the *config_name* argument.
 In these yaml files, you can choose the model architecture, configurate the architecture, choose the dataset, set the hyperparameters, etc..
 
-##### model: fvit_monolith
+### The Monolothic Architecture
 For simplicity and for easy comparison, we have combined our various implemented architectures into a monolothic architecture that can be configured with the various spectral layers.
+All configurations below refer to this architecture **model: fvit_monolith** and from this we can represent all tested architectures including ViT, FViT, GFN, and FNO with their multiscale counterparts.
+
+##### scale_factors
+We can configurate the 
+
+##### layer_config
+We can configurate the network depth 
+1. Attention Layer
+2. Spectral Layer  
+3. Spectral Layer 
+4. Spectral Layer
+5. Spectral Layer
+
+We can 
