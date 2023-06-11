@@ -1,3 +1,6 @@
+# Base Vision Transformer Architecture Credit to PyTorch
+# https://github.com/pytorch/vision/blob/main/torchvision/models/vision_transformer.py
+
 
 import math
 from collections import OrderedDict
