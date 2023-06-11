@@ -19,7 +19,7 @@ Template:
 
 Example:
 
-    python3 repository/src/main.py example -D dataset -E experiment -N example --download
+    python3 repository/src/main.py example -D dataset -E experiments -N example --download
 
 Zip all the run results for keeping with:
 
