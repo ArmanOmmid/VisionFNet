@@ -1,5 +1,8 @@
 # CSE 252D Project : Fourier Vision Transformers
 
+Base Vision Transformer Architecture Credit to PyTorch
+https://github.com/pytorch/vision/blob/main/torchvision/models/vision_transformer.py
+
 ## Quickstart Guide
 
 ### Running Experiments 
