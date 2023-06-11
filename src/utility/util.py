@@ -84,7 +84,7 @@ def save_sample(orig, true, pred):
 
 """ Plotting Experiment Results (ALL)"""
 
-def get_results(experiments_path, styles, strict):
+def get_results(experiments_path, styles={}, strict=False):
 
     if len(styles) == 0: strict = False
     strict_keys = styles.keys()
