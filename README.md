@@ -1,9 +1,14 @@
 # CSE 252D Project : Fourier Vision Transformers
 
-Base Vision Transformer Architecture Credit to PyTorch
-https://github.com/pytorch/vision/blob/main/torchvision/models/vision_transformer.py
+# Repository Link
+https://github.com/ArmanOmmid/VisionFNet#configuring-experiments
+# Google Collab Link
+https://colab.research.google.com/drive/1yPHiZWhUD0XYieyca95f-tQTwCMdwl-4?usp=sharing
 
 ## Quickstart Guide
+
+Base Vision Transformer Architecture Credit to PyTorch
+https://github.com/pytorch/vision/blob/main/torchvision/models/vision_transformer.py
 
 ### Running Experiments 
 Our main program takes 5 main arguments; other arguments can be observed in **root/src/run_experiment**
